@@ -14,12 +14,21 @@
     outputs = inputs@{self, nixpkgs, ...} :
     let 
         lib  = nixpkgs.lib;
-        pkgs = nixpkgs;
+        pkgs = import nixpkgs
+        {
+          system = systemSettings.system;
+          config = 
+          {
+            allowUnfree = true;
+          };
+        };
+
         home-manager = inputs.home-manager;
         systemSettings = 
         {
           system = "x86_64-linux";
           timezone = "America/Vancouver";
+          hostname = "nixos";
           bootMode = "uefi";
           profile = "t490";
           bootMountPath = "/boot";
@@ -31,11 +40,14 @@
         #ToDo: What is rec keyword 
         userSettings = rec 
         {
-          username = "Fern";
-          name = "Omang";
+          username = "fern";
+          name = "fern";
           email = "omangbaheti@gmail.com";
           dotfilesDir = "~/.dotfiles";
+          term = "bash";
           browser = "firefox";
+          editor = "code";
+          spawnEditor = "code";
         };
         
     in 
@@ -46,7 +58,7 @@
         {
           inherit pkgs;
           modules = 
-          [("~/.dotfiles/profiles" + ("/" + systemSettings.profile) + "/configuration.nix")];
+          [(./. + "/profiles" + ("/" + systemSettings.profile) + "/home.nix")];
           extraSpecialArgs = 
           {
             inherit pkgs;
@@ -62,8 +74,15 @@
         nixos = lib.nixosSystem
         {
             system = systemSettings.system;
-            modules = 
-            [("~/.dotfiles/profiles" + ("/" + systemSettings.profile) + "/configuration.nix")];
+            modules = #[./configuration.nix];
+              [(./. + "/profiles" + ("/" + systemSettings.profile) + "/configuration.nix")];
+            specialArgs = 
+            {
+              inherit pkgs;
+              inherit systemSettings;
+              inherit userSettings;
+              inherit inputs;
+            };
         };
       };
     };

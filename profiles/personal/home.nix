@@ -1,8 +1,8 @@
-{ config, pkgs, userSettings, ... }:
+{ config, pkgs, userSettings, systemSettings, ... }:
 
 {
-    home.username = userSettings.name;
-    home.homeDirectory = "/home" + userSettings.name;
+    home.username = userSettings.username;
+    home.homeDirectory = "/home/fern";
 
     programs.home-manager.enable = true;
 
@@ -36,7 +36,7 @@
 
         #Communication
         discord
-        whatsapp-for-linux
+        whatsapp-for-linux 
         telegram-desktop
 
         #Games
@@ -58,7 +58,6 @@
     {
         EDITOR = userSettings.editor;
         SPAWNEDITOR = userSettings.spawnEditor;
-        TERM = userSettings.term;
         BROWSER = userSettings.browser;
     };
 }

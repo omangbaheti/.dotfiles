@@ -22,7 +22,7 @@
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
-  networking.networkmanager.enable = systemSettings.hostname;
+  #networking.networkmanager.enable = systemSettings.hostname;
   nix.settings.experimental-features = ["nix-command" "flakes"];
   # Set your time zone.
   time.timeZone = systemSettings.timezone;

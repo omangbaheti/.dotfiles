@@ -14,16 +14,18 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = systemSettings.hostName; # Define your hostname.
-  networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.hostName = systemSettings.hostname; # Define your hostname.
+  #networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
+  
   # Enable networking
-  networking.networkmanager.enable = systemSettings.hostname;
+  networking.networkmanager.enable = true;
   nix.settings.experimental-features = ["nix-command" "flakes"];
+
+  nixpkgs.config.allowUnfree = systemSettings.allowUnfree;
 
   # Set your time zone.
   time.timeZone = systemSettings.timezone;
@@ -81,15 +83,16 @@
   programs.firefox.enable = true;
 
   # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; 
+  [
   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   #  wget
   vim
-  github-desktop
+  gitkraken
   vscode
   git
   home-manager  

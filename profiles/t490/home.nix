@@ -2,7 +2,7 @@
 
 {
     home.username = userSettings.name;
-    home.homeDirectory = "/home" + userSettings.name;
+    home.homeDirectory = "/home/" + userSettings.name;
 
     programs.home-manager.enable = true;
 
