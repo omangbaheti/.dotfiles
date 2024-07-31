@@ -16,12 +16,12 @@
     home.packages = (with pkgs;
     [
         #Dev-Tools
-        github-desktop
         jetbrains.rider
         unityhub
         ventoy
         bitwarden-desktop
-
+        blender
+        
         #Tools
         libreoffice-fresh
         gimp
@@ -33,12 +33,13 @@
         obs-studio
         ffmpeg
         spotify
-
+        parsec-bin
         #Communication
         discord
         whatsapp-for-linux
         telegram-desktop
-
+        slack 
+        
         #Games
         steam
         lutris-unwrapped
@@ -52,6 +53,7 @@
         lxc
         swtpm
         bottles
+        fprintd
     ]);
 
     home.sessionVariables = 

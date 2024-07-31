@@ -23,6 +23,9 @@
   
   # Enable networking
   networking.networkmanager.enable = true;
+  # networking.useDHCP = false;
+  # networking.interfaces.eno1.useDHCP = true;
+
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
   nixpkgs.config.allowUnfree = systemSettings.allowUnfree;
@@ -32,7 +35,7 @@
 
   # Select internationalisation properties.
   i18n.defaultLocale = systemSettings.defaultLocale;
-  
+
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
@@ -90,14 +93,21 @@
   environment.systemPackages = with pkgs; 
   [
   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #  wget
-  vim
   gitkraken
   vscode
   git
-  home-manager  
+  git-lfs
+  home-manager
+  fprintd
+  syncthing
+  fastfetch
+  dotnetCorePackages.sdk_8_0_2xx
+  mono5
+  alacritty
+  libgcc
   ];
 
+  services.fprintd.enable = true;
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;

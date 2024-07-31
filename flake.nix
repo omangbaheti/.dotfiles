@@ -35,6 +35,7 @@
           defaultLocale = "en_CA.UTF-8";
           gpuType = "intel";
           allowUnfree = true;
+          desktopEnvironment = "";
         };
 
         #ToDo: What is rec keyword 
