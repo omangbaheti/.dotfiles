@@ -27,19 +27,21 @@
         gimp
         aseprite
         zotero
-
+        
         #Media
         vlc
         obs-studio
         ffmpeg
         spotify
         parsec-bin
+        
         #Communication
         discord
         whatsapp-for-linux
         telegram-desktop
         slack 
-        
+        zoom-us
+
         #Games
         steam
         lutris-unwrapped
