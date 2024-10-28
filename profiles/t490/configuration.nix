@@ -97,12 +97,14 @@
   git
   git-lfs
   gitkraken
+  git-credential-manager
+  lazygit
   vscode
   libgcc
-  fprintd
   syncthing
   fastfetch
   dotnetCorePackages.sdk_8_0_2xx
+  dotnetCorePackages.sdk_7_0_3xx
   mono5
   alacritty
   texliveFull
@@ -110,7 +112,7 @@
   zed-editor
   ];
 
-  services.fprintd.enable = true;
+  services.fprintd.enable = false;
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;

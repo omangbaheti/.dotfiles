@@ -27,7 +27,8 @@
         gimp
         aseprite
         zotero
-        
+        obsidian
+        android-studio
         #Media
         vlc
         obs-studio
@@ -41,7 +42,7 @@
         telegram-desktop
         slack 
         zoom-us
-
+        teams
         #Games
         steam
         lutris-unwrapped
