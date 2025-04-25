@@ -1,10 +1,11 @@
-{ config, pkgs, userSettings, ... }:
+{ config, pkgs, pkgs-unstable, userSettings, ... }:
 
 {
     home.username = userSettings.name;
     home.homeDirectory = "/home/" + userSettings.name;
 
     programs.home-manager.enable = true;
+    programs.zoxide.enable = true;
 
     imports = 
     [
@@ -17,18 +18,21 @@
     [
         #Dev-Tools
         jetbrains.rider
-        unityhub
+        pkgs-unstable.unityhub
         ventoy
         bitwarden-desktop
         blender
+        rclone
         
         #Tools
-        libreoffice-fresh
+        libreoffice
         gimp
         aseprite
         zotero
         obsidian
-        android-studio
+        pkgs-unstable.android-studio
+        audacity
+
         #Media
         vlc
         obs-studio
@@ -42,7 +46,6 @@
         telegram-desktop
         slack 
         zoom-us
-        teams
         #Games
         steam
         lutris-unwrapped
@@ -66,4 +69,6 @@
         TERM = userSettings.term;
         BROWSER = userSettings.browser;
     };
+    
+    
 }

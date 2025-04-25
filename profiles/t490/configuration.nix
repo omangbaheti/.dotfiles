@@ -97,7 +97,14 @@
   git
   git-lfs
   gitkraken
-  git-credential-manager
+  zoxide
+  fzf
+  emacs
+  ripgrep
+  coreutils
+  fd
+  clang
+  yazi
   lazygit
   vscode
   libgcc
@@ -109,7 +116,7 @@
   alacritty
   texliveFull
   texlivePackages.chktex
-  zed-editor
+  nil
   ];
 
   services.fprintd.enable = false;
@@ -124,7 +131,7 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

@@ -11,10 +11,19 @@
         home-manager.url = "github:nix-community/home-manager/release-24.05";
     };
 
-    outputs = inputs@{self, nixpkgs, ...} :
+    outputs = inputs@{self, nixpkgs, nixpkgs-unstable, ...} :
     let 
         lib  = nixpkgs.lib;
         pkgs = import nixpkgs
+        {
+          system = systemSettings.system;
+          config = 
+          {
+            allowUnfree = true;
+          };
+        };
+
+        pkgs-unstable = import nixpkgs-unstable
         {
           system = systemSettings.system;
           config = 
@@ -63,6 +72,7 @@
           extraSpecialArgs = 
           {
             inherit pkgs;
+            inherit pkgs-unstable;
             inherit systemSettings;
             inherit userSettings;
             inherit inputs;
@@ -80,6 +90,7 @@
             specialArgs = 
             {
               inherit pkgs;
+              inherit pkgs-unstable;
               inherit systemSettings;
               inherit userSettings;
               inherit inputs;
