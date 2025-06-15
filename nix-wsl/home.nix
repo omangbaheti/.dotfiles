@@ -39,6 +39,27 @@
       plugins = [ "git" "sudo" ];
       theme = "robbyrussell";
     };
+
+    initExtra = ''
+      eval "$(zoxide init zsh)"
+
+function isWinDir {
+  case "$PWD/" in
+    /mnt/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+function lazygit {
+  if isWinDir; then
+    # Use Windows `lazygit.exe` in Windows-mounted dirs
+    command lazygit.exe "$@"
+  else
+    # Use native Linux `lazygit` in native dirs
+    command lazygit "$@"
+  fi
+}
+    '';
   };
 
 services.ssh-agent.enable = true;
