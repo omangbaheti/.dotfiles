@@ -34,11 +34,12 @@
   gtk4
   emacs30
   zsh
+  tealdeer
   ispell
   proselint
   ripgrep
   coreutils
-  
+  nnn  
   nodejs_23
   (python3.withPackages (ps: with ps; [
       numpy
