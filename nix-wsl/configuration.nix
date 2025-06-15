@@ -64,6 +64,7 @@
   libgcc
   syncthing
   fastfetch
+  diff-so-fancy
   nil
   texliveFull
   ];
