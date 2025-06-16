@@ -34,6 +34,7 @@
   gtk4
   emacs30
   zsh
+  oh-my-posh
   tealdeer
   ispell
   proselint
@@ -68,6 +69,7 @@
   diff-so-fancy
   nil
   texliveFull
+  pandoc
   ];
 
   # This value determines the NixOS release from which the default

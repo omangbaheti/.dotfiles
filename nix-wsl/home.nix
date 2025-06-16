@@ -42,7 +42,8 @@
 
     initExtra = ''
       eval "$(zoxide init zsh)"
-env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
+     #env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
+     eval "$(oh-my-posh init zsh)"
 function isWinDir {
   case "$PWD/" in
     /mnt/*) return 0 ;;
