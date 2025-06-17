@@ -125,10 +125,10 @@
       :keymaps 'override
       :prefix "SPC" ;; set leader
       :global-prefix "M-SPC") ;; access leader in insert mode
-
+  (setq evil-want-keybinding nil)
   (leader-key
     "." '(find-file :wk "Find file")
-    "f c" '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :wk "Edit emacs config")
+    "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
     "TAB TAB" '(comment-line :wk "Comment lines"))
 
      (leader-key
