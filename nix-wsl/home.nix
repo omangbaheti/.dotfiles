@@ -88,8 +88,19 @@ programs.keychain = {
     nix-direnv.enable = true;
   };
 
+programs.emacs = {
+enable = true;
+package = pkgs.emacs;
+};
 
-  # Let Home Manager install and manage itself
+home.sessionVariables = {
+EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+};
+
+home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+
+
+   # Let Home Manager install and manage itself
   programs.home-manager.enable = true;
 
   # This value determines the Home Manager release that your
