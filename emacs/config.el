@@ -84,6 +84,7 @@
 (leader-key
   "." '(find-file :wk "Find file")
   "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
+  "f r" '(counsel-recentf :wk "Find Recent Files")
   "TAB TAB" '(comment-line :wk "Comment lines"))
 
    (leader-key
@@ -118,7 +119,95 @@
   "t" '(:ignore t :wk "Toggle")
   "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
   "t t" '(visual-line-mode :wk "Toggle truncated lines"))
+
+  (leader-key
+  "w" '(:ignore t :wk "Windows")
+  ;; Window splits
+  "w c" '(evil-window-delete :wk "Close window")
+  "w n" '(evil-window-new :wk "New window")
+  "w s" '(evil-window-split :wk "Horizontal split window")
+  "w v" '(evil-window-vsplit :wk "Vertical split window")
+  ;; Window motions
+  "w h" '(evil-window-left :wk "Window Left")
+  "w j" '(evil-window-down :wk "Window Down")
+  "w k" '(evil-window-up :wk "Window Up")
+  "w l" '(evil-window-right :wk "Window Right")
+  "w w" '(evil-window-next :wk "Goto Next Window")
+  ;; Move Windows
+  "w H" '(buf-move-left :wk "Buffer Move Left")
+  "w J" '(buf-move-down :wk "Buffer Move Down")
+  "w K" '(buf-move-up :wk "Buffer Move Up")
+  "w L" '(buf-move-right :wk "Buffer Move Right"))
 )
+
+(require 'windmove)
+
+;;;###autoload
+(defun buf-move-up ()
+  "Swap the current buffer and the buffer above the split.
+If there is no split, ie now window above the current one, an
+error is signaled."
+;;  "Switches between the current buffer, and the buffer above the
+;;  split, if possible."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'up))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No window above this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun buf-move-down ()
+"Swap the current buffer and the buffer under the split.
+If there is no split, ie now window under the current one, an
+error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'down))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (or (null other-win) 
+            (string-match "^ \\*Minibuf" (buffer-name (window-buffer other-win))))
+        (error "No window under this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun buf-move-left ()
+"Swap the current buffer and the buffer on the left of the split.
+If there is no split, ie now window on the left of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'left))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No left split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun buf-move-right ()
+"Swap the current buffer and the buffer on the right of the split.
+If there is no split, ie now window on the right of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'right))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No right split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
 
 ;; Setting the default font
   (set-face-attribute 'default nil
@@ -192,3 +281,42 @@
  (leader-key
    "fu" '(sudo-edit-find-file :wk "Sudo find file")
    "fU" '(sudo-edit :wk "Sudo Edit File")))
+
+(use-package all-the-icons
+  :ensure t
+  :if (display-graphic-p))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+
+(use-package counsel
+  :after ivy
+  :config (counsel-mode))
+
+(use-package ivy
+  :bind
+  ;; ivy-resume resumes the last Ivy-based completion.
+  (("C-c C-r" . ivy-resume)
+   ("C-x B" . ivy-switch-buffer-other-window))
+  :custom
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d/%d) ")
+  (setq enable-recursive-minibuffers t)
+  :config
+  (ivy-mode))
+
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :init (all-the-icons-ivy-rich-mode 1))
+
+(use-package ivy-rich
+  :after ivy
+  :ensure t
+  :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
+  :custom
+  (ivy-virtual-abbreviate 'full
+   ivy-rich-switch-buffer-align-virtual-buffer t
+   ivy-rich-path-style 'abbrev)
+  :config
+  (ivy-set-display-transformer 'ivy-switch-buffer
+                               'ivy-rich-switch-buffer-transformer))
