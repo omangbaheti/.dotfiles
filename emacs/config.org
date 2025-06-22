@@ -4,7 +4,6 @@
 #+OPTIONS: toc:2
 
 * TABLE OF CONTENTS :toc:
-- [[#sudo-edit][SUDO EDIT]]
 - [[#important-programs-to-load-first][IMPORTANT PROGRAMS TO LOAD FIRST]]
   - [[#package-manager][Package Manager]]
   - [[#load-evil-mode][Load Evil Mode]]
@@ -18,17 +17,10 @@
   - [[#enabling-table-of-contents][Enabling Table of Contents]]
   - [[#enabling-org-bullets][Enabling Org Bullets]]
   - [[#disable-electric-indent][Disable Electric Indent]]
+  - [[#source-code-block-expansion][Source Code Block Expansion]]
 - [[#which-key][WHICH-KEY]]
+- [[#sudo-edit][SUDO EDIT]]
 
-* SUDO EDIT
-
-#+begin_src emacs-lisp
-  (use-package sudo-edit
-    :config 
-   (leader-key
-     "fu" '(sudo-edit-find-file :wk "Sudo find file")
-     "fU" '(sudo-edit :wk "Sudo Edit File")))
-#+end_src
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
 
@@ -152,7 +144,7 @@
       "h" '(:ignore t :wk "Help")
       "h f" '(describe-function :wk "Describe function")
       "h v" '(describe-variable :wk "Describe Variable")
-      "h r r" '((lambda() (interactive) (load-file "~/.config/emacs/init.el")) :wk "reload emacs config"))
+      "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el")) :wk "reload emacs config"))
 
     (leader-key
       "t" '(:ignore t :wk "Toggle")
@@ -243,15 +235,28 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 ** Disable Electric Indent
 Org mode has weird indentation
-
 #+begin_src emacs-lisp
 (electric-indent-mode -1)
 #+end_src
 
+** Source Code Block Expansion
+| Typing the below + TAB | Expands to ...                          |
+|------------------------+-----------------------------------------|
+| <a                     | '#+BEGIN_EXPORT ascii' … '#+END_EXPORT  |
+| <c                     | '#+BEGIN_CENTER' … '#+END_CENTER'       |
+| <C                     | '#+BEGIN_COMMENT' … '#+END_COMMENT'     |
+| <e                     | '#+BEGIN_EXAMPLE' … '#+END_EXAMPLE'     |
+| <E                     | '#+BEGIN_EXPORT' … '#+END_EXPORT'       |
+| <h                     | '#+BEGIN_EXPORT html' … '#+END_EXPORT'  |
+| <l                     | '#+BEGIN_EXPORT latex' … '#+END_EXPORT' |
+| <q                     | '#+BEGIN_QUOTE' … '#+END_QUOTE'         |
+| <s                     | '#+BEGIN_SRC' … '#+END_SRC'             |
+| <v                     | '#+BEGIN_VERSE' … '#+END_VERSE'         |
+
+
 #+begin_src emacs-lisp
 (require 'org-tempo)
 #+end_src
-
 
 
 * WHICH-KEY
@@ -273,3 +278,14 @@ Org mode has weird indentation
 	  which-key-allow-imprecise-window-fit t
 	  which-key-separator " → " ))
 #+end_src
+
+* SUDO EDIT
+Sudo-edit gives us the ability to open files with sudo privileges or switch over to editing with sudo privileges if we initially opened the file without such privileges.
+#+begin_src emacs-lisp
+  (use-package sudo-edit
+    :config 
+   (leader-key
+     "fu" '(sudo-edit-find-file :wk "Sudo find file")
+     "fU" '(sudo-edit :wk "Sudo Edit File")))
+#+end_src
+

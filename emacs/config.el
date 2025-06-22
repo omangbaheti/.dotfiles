@@ -1,9 +1,3 @@
-(use-package sudo-edit
-  :config 
- (leader-key
-   "fu" '(sudo-edit-find-file :wk "Sudo find file")
-   "fU" '(sudo-edit :wk "Sudo Edit File")))
-
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
@@ -113,7 +107,7 @@
     "h" '(:ignore t :wk "Help")
     "h f" '(describe-function :wk "Describe function")
     "h v" '(describe-variable :wk "Describe Variable")
-    "h r r" '((lambda() (interactive) (load-file "~/.config/emacs/init.el")) :wk "reload emacs config"))
+    "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el")) :wk "reload emacs config"))
 
   (leader-key
     "t" '(:ignore t :wk "Toggle")
@@ -192,3 +186,9 @@
 	  which-key-max-description-length 25
 	  which-key-allow-imprecise-window-fit t
 	  which-key-separator " → " ))
+
+(use-package sudo-edit
+  :config 
+ (leader-key
+   "fu" '(sudo-edit-find-file :wk "Sudo find file")
+   "fU" '(sudo-edit :wk "Sudo Edit File")))
