@@ -6,7 +6,10 @@
   home.username = "nixos"; # Replace with your username
   home.homeDirectory = "/home/nixos"; # Replace with your username
 
-
+  home.packages = with pkgs; [
+  cmake
+  ];
+  		     
   # Git configuration
   programs.git = {
     enable = true;
@@ -41,7 +44,8 @@
     };
 
     initExtra = ''
-      eval "$(zoxide init zsh)"
+   PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:$PATH
+     eval "$(zoxide init zsh)"
      #env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
      eval "$(oh-my-posh init zsh)"
 function isWinDir {
@@ -95,7 +99,6 @@ package = pkgs.emacs;
 
 home.sessionVariables = {
 EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
-PATH = "${pkgs.cmake}/bin:${pkgs.gcc}/bin:$PATH";
 };
 
 home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";

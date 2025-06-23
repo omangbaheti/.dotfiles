@@ -62,9 +62,12 @@
   glib
   clang
   cmake
+  gcc
+  libvterm
+  libgcc
+  libtool
   yazi
   lazygit
-  libgcc
   syncthing
   fastfetch
   diff-so-fancy
