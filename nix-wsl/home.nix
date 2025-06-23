@@ -95,6 +95,7 @@ package = pkgs.emacs;
 
 home.sessionVariables = {
 EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+PATH = "${pkgs.cmake}/bin:${pkgs.gcc}/bin:$PATH";
 };
 
 home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";

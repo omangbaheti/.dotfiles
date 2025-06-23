@@ -48,12 +48,12 @@
   ;; Block until current queue processed.
   (elpaca-wait)
 
-
+  (setq evil-want-keybinding nil)
   ;; Expands to: (elpaca evil (use-package evil :demand t))
   (use-package evil
     :init
-    (setq evil-want-integration t)
     (setq evil-want-keybinging nil)
+    (setq evil-want-integration t)
     (setq evil-vsplit-window-right t)
     (setq evil-split-window-below t)
     (evil-mode))
@@ -102,7 +102,10 @@
     "e d" '(eval-defun :wk "Evaluate defun containing or after point")
     "e e" '(eval-expression :wk "Evaluate elisp expression")
     "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
-    "e r" '(eval-region :wk "Evaluate elisp in region"))
+    "e r" '(eval-region :wk "Evaluate elisp in region")
+    "e h" '(counsel-esh-history :which-key "Eshell History")
+    "e s" '(eshell :which-key "Eshell")
+    )
 
   (leader-key
     "h" '(:ignore t :wk "Help")
@@ -339,26 +342,22 @@ one, an error is signaled."
       eshell-destroy-buffer-when-process-dies t
       eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh"))
 
-(use-package vterm
-:config
-(setq shell-file-name "/bin/fish"
-      vterm-max-scrollback 5000))
-
-(use-package vterm-toggle
-  :after vterm
+(use-package doom-themes
+  :ensure t
+  :custom
+  ;; Global settings (defaults)
+  (doom-themes-enable-bold t)   ; if nil, bold is universally disabled
+  (doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;; for treemacs users
+  (doom-themes-treemacs-theme "doom-aurora") ; use "doom-colors" for less minimal icon theme
   :config
-  (setq vterm-toggle-fullscreen-p nil)
-  (setq vterm-toggle-scope 'project)
-  (add-to-list 'display-buffer-alist
-               '((lambda (buffer-or-name _)
-                     (let ((buffer (get-buffer buffer-or-name)))
-                       (with-current-buffer buffer
-                         (or (equal major-mode 'vterm-mode)
-                             (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
-                  (display-buffer-reuse-window display-buffer-at-bottom)
-                  ;;(display-buffer-reuse-window display-buffer-in-direction)
-                  ;;display-buffer-in-direction/direction/dedicated is added in emacs27
-                  ;;(direction . bottom)
-                  ;;(dedicated . t) ;dedicated is supported in emacs27
-                  (reusable-frames . visible)
-                  (window-height . 0.3))))
+  (load-theme 'doom-one t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (nerd-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))

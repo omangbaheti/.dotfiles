@@ -61,6 +61,7 @@
   fd
   glib
   clang
+  cmake
   yazi
   lazygit
   libgcc
