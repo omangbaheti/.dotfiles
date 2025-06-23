@@ -119,11 +119,6 @@
     "t t" '(visual-line-mode :wk "Toggle truncated lines"))
 
   (leader-key
-  "t" '(:ignore t :wk "Toggle")
-  "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-  "t t" '(visual-line-mode :wk "Toggle truncated lines"))
-
-  (leader-key
   "w" '(:ignore t :wk "Windows")
   ;; Window splits
   "w c" '(evil-window-delete :wk "Close window")
@@ -245,7 +240,8 @@ one, an error is signaled."
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 
 (menu-bar-mode -1)
-(tool-bar-mode -1)
+ (tool-bar-mode -1)
+(scroll-bar-mode -1)
 
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
@@ -349,9 +345,9 @@ one, an error is signaled."
   (doom-themes-enable-bold t)   ; if nil, bold is universally disabled
   (doom-themes-enable-italic t) ; if nil, italics is universally disabled
   ;; for treemacs users
-  (doom-themes-treemacs-theme "doom-aurora") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-theme "doom-nord") ; use "doom-colors" for less minimal icon theme
   :config
-  (load-theme 'doom-one t)
+  (load-theme 'doom-nord-aurora t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -361,3 +357,8 @@ one, an error is signaled."
   (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
+
+(use-package dirvish
+  :after evil
+  :init (dirvish-override-dired-mode)
+  :config (evil-define-key 'normal dirvish-mode-map (kbd "TAB") 'dirvish-subtree-toggle))
