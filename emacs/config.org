@@ -31,6 +31,9 @@
   - [[#doom-modeline-setup][Doom modeline setup]]
 - [[#neotree][NEOTREE]]
 - [[#filemanager][FILEMANAGER]]
+- [[#company][COMPANY]]
+- [[#projectile][PROJECTILE]]
+- [[#dashboard][DASHBOARD]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -154,6 +157,8 @@
       "e h" '(counsel-esh-history :which-key "Eshell History")
       "e s" '(eshell :which-key "Eshell")
       )
+    (leader-key
+    "p" '(projectile-command-map :wk "Projectile"))
 
     (leader-key
       "h" '(:ignore t :wk "Help")
@@ -790,4 +795,45 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 #+end_src
  
 
+* COMPANY
 
+[[https://company-mode.github.io/][Company]] is a text completion framework for Emacs. The name stands for "complete anything".  Completion will start automatically after you type a few letters. Use M-n and M-p to select, <return> to complete or <tab> to complete the common part.
+
+#+begin_src emacs-lisp
+
+
+#+end_src
+
+* PROJECTILE
+[[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.
+ 
+#+begin_src emacs-lisp
+(use-package projectile
+  :config
+  (projectile-mode 1))
+#+end_src
+
+* DASHBOARD
+#+begin_src emacs-lisp
+  (use-package dashboard
+     :ensure t 
+     :init
+     (setq initial-buffer-choice 'dashboard-open)
+     (setq dashboard-set-heading-icons t)
+     (setq dashboard-set-file-icons t)
+     (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
+     (setq dashboard-image-banner-max-height 200)
+     (setq dashboard-image-banner-max-width 200)
+     (setq dashboard-center-content nil) ;; set to 't' for centered content
+     (setq dashboard-items '((recents . 5)
+                             (agenda . 5 )
+                             (bookmarks . 3)
+                             (projects . 3)
+                             (registers . 3)))
+     
+     :custom
+     (dashboard-modify-heading-icons '((recents . "file-text")
+                                       (bookmarks . "book")))
+     :config
+     (dashboard-setup-startup-hook))
+#+end_src

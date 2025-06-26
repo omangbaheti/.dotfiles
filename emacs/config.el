@@ -106,6 +106,8 @@
     "e h" '(counsel-esh-history :which-key "Eshell History")
     "e s" '(eshell :which-key "Eshell")
     )
+  (leader-key
+  "p" '(projectile-command-map :wk "Projectile"))
 
   (leader-key
     "h" '(:ignore t :wk "Help")
@@ -631,3 +633,31 @@ one, an error is signaled."
   :after evil
   :init (dirvish-override-dired-mode)
   :config (evil-define-key 'normal dirvish-mode-map (kbd "TAB") 'dirvish-subtree-toggle))
+
+
+
+(use-package projectile
+  :config
+  (projectile-mode 1))
+
+(use-package dashboard
+   :ensure t 
+   :init
+   (setq initial-buffer-choice 'dashboard-open)
+   (setq dashboard-set-heading-icons t)
+   (setq dashboard-set-file-icons t)
+   (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
+   (setq dashboard-image-banner-max-height 200)
+   (setq dashboard-image-banner-max-width 200)
+   (setq dashboard-center-content nil) ;; set to 't' for centered content
+   (setq dashboard-items '((recents . 5)
+                           (agenda . 5 )
+                           (bookmarks . 3)
+                           (projects . 3)
+                           (registers . 3)))
+   
+   :custom
+   (dashboard-modify-heading-icons '((recents . "file-text")
+                                     (bookmarks . "book")))
+   :config
+   (dashboard-setup-startup-hook))
