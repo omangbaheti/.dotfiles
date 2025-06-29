@@ -5,7 +5,7 @@
 # NixOS-WSL specific options are documented on the NixOS-WSL repository:
 # https://github.com/nix-community/NixOS-WSL
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, pkgs-unstable, ... }:
 {
 
 
@@ -15,66 +15,75 @@
   wsl.defaultUser = "nixos";
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
-  fonts.packages = with pkgs; [ nerdfonts ];
+  fonts.packages = with pkgs.nerd-fonts; 
+    [ 
+      jetbrains-mono
+      ubuntu
+      fira-code
+      fira-mono
+      dejavu-sans-mono
+    ];
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs;
-
-
-  [
-  home-manager
-  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  btop
-  git
-  nixfmt-rfc-style
-  eza
-  languagetool
-  git-lfs
-  zoxide
-  fzf
-  gtk4
-  emacs30
-  zsh
-  oh-my-posh
-  tealdeer
-  ispell
-  proselint
-  ripgrep
-  coreutils
-  nnn  
-  nodejs_23
-  (python3.withPackages (ps: with ps; [
-      numpy
-      pandas
-      requests
-      matplotlib
-      scipy
-      jupyter
-      jupyterlab
-      seaborn
-      epc
-      sexpdata
-      six
-      inflect
-      pyqt6
-      pyqt6-sip
-    ]))
-  fd
-  glib
-  clang
-  cmake
-  gcc
-  libvterm
-  libgcc
-  libtool
-  yazi
-  lazygit
-  syncthing
-  fastfetch
-  diff-so-fancy
-  nil
-  texliveFull
-  pandoc
-  ];
+    [
+      home-manager
+      vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+      btop
+      wiper
+      git
+      nixfmt-rfc-style
+      eza
+      languagetool
+      git-lfs
+      zoxide
+      fzf
+      gtk4
+      emacs30
+      zsh
+      oh-my-posh
+      tealdeer
+      ispell
+      proselint
+      ripgrep
+      coreutils
+      nnn  
+      nodejs_24
+      (python3.withPackages (ps: with ps; [
+        numpy
+        pandas
+        requests
+        matplotlib
+        scipy
+        jupyter
+        jupyterlab
+        seaborn
+        epc
+        sexpdata
+        six
+        inflect
+        pyqt6
+        pyqt6-sip
+      ]))
+      fd
+      glib
+      clang
+      cmake
+      gcc
+      libvterm
+      libgcc
+      libtool
+      yazi
+      lazygit
+      syncthing
+      fastfetch
+      diff-so-fancy
+      nil
+      texliveFull
+      pandoc
+      pylint
+      statix
+      #pkgs-unstable.pyrefly
+    ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

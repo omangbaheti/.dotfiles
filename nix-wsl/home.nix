@@ -43,7 +43,7 @@
       theme = "robbyrussell";
     };
 
-    initExtra = ''
+     initContent = ''
    PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:$PATH
      eval "$(zoxide init zsh)"
      #env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
