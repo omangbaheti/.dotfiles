@@ -66,6 +66,14 @@
   (evil-collection-init))
 (use-package evil-tutor)
 
+(with-eval-after-load 'evil-maps
+  (define-key evil-motion-state-map (kbd "SPC") nil)
+  (define-key evil-motion-state-map (kbd "RET") nil)
+  (define-key evil-motion-state-map (kbd "TAB") nil))
+  
+  ;;setting RETURN key in org-mode to follow links
+  (setq org-return-follows-link t)
+
 ;;Turns off elpaca-use-package-mode current declaration
 ;;Note this will cause evaluate the declaration immediately. It is not deferred.
 ;;Useful for configuring built-in emacs features.
@@ -127,7 +135,10 @@
   
   (leader-key
     "p" '(projectile-command-map :wk "Projectile"))
-
+  
+  ;;(leader-key
+    ;;"t n" '(neotree-toggle :wk "Toggle neotree file viewer")) 
+  
   (leader-key
     "h" '(:ignore t :wk "Help")
     "h f" '(describe-function :wk "Describe function")
@@ -228,11 +239,11 @@ one, an error is signaled."
       (select-window other-win))))
 
 ;; Setting the default font
-  (set-face-attribute 'default nil
-        :font "JetBrainsMono Nerd Font"
-        :height 110
-        :weight 'medium)
-  ;; Setting font for variable pitch
+(set-face-attribute 'default nil
+		    :font "JetBrainsMono Nerd Font"
+		    :height 110
+		    :weight 'medium)
+;; Setting font for variable pitch
 (set-face-attribute 'variable-pitch nil
                     :family (or (car (seq-filter
                                       (lambda (f) (member f (font-family-list)))
@@ -240,31 +251,43 @@ one, an error is signaled."
                                 "Sans")
                     :height 140)
 ;;Setting font for fixed pitch
-  (set-face-attribute 'fixed-pitch nil
-        :font "JetBrainsMono Nerd Font"
-        :height 110
-        :weight 'medium)
+(set-face-attribute 'fixed-pitch nil
+		    :font "JetBrainsMono Nerd Font"
+		    :height 110
+		    :weight 'medium)
 
-  ;; Makes commented text and keywords  italics
-  (set-face-attribute 'font-lock-comment-face nil
-        :slant 'italic)
-  (set-face-attribute 'font-lock-keyword-face nil
-        :slant 'italic)
+;; Makes commented text and keywords  italics
+(set-face-attribute 'font-lock-comment-face nil
+		    :slant 'italic)
+(set-face-attribute 'font-lock-keyword-face nil
+		    :slant 'italic)
 
-  (add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
-  (setq-default line-spacing 0.12)
+(add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
+(setq-default line-spacing 0.12)
 
 (global-set-key (kbd "C-=") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
+(scroll-bar-mode -1)               ; disable scrollbar
+(tool-bar-mode -1)                 ; disable toolbar
+(tooltip-mode -1)                  ; disable tooltips
+(set-fringe-mode 10)               ; give some breathing room
+(menu-bar-mode -1)                 ; disable menubar
+(blink-cursor-mode 0)              ; disable blinking cursor
 
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
+
+(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+
+(global-set-key [escape] 'keyboard-escape-quit)
+
+(delete-selection-mode 1)
+(electric-indent-mode -1)
+(electric-pair-mode 1)
+(setq org-edit-src-content-indentation 0)
 
 (use-package toc-org
   :commands toc-org-enable
@@ -273,9 +296,6 @@ one, an error is signaled."
 (add-hook 'org-mode-hook 'org-indent-mode)
 (use-package org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-
-(electric-indent-mode -1)
-(setq org-edit-src-content-indentation 0)
 
 (require 'org-tempo)
 
@@ -672,6 +692,23 @@ one, an error is signaled."
   :init (dirvish-override-dired-mode)
   :config (evil-define-key 'normal dirvish-mode-map (kbd "TAB") 'dirvish-subtree-toggle))
 
+;;(use-package neotree
+;;  :config
+;;  (setq neo-smart-open t
+;;        neo-show-hidden-files t
+;;        neo-window-width 55
+;;        neo-window-fixed-size nil
+;;        inhibit-compacting-font-caches t
+;;        projectile-switch-project-action 'neotree-projectile-action) 
+;;        ;; truncate long file names in neotree
+;;        (add-hook 'neo-after-create-hook
+;;           #'(lambda (_)
+;;               (with-current-buffer (get-buffer neo-buffer-name)
+;;                 (setq truncate-lines t)
+;;                 (setq word-wrap nil)
+;;                 (make-local-variable 'auto-hscroll-mode)
+;;                 (setq auto-hscroll-mode nil)))))
+
 (use-package flycheck
   :ensure t
   :config (add-hook 'after-init-hook #'global-flycheck-mode))
@@ -730,6 +767,7 @@ one, an error is signaled."
   (setq dashboard-items '((recents . 5)
                           (agenda . 5 )
                           (bookmarks . 3)
+			  ;;Why is this throwing an error??
                           ;;(projects . 3)
                           (registers . 3)))
   

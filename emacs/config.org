@@ -12,13 +12,15 @@
 - [[#fonts][FONTS]]
   - [[#setting-the-font-face][Setting the Font Face]]
   - [[#zooming-inout][Zooming In/Out]]
-- [[#gui-tweaks][GUI TWEAKS]]
+-  [[#emacs-sane-defaults][EMACS SANE DEFAULTS]]
   - [[#disable-menubar-toolbar][Disable Menubar, Toolbar]]
   - [[#display-line-numbers-and-truncated-lines][Display Line Numbers and Truncated Lines]]
+  - [[#backups][Backups]]
+  - [[#minibuffer-escape][Minibuffer escape]]
+  - [[#electric][Electric]]
 - [[#org-mode][ORG MODE]]
   - [[#enabling-table-of-content][Enabling Table of Content]]
   - [[#enabling-org-bullets][Enabling Org Bullets]]
-  - [[#disable-electric-indent][Disable Electric Indent]]
   - [[#source-code-block-expansion][Source Code Block Expansion]]
   - [[#modern-org][MODERN ORG]]
 - [[#which-key][WHICH-KEY]]
@@ -31,8 +33,9 @@
 - [[#theming][THEMING]]
   - [[#doom-themes][Doom Themes]]
   - [[#doom-modeline-setups][Doom modeline setups]]
-- [[#neotree][NEOTREE]]
 - [[#filemanager][FILEMANAGER]]
+  - [[#neotree][NEOTREE]]
+- [[#neotree-1][NEOTREE]]
 - [[#flycheck][FLYCHECK]]
 - [[#company][COMPANY]]
 - [[#lsp-mode][LSP-MODE]]
@@ -119,6 +122,14 @@
   (evil-collection-init))
 (use-package evil-tutor)
 
+(with-eval-after-load 'evil-maps
+  (define-key evil-motion-state-map (kbd "SPC") nil)
+  (define-key evil-motion-state-map (kbd "RET") nil)
+  (define-key evil-motion-state-map (kbd "TAB") nil))
+  
+  ;;setting RETURN key in org-mode to follow links
+  (setq org-return-follows-link t)
+
 ;;Turns off elpaca-use-package-mode current declaration
 ;;Note this will cause evaluate the declaration immediately. It is not deferred.
 ;;Useful for configuring built-in emacs features.
@@ -186,7 +197,10 @@
   
   (leader-key
     "p" '(projectile-command-map :wk "Projectile"))
-
+  
+  ;;(leader-key
+    ;;"t n" '(neotree-toggle :wk "Toggle neotree file viewer")) 
+  
   (leader-key
     "h" '(:ignore t :wk "Help")
     "h f" '(describe-function :wk "Describe function")
@@ -338,14 +352,17 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 #+end_src
 
-* GUI TWEAKS
+*  EMACS SANE DEFAULTS
 
 ** Disable Menubar, Toolbar
 
 #+begin_src emacs-lisp
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
+(scroll-bar-mode -1)               ; disable scrollbar
+(tool-bar-mode -1)                 ; disable toolbar
+(tooltip-mode -1)                  ; disable tooltips
+(set-fringe-mode 10)               ; give some breathing room
+(menu-bar-mode -1)                 ; disable menubar
+(blink-cursor-mode 0)              ; disable blinking cursor
 #+end_src
 
 ** Display Line Numbers and Truncated Lines
@@ -355,6 +372,24 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (global-visual-line-mode t)
 #+end_src
 
+** Backups
+
+#+begin_src emacs-lisp
+(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+#+end_src
+
+** Minibuffer escape
+#+begin_src emacs-lisp
+(global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+
+** Electric
+#+begin_src emacs-lisp
+(delete-selection-mode 1)
+(electric-indent-mode -1)
+(electric-pair-mode 1)
+(setq org-edit-src-content-indentation 0)
+#+end_src
 * ORG MODE
 ** Enabling Table of Content
 
@@ -370,13 +405,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (add-hook 'org-mode-hook 'org-indent-mode)
 (use-package org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-#+end_src
-
-** Disable Electric Indent
-Org mode has weird indentation
-#+begin_src emacs-lisp
-(electric-indent-mode -1)
-(setq org-edit-src-content-indentation 0)
 #+end_src
 
 ** Source Code Block Expansion
@@ -835,10 +863,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 
 #+end_src
 
-
-* NEOTREE
-
-#TODO
 * FILEMANAGER
 
 #+begin_src emacs-lisp
@@ -847,7 +871,38 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
   :init (dirvish-override-dired-mode)
   :config (evil-define-key 'normal dirvish-mode-map (kbd "TAB") 'dirvish-subtree-toggle))
 #+end_src
- 
+
+** NEOTREE 
+
+
+* TODO NEOTREE
+Neotree is a file tree viewer.  When you open neotree, it jumps to the current file thanks to neo-smart-open.  The neo-window-fixed-size setting makes the neotree width be adjustable.  NeoTree provides following themes: classic, ascii, arrow, icons, and nerd.  Theme can be config'd by setting "two" themes for neo-theme: one for the GUI and one for the terminal.  I like to use 'SPC t' for 'toggle' keybindings, so I have used 'SPC t n' for toggle-neotree.
+
+| COMMAND        | DESCRIPTION                 | KEYBINDING |
+|----------------+--------------------------  -+------------|
+| neotree-toggle | /Toggle neotree/            | SPC t n    |
+| neotree- dir   | /Open directory in neotree/ | SPC d n    |
+
+#+BEGIN_SRC emacs-lisp
+;;(use-package neotree
+;;  :config
+;;  (setq neo-smart-open t
+;;        neo-show-hidden-files t
+;;        neo-window-width 55
+;;        neo-window-fixed-size nil
+;;        inhibit-compacting-font-caches t
+;;        projectile-switch-project-action 'neotree-projectile-action) 
+;;        ;; truncate long file names in neotree
+;;        (add-hook 'neo-after-create-hook
+;;           #'(lambda (_)
+;;               (with-current-buffer (get-buffer neo-buffer-name)
+;;                 (setq truncate-lines t)
+;;                 (setq word-wrap nil)
+;;                 (make-local-variable 'auto-hscroll-mode)
+;;                 (setq auto-hscroll-mode nil)))))
+
+#+end_src
+
 
 * FLYCHECK
 Modern on-the-fly syntax checking extension for GNU Emacs
@@ -878,7 +933,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :hook (company-mode . company-box-mode))
 #+end_src
 
-* LSP-MODE
+* TODO LSP-MODE
 ** LSPs
 
 #+begin_src emacs-lisp
@@ -959,3 +1014,5 @@ Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL ex
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
+
+
