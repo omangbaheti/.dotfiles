@@ -7,9 +7,9 @@
   home.homeDirectory = "/home/nixos"; # Replace with your username
 
   home.packages = with pkgs; [
-  cmake
+    cmake
   ];
-  		     
+  
   # Git configuration
   programs.git = {
     enable = true;
@@ -44,50 +44,53 @@
       theme = "robbyrussell";
     };
 
-     initContent = ''
+    initContent = ''
    PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:$PATH
      eval "$(zoxide init zsh)"
      #env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
      eval "$(oh-my-posh init zsh)"
-function isWinDir {
-  case "$PWD/" in
-    /mnt/*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-if ! emacsclient -e "(server-running-p)" | grep -q t; then
-  emacs --daemon
-fi
-function lazygit {
-  if isWinDir; then
-    # Use Windows `lazygit.exe` in Windows-mounted dirs
-    command lazygit.exe "$@"
-  else
-    # Use native Linux `lazygit` in native dirs
-    command lazygit "$@"
-  fi
-}
+     function isWinDir 
+     {
+        case "$PWD/" in
+        /mnt/*) return 0 ;;
+        *) return 1 ;;
+        esac
+     }
+     if ! emacsclient -e "(server-running-p)" | grep -q t; then
+        emacs --daemon
+     fi
+
+     function lazygit 
+     {
+        if isWinDir; then
+     #  Use Windows `lazygit.exe` in Windows-mounted dirs
+            command lazygit.exe "$@"
+        else
+     #  Use native Linux `lazygit` in native dirs
+            command lazygit "$@"
+        fi 
+     }
     '';
   };
 
-services.ssh-agent.enable = true;
+  services.ssh-agent.enable = true;
 
-programs.ssh = {
-  enable = true;
-  addKeysToAgent = "yes";       # Automatically adds keys to the agent
-  forwardAgent = true;         # Optional: disables forwarding
-  extraConfig = ''
+  programs.ssh = {
+    enable = true;
+    addKeysToAgent = "yes";       # Automatically adds keys to the agent
+    forwardAgent = true;         # Optional: disables forwarding
+    extraConfig = ''
     Host github.com
       IdentityFile ~/.ssh/id_ed25519
   '';
-};
+  };
 
-programs.keychain = {
-  enable = true;
-  keys = [ "id_ed25519" ];  # Replace with your SSH key filename
-  agents = [ "ssh" ];
-  enableZshIntegration = true;
-};
+  programs.keychain = {
+    enable = true;
+    keys = [ "id_ed25519" ];  # Replace with your SSH key filename
+    agents = [ "ssh" ];
+    enableZshIntegration = true;
+  };
   # Direnv for automatic environment loading
   programs.direnv = {
     enable = true;
@@ -95,19 +98,19 @@ programs.keychain = {
     nix-direnv.enable = true;
   };
 
-programs.emacs = {
-enable = true;
-package = pkgs.emacs;
-};
+  programs.emacs = {
+    enable = true;
+    package = pkgs.emacs;
+  };
 
-home.sessionVariables = {
-EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
-};
+  home.sessionVariables = {
+    EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+  };
 
-home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+  home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
 
 
-   # Let Home Manager install and manage itself
+  # Let Home Manager install and manage itself
   programs.home-manager.enable = true;
 
   # This value determines the Home Manager release that your
