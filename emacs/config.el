@@ -45,30 +45,30 @@
   ;; Assume :elpaca t unless otherwise specified.
   (setq elpaca-use-package-by-default t))
 
-  ;; Block until current queue processed.
-  (elpaca-wait)
+;; Block until current queue processed.
+(elpaca-wait)
 
-  (setq evil-want-keybinding nil)
-  ;; Expands to: (elpaca evil (use-package evil :demand t))
-  (use-package evil
-    :init
-    (setq evil-want-keybinging nil)
-    (setq evil-want-integration t)
-    (setq evil-vsplit-window-right t)
-    (setq evil-split-window-below t)
-    (evil-mode))
+(setq evil-want-keybinding nil)
+;; Expands to: (elpaca evil (use-package evil :demand t))
+(use-package evil
+  :init
+  (setq evil-want-keybinging nil)
+  (setq evil-want-integration t)
+  (setq evil-vsplit-window-right t)
+  (setq evil-split-window-below t)
+  (evil-mode))
 
-  (use-package evil-collection
-    :after evil
-    :config
-    (setq evil-collection-mode-list '(dashboard dired ibuffer))
-    (evil-collection-init))
-  (use-package evil-tutor)
+(use-package evil-collection
+  :after evil
+  :config
+  (setq evil-collection-mode-list '(dashboard dired ibuffer))
+  (evil-collection-init))
+(use-package evil-tutor)
 
-  ;;Turns off elpaca-use-package-mode current declaration
-  ;;Note this will cause evaluate the declaration immediately. It is not deferred.
-  ;;Useful for configuring built-in emacs features.
-  (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
+;;Turns off elpaca-use-package-mode current declaration
+;;Note this will cause evaluate the declaration immediately. It is not deferred.
+;;Useful for configuring built-in emacs features.
+(use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
 (use-package general
   :config
@@ -80,14 +80,14 @@
     :keymaps 'override
     :prefix "SPC" ;; set leader
     :global-prefix "M-SPC") ;; access leader in insert mode
-(setq evil-want-keybinding nil)
-(leader-key
-  "." '(find-file :wk "Find file")
-  "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
-  "f r" '(counsel-recentf :wk "Find Recent Files")
-  "TAB TAB" '(comment-line :wk "Comment lines"))
+  (setq evil-want-keybinding nil)
+  (leader-key
+    "." '(find-file :wk "Find file")
+    "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
+    "f r" '(counsel-recentf :wk "Find Recent Files")
+    "TAB TAB" '(comment-line :wk "Comment lines"))
 
-   (leader-key
+  (leader-key
     "b" '(:ignore t :wk "buffer")
     "b b" '(switch-to-buffer :wk "Switch buffer")
     "b i" '(ibuffer :wk "Ibuffer")
@@ -107,7 +107,7 @@
     "e s" '(eshell :which-key "Eshell")
     )
   (leader-key
-  "p" '(projectile-command-map :wk "Projectile"))
+    "p" '(projectile-command-map :wk "Projectile"))
 
   (leader-key
     "h" '(:ignore t :wk "Help")
@@ -121,24 +121,24 @@
     "t t" '(visual-line-mode :wk "Toggle truncated lines"))
 
   (leader-key
-  "w" '(:ignore t :wk "Windows")
-  ;; Window splits
-  "w c" '(evil-window-delete :wk "Close window")
-  "w n" '(evil-window-new :wk "New window")
-  "w s" '(evil-window-split :wk "Horizontal split window")
-  "w v" '(evil-window-vsplit :wk "Vertical split window")
-  ;; Window motions
-  "w h" '(evil-window-left :wk "Window Left")
-  "w j" '(evil-window-down :wk "Window Down")
-  "w k" '(evil-window-up :wk "Window Up")
-  "w l" '(evil-window-right :wk "Window Right")
-  "w w" '(evil-window-next :wk "Goto Next Window")
-  ;; Move Windows
-  "w H" '(buf-move-left :wk "Buffer Move Left")
-  "w J" '(buf-move-down :wk "Buffer Move Down")
-  "w K" '(buf-move-up :wk "Buffer Move Up")
-  "w L" '(buf-move-right :wk "Buffer Move Right"))
-)
+    "w" '(:ignore t :wk "Windows")
+    ;; Window splits
+    "w c" '(evil-window-delete :wk "Close window")
+    "w n" '(evil-window-new :wk "New window")
+    "w s" '(evil-window-split :wk "Horizontal split window")
+    "w v" '(evil-window-vsplit :wk "Vertical split window")
+    ;; Window motions
+    "w h" '(evil-window-left :wk "Window Left")
+    "w j" '(evil-window-down :wk "Window Down")
+    "w k" '(evil-window-up :wk "Window Up")
+    "w l" '(evil-window-right :wk "Window Right")
+    "w w" '(evil-window-next :wk "Goto Next Window")
+    ;; Move Windows
+    "w H" '(buf-move-left :wk "Buffer Move Left")
+    "w J" '(buf-move-down :wk "Buffer Move Down")
+    "w K" '(buf-move-up :wk "Buffer Move Up")
+    "w L" '(buf-move-right :wk "Buffer Move Right"))
+  )
 
 (require 'windmove)
 
@@ -147,8 +147,8 @@
   "Swap the current buffer and the buffer above the split.
 If there is no split, ie now window above the current one, an
 error is signaled."
-;;  "Switches between the current buffer, and the buffer above the
-;;  split, if possible."
+  ;;  "Switches between the current buffer, and the buffer above the
+  ;;  split, if possible."
   (interactive)
   (let* ((other-win (windmove-find-other-window 'up))
 	 (buf-this-buf (window-buffer (selected-window))))
@@ -162,7 +162,7 @@ error is signaled."
 
 ;;;###autoload
 (defun buf-move-down ()
-"Swap the current buffer and the buffer under the split.
+  "Swap the current buffer and the buffer under the split.
 If there is no split, ie now window under the current one, an
 error is signaled."
   (interactive)
@@ -179,7 +179,7 @@ error is signaled."
 
 ;;;###autoload
 (defun buf-move-left ()
-"Swap the current buffer and the buffer on the left of the split.
+  "Swap the current buffer and the buffer on the left of the split.
 If there is no split, ie now window on the left of the current
 one, an error is signaled."
   (interactive)
@@ -195,7 +195,7 @@ one, an error is signaled."
 
 ;;;###autoload
 (defun buf-move-right ()
-"Swap the current buffer and the buffer on the right of the split.
+  "Swap the current buffer and the buffer on the right of the split.
 If there is no split, ie now window on the right of the current
 one, an error is signaled."
   (interactive)
@@ -261,21 +261,21 @@ one, an error is signaled."
 (require 'org-tempo)
 
 (use-package which-key
-:init
+  :init
   (which-key-mode 1)
-:config
-(setq which-key-side-window-location 'bottom
-	  which-key-sort-order #'which-key-key-order-alpha
-	  which-key-sort-uppercase-first nil
-	  which-key-add-column-padding 1
-	  which-key-max-display-columns nil
-	  which-key-min-display-lines 6
-	  which-key-side-window-slot -10
-	  which-key-side-window-max-height 0.25
-	  which-key-idle-delay 0.8
-	  which-key-max-description-length 25
-	  which-key-allow-imprecise-window-fit t
-	  which-key-separator " → " ))
+  :config
+  (setq which-key-side-window-location 'bottom
+      which-key-sort-order #'which-key-key-order-alpha
+      which-key-sort-uppercase-first nil
+      which-key-add-column-padding 1
+      which-key-max-display-columns nil
+      which-key-min-display-lines 6
+      which-key-side-window-slot -10
+      which-key-side-window-max-height 0.25
+      which-key-idle-delay 0.8
+      which-key-max-description-length 25
+      which-key-allow-imprecise-window-fit t
+      which-key-separator " → " ))
 
 (use-package sudo-edit
   :config 
@@ -316,16 +316,16 @@ one, an error is signaled."
   :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
   :custom
   (ivy-virtual-abbreviate 'full
-   ivy-rich-switch-buffer-align-virtual-buffer t
-   ivy-rich-path-style 'abbrev)
+			  ivy-rich-switch-buffer-align-virtual-buffer t
+			  ivy-rich-path-style 'abbrev)
   :config
   (ivy-set-display-transformer 'ivy-switch-buffer
                                'ivy-rich-switch-buffer-transformer))
 
 (use-package eshell-syntax-highlighting
-    :after esh-mode
-    :config
-    (eshell-syntax-highlighting-global-mode +1))
+  :after esh-mode
+  :config
+  (eshell-syntax-highlighting-global-mode +1))
 
 ;;eshell-syntax-highlighting -- adds zsh-like syntax highlighting
 ;;eshell-rc-script -- your profile for eshell similar to .zshrc
@@ -641,23 +641,23 @@ one, an error is signaled."
   (projectile-mode 1))
 
 (use-package dashboard
-   :ensure t 
-   :init
-   (setq initial-buffer-choice 'dashboard-open)
-   (setq dashboard-set-heading-icons t)
-   (setq dashboard-set-file-icons t)
-   (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
-   (setq dashboard-image-banner-max-height 200)
-   (setq dashboard-image-banner-max-width 200)
-   (setq dashboard-center-content nil) ;; set to 't' for centered content
-   (setq dashboard-items '((recents . 5)
-                           (agenda . 5 )
-                           (bookmarks . 3)
-                           (projects . 3)
-                           (registers . 3)))
-   
-   :custom
-   (dashboard-modify-heading-icons '((recents . "file-text")
-                                     (bookmarks . "book")))
-   :config
-   (dashboard-setup-startup-hook))
+  :ensure t 
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
+  (setq dashboard-image-banner-max-height 200)
+  (setq dashboard-image-banner-max-width 200)
+  (setq dashboard-center-content nil) ;; set to 't' for centered content
+  (setq dashboard-items '((recents . 5)
+                          (agenda . 5 )
+                          (bookmarks . 3)
+                          (projects . 3)
+                          (registers . 3)))
+  
+  :custom
+  (dashboard-modify-heading-icons '((recents . "file-text")
+                                    (bookmarks . "book")))
+  :config
+  (dashboard-setup-startup-hook))
