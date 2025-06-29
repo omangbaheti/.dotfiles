@@ -33,6 +33,9 @@
 - [[#filemanager][FILEMANAGER]]
 - [[#flycheck][FLYCHECK]]
 - [[#company][COMPANY]]
+- [[#lsp-mode][LSP-MODE]]
+  - [[#lsp][LSP]]
+  - [[#lsp-extensions][LSP Extensions]]
 - [[#projectile][PROJECTILE]]
 - [[#dashboard][DASHBOARD]]
 - [[#language-support][LANGUAGE SUPPORT]]
@@ -844,6 +847,35 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :after company
   :diminish
   :hook (company-mode . company-box-mode))
+#+end_src
+
+* LSP-MODE
+** LSP
+#+begin_src emacs-lisp
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook 
+  (csharp-mode . lsp)
+  (python-mode . lsp)
+  :init
+  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  :config
+  (lsp-enable-which-key-integration t))
+#+end_src
+
+** LSP Extensions
+#+begin_src emacs-lisp
+;;lsp ui extensions
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+
+;; ivy integrations for lsp mode
+(use-package lsp-ivy)
+
+(use-package dap-mode)
+;; (use-package dap-LANGUAGE) to load the dap adapter for your language
 #+end_src
 
 * PROJECTILE

@@ -82,6 +82,7 @@
       pandoc
       pylint
       statix
+      omnisharp-roslyn
       unstable.pyrefly
     ];
 

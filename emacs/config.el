@@ -671,6 +671,28 @@ one, an error is signaled."
   :diminish
   :hook (company-mode . company-box-mode))
 
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook 
+  (csharp-mode . lsp)
+  (python-mode . lsp)
+  :init
+  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  :config
+  (lsp-enable-which-key-integration t))
+
+;;lsp ui extensions
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+
+;; ivy integrations for lsp mode
+(use-package lsp-ivy)
+
+(use-package dap-mode)
+;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+
 (use-package projectile
   :config
   (projectile-mode 1))
