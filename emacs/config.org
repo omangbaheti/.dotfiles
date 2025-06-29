@@ -19,6 +19,7 @@
   - [[#enabling-org-bullets][Enabling Org Bullets]]
   - [[#disable-electric-indent][Disable Electric Indent]]
   - [[#source-code-block-expansion][Source Code Block Expansion]]
+  - [[#modern-org][MODERN ORG]]
 - [[#which-key][WHICH-KEY]]
 - [[#sudo-edit][SUDO EDIT]]
 - [[#all-the-icons][ALL THE ICONS]]
@@ -387,11 +388,31 @@ Org mode has weird indentation
 | <s                     | '#+BEGIN_SRC' … '#+END_SRC'             |
 | <v                     | '#+BEGIN_VERSE' … '#+END_VERSE'         |
 
-
 #+begin_src emacs-lisp
 (require 'org-tempo)
 #+end_src
 
+** MODERN ORG
+#+begin_src emacs-lisp
+(use-package org-modern
+  :ensure t
+  :hook (org-mode . org-modern-mode)
+  :config
+  ;; Customize as needed
+  (modify-all-frames-parameters
+   '((right-divider-width . 0)
+     (internal-border-width . 0)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+  (setq org-modern-star '("◉" "○" "✸" "✿")
+        org-modern-table t 
+        org-modern-checkbox '((X . "☑") (- . "❍") (\s . "☐"))
+        org-modern-block-fringe t))
+#+end_src
 
 * WHICH-KEY
 #+begin_src emacs-lisp

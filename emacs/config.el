@@ -278,6 +278,25 @@ one, an error is signaled."
 
 (require 'org-tempo)
 
+(use-package org-modern
+  :ensure t
+  :hook (org-mode . org-modern-mode)
+  :config
+  ;; Customize as needed
+  (modify-all-frames-parameters
+   '((right-divider-width . 0)
+     (internal-border-width . 0)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+  (setq org-modern-star '("◉" "○" "✸" "✿")
+        org-modern-table t 
+        org-modern-checkbox '((X . "☑") (- . "❍") (\s . "☐"))
+        org-modern-block-fringe t))
+
 (use-package which-key
   :init
   (which-key-mode 1)
