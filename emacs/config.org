@@ -121,75 +121,92 @@
 
 #+BEGIN_SRC emacs-lisp
 
-  (use-package general
-    :config
-    (general-evil-setup)
+(use-package general
+  :config
+  (general-evil-setup)
 
-    ;; set up 'SPC' as the global leader key
-    (general-create-definer leader-key
-      :states '(normal insert visual emacs)
-      :keymaps 'override
-      :prefix "SPC" ;; set leader
-      :global-prefix "M-SPC") ;; access leader in insert mode
-    (setq evil-want-keybinding nil)
-    (leader-key
-      "." '(find-file :wk "Find file")
-      "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
-      "f r" '(counsel-recentf :wk "Find Recent Files")
-      "TAB TAB" '(comment-line :wk "Comment lines"))
+  ;; set up 'SPC' as the global leader key
+  (general-create-definer leader-key
+    :states '(normal insert visual emacs)
+    :keymaps 'override
+    :prefix "SPC" ;; set leader
+    :global-prefix "M-SPC") ;; access leader in insert mode
+  (setq evil-want-keybinding nil)
+  (leader-key
+    "SPC" '(counsel-M-x :wk "Counsel M-X")
+    "." '(find-file :wk "Find file")
+    "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
+    "f r" '(counsel-recentf :wk "Find Recent Files")
+    "TAB TAB" '(comment-line :wk "Comment lines"))
 
-    (leader-key
-      "b" '(:ignore t :wk "buffer")
-      "b b" '(switch-to-buffer :wk "Switch buffer")
-      "b i" '(ibuffer :wk "Ibuffer")
-      "b k" '(kill-this-buffer :wk "Kill this buffer")
-      "b n" '(next-buffer :wk "Next buffer")
-      "b p" '(previous-buffer :wk "Previous buffer")
-      "b r" '(revert-buffer :wk "Reload buffer"))
-    
-    (leader-key
-      "e" '(:ignore t :wk "Evaluate")
-      "e b" '(eval-buffer :wk "Evaluate the elisp in buffer")
-      "e d" '(eval-defun :wk "Evaluate defun containing or after point")
-      "e e" '(eval-expression :wk "Evaluate elisp expression")
-      "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
-      "e r" '(eval-region :wk "Evaluate elisp in region")
-      "e h" '(counsel-esh-history :which-key "Eshell History")
-      "e s" '(eshell :which-key "Eshell")
-      )
-    (leader-key
-      "p" '(projectile-command-map :wk "Projectile"))
+  (leader-key
+    "b" '(:ignore t :wk "buffer")
+    "b b" '(switch-to-buffer :wk "Switch buffer")
+    "b i" '(ibuffer :wk "Ibuffer")
+    "b k" '(kill-this-buffer :wk "Kill this buffer")
+    "b n" '(next-buffer :wk "Next buffer")
+    "b p" '(previous-buffer :wk "Previous buffer")
+    "b r" '(revert-buffer :wk "Reload buffer"))
+  
+  (leader-key
+    "e" '(:ignore t :wk "Evaluate")
+    "e b" '(eval-buffer :wk "Evaluate the elisp in buffer")
+    "e d" '(eval-defun :wk "Evaluate defun containing or after point")
+    "e e" '(eval-expression :wk "Evaluate elisp expression")
+    "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
+    "e r" '(eval-region :wk "Evaluate elisp in region")
+    "e h" '(counsel-esh-history :which-key "Eshell History")
+    "e s" '(eshell :which-key "Eshell"))
+  
+  (leader-key
+    "m" '(:ignore t :wk "Org")
+    "m a" '(org-agenda :wk "Org agenda")
+    "m e" '(org-export-dispatch :wk "Org export dispatch")
+    "m i" '(org-toggle-item :wk "Org toggle item")
+    "m t" '(org-todo :wk "Org todo")
+    "m B" '(org-babel-tangle :wk "Org babel tangle")
+    "m T" '(org-todo-list :wk "Org todo list"))
 
-    (leader-key
-      "h" '(:ignore t :wk "Help")
-      "h f" '(describe-function :wk "Describe function")
-      "h v" '(describe-variable :wk "Describe Variable")
-      "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el")) :wk "reload emacs config"))
+  (leader-key
+    "m b" '(:ignore t :wk "Tables")
+    "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
 
-    (leader-key
-      "t" '(:ignore t :wk "Toggle")
-      "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-      "t t" '(visual-line-mode :wk "Toggle truncated lines"))
+  (leader-key
+    "m d" '(:ignore t :wk "Date/deadline")
+    "m d t" '(org-time-stamp :wk "Org time stamp"))
+  
+  (leader-key
+    "p" '(projectile-command-map :wk "Projectile"))
 
-    (leader-key
-      "w" '(:ignore t :wk "Windows")
-      ;; Window splits
-      "w c" '(evil-window-delete :wk "Close window")
-      "w n" '(evil-window-new :wk "New window")
-      "w s" '(evil-window-split :wk "Horizontal split window")
-      "w v" '(evil-window-vsplit :wk "Vertical split window")
-      ;; Window motions
-      "w h" '(evil-window-left :wk "Window Left")
-      "w j" '(evil-window-down :wk "Window Down")
-      "w k" '(evil-window-up :wk "Window Up")
-      "w l" '(evil-window-right :wk "Window Right")
-      "w w" '(evil-window-next :wk "Goto Next Window")
-      ;; Move Windows
-      "w H" '(buf-move-left :wk "Buffer Move Left")
-      "w J" '(buf-move-down :wk "Buffer Move Down")
-      "w K" '(buf-move-up :wk "Buffer Move Up")
-      "w L" '(buf-move-right :wk "Buffer Move Right"))
-    )
+  (leader-key
+    "h" '(:ignore t :wk "Help")
+    "h f" '(describe-function :wk "Describe function")
+    "h v" '(describe-variable :wk "Describe Variable")
+    "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el")) :wk "reload emacs config"))
+
+  (leader-key
+    "t" '(:ignore t :wk "Toggle")
+    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+    "t t" '(visual-line-mode :wk "Toggle truncated lines"))
+
+  (leader-key
+    "w" '(:ignore t :wk "Windows")
+    ;; Window splits
+    "w c" '(evil-window-delete :wk "Close window")
+    "w n" '(evil-window-new :wk "New window")
+    "w s" '(evil-window-split :wk "Horizontal split window")
+    "w v" '(evil-window-vsplit :wk "Vertical split window")
+    ;; Window motions
+    "w h" '(evil-window-left :wk "Window Left")
+    "w j" '(evil-window-down :wk "Window Down")
+    "w k" '(evil-window-up :wk "Window Up")
+    "w l" '(evil-window-right :wk "Window Right")
+    "w w" '(evil-window-next :wk "Goto Next Window")
+    ;; Move Windows
+    "w H" '(buf-move-left :wk "Buffer Move Left")
+    "w J" '(buf-move-down :wk "Buffer Move Down")
+    "w K" '(buf-move-up :wk "Buffer Move Up")
+    "w L" '(buf-move-right :wk "Buffer Move Right")))
 #+END_SRC
 
 * BUFFER-MOVE
@@ -347,6 +364,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 Org mode has weird indentation
 #+begin_src emacs-lisp
   (electric-indent-mode -1)
+  (setq org-edit-src-content-indentation 0)
 #+end_src
 
 ** Source Code Block Expansion
@@ -385,7 +403,7 @@ Org mode has weird indentation
         which-key-side-window-max-height 0.25
         which-key-idle-delay 0.8
         which-key-max-description-length 25
-        which-key-allow-imprecise-window-fit t
+        which-key-allow-imprecise-window-fit nil 
         which-key-separator " → " ))
 #+end_src
 

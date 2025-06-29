@@ -82,6 +82,7 @@
     :global-prefix "M-SPC") ;; access leader in insert mode
   (setq evil-want-keybinding nil)
   (leader-key
+    "SPC" '(counsel-M-x :wk "Counsel M-X")
     "." '(find-file :wk "Find file")
     "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
     "f r" '(counsel-recentf :wk "Find Recent Files")
@@ -104,8 +105,25 @@
     "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
     "e r" '(eval-region :wk "Evaluate elisp in region")
     "e h" '(counsel-esh-history :which-key "Eshell History")
-    "e s" '(eshell :which-key "Eshell")
-    )
+    "e s" '(eshell :which-key "Eshell"))
+  
+  (leader-key
+    "m" '(:ignore t :wk "Org")
+    "m a" '(org-agenda :wk "Org agenda")
+    "m e" '(org-export-dispatch :wk "Org export dispatch")
+    "m i" '(org-toggle-item :wk "Org toggle item")
+    "m t" '(org-todo :wk "Org todo")
+    "m B" '(org-babel-tangle :wk "Org babel tangle")
+    "m T" '(org-todo-list :wk "Org todo list"))
+
+  (leader-key
+    "m b" '(:ignore t :wk "Tables")
+    "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
+
+  (leader-key
+    "m d" '(:ignore t :wk "Date/deadline")
+    "m d t" '(org-time-stamp :wk "Org time stamp"))
+  
   (leader-key
     "p" '(projectile-command-map :wk "Projectile"))
 
@@ -137,8 +155,7 @@
     "w H" '(buf-move-left :wk "Buffer Move Left")
     "w J" '(buf-move-down :wk "Buffer Move Down")
     "w K" '(buf-move-up :wk "Buffer Move Up")
-    "w L" '(buf-move-right :wk "Buffer Move Right"))
-  )
+    "w L" '(buf-move-right :wk "Buffer Move Right")))
 
 (require 'windmove)
 
@@ -257,6 +274,7 @@ one, an error is signaled."
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
 (electric-indent-mode -1)
+(setq org-edit-src-content-indentation 0)
 
 (require 'org-tempo)
 
@@ -274,7 +292,7 @@ one, an error is signaled."
       which-key-side-window-max-height 0.25
       which-key-idle-delay 0.8
       which-key-max-description-length 25
-      which-key-allow-imprecise-window-fit t
+      which-key-allow-imprecise-window-fit nil 
       which-key-separator " → " ))
 
 (use-package sudo-edit
