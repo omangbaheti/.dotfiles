@@ -652,6 +652,10 @@ one, an error is signaled."
   :init (dirvish-override-dired-mode)
   :config (evil-define-key 'normal dirvish-mode-map (kbd "TAB") 'dirvish-subtree-toggle))
 
+(use-package flycheck
+  :ensure t
+  :config (add-hook 'after-init-hook #'global-flycheck-mode))
+
 
 
 (use-package projectile
@@ -679,3 +683,5 @@ one, an error is signaled."
                                     (bookmarks . "book")))
   :config
   (dashboard-setup-startup-hook))
+
+
