@@ -5,7 +5,7 @@
 # NixOS-WSL specific options are documented on the NixOS-WSL repository:
 # https://github.com/nix-community/NixOS-WSL
 
-{ config, lib, pkgs, pkgs-unstable, ... }:
+{ config, lib, pkgs, unstable, ... }:
 {
 
 
@@ -82,7 +82,7 @@
       pandoc
       pylint
       statix
-      #pkgs-unstable.pyrefly
+      unstable.pyrefly
     ];
 
   # This value determines the NixOS release from which the default
