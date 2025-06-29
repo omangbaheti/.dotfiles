@@ -34,6 +34,7 @@
       ls = "eza";
       grep = "rg";
       find = "fd";
+      e="emacsclient -c";
       update-config = "sudo nixos-rebuild switch --flake .#nixos";
     };
 
@@ -54,7 +55,9 @@ function isWinDir {
     *) return 1 ;;
   esac
 }
-
+if ! emacsclient -e "(server-running-p)" | grep -q t; then
+  emacs --daemon
+fi
 function lazygit {
   if isWinDir; then
     # Use Windows `lazygit.exe` in Windows-mounted dirs
