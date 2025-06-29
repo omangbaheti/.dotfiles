@@ -656,7 +656,20 @@ one, an error is signaled."
   :ensure t
   :config (add-hook 'after-init-hook #'global-flycheck-mode))
 
+(use-package company
+  :defer 2
+  :custom
+  (company-begin-commands '(self-insert-command))
+  (company-idle-delay .1)
+  (company-minimum-prefix-length 2)
+  (company-show-numbers t)
+  (company-tooltip-align-annotations 't)
+  (global-company-mode t))
 
+(use-package company-box
+  :after company
+  :diminish
+  :hook (company-mode . company-box-mode))
 
 (use-package projectile
   :config
@@ -684,4 +697,8 @@ one, an error is signaled."
   :config
   (dashboard-setup-startup-hook))
 
+(use-package nix-mode
+  :mode "\\.nix\\'")
 
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))

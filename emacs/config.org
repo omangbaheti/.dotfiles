@@ -36,6 +36,7 @@
 - [[#projectile][PROJECTILE]]
 - [[#dashboard][DASHBOARD]]
 - [[#language-support][LANGUAGE SUPPORT]]
+- [[#rainbow-mode][RAINBOW MODE]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -811,7 +812,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
     :after evil
     :init (dirvish-override-dired-mode)
     :config (evil-define-key 'normal dirvish-mode-map (kbd "TAB") 'dirvish-subtree-toggle))
-
 #+end_src
  
 
@@ -830,8 +830,20 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 [[https://company-mode.github.io/][Company]] is a text completion framework for Emacs. The name stands for "complete anything".  Completion will start automatically after you type a few letters. Use M-n and M-p to select, <return> to complete or <tab> to complete the common part.
 
 #+begin_src emacs-lisp
+(use-package company
+  :defer 2
+  :custom
+  (company-begin-commands '(self-insert-command))
+  (company-idle-delay .1)
+  (company-minimum-prefix-length 2)
+  (company-show-numbers t)
+  (company-tooltip-align-annotations 't)
+  (global-company-mode t))
 
-
+(use-package company-box
+  :after company
+  :diminish
+  :hook (company-mode . company-box-mode))
 #+end_src
 
 * PROJECTILE
@@ -872,8 +884,15 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 * LANGUAGE SUPPORT
 Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL expression language, Ada, ASM, AWK, C, C++, C#, Elixir, Fortran, Icon, IDL (CORBA), HEEx, IDLWAVE, Java, Javascript, Lua, M4, Makefiles, Metafont (TeX’s companion for font creation), Modula2, Object Pascal, Objective-C, Octave, Pascal, Perl, PHP, Pike, PostScript, Prolog, Python, Ruby, Simula, SQL, Tcl, TypeScript, Verilog, and VHDL. The recommended mode for Perl is called CPerl mode. Modes are also available for the scripting languages of the common GNU and Unix shells, and MS-DOS/MS-Windows ‘BAT’ files, JSON, DNS master files, CSS (Cascading Style Sheets), Dockerfiles, CMake files, and various sorts of configuration files. 
 
+#+begin_src emacs-lisp
+(use-package nix-mode
+  :mode "\\.nix\\'")
+#+end_src
+
+
+* RAINBOW MODE
 
 #+begin_src emacs-lisp
-
-
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
