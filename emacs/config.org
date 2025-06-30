@@ -44,6 +44,7 @@
 - [[#projectile][PROJECTILE]]
 - [[#dashboard][DASHBOARD]]
 - [[#language-support][LANGUAGE SUPPORT]]
+- [[#jupyter][JUPYTER]]
 - [[#rainbow-mode][RAINBOW MODE]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
@@ -1006,6 +1007,14 @@ Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL ex
 #+begin_src emacs-lisp
 (use-package nix-mode
   :mode "\\.nix\\'")
+#+end_src
+
+* JUPYTER
+
+#+begin_src emacs-lisp
+(use-package jupyter
+  :ensure (:host github :repo "emacs-jupyter/jupyter")
+  :defer t)
 #+end_src
 
 * RAINBOW MODE

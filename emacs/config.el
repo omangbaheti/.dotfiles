@@ -780,5 +780,9 @@ one, an error is signaled."
 (use-package nix-mode
   :mode "\\.nix\\'")
 
+(use-package jupyter
+  :ensure (:host github :repo "emacs-jupyter/jupyter")
+  :defer t)
+
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
