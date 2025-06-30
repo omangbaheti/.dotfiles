@@ -12,17 +12,19 @@
 - [[#fonts][FONTS]]
   - [[#setting-the-font-face][Setting the Font Face]]
   - [[#zooming-inout][Zooming In/Out]]
--  [[#emacs-sane-defaults][EMACS SANE DEFAULTS]]
+- [[#emacs-sane-defaults][EMACS SANE DEFAULTS]]
   - [[#disable-menubar-toolbar][Disable Menubar, Toolbar]]
   - [[#display-line-numbers-and-truncated-lines][Display Line Numbers and Truncated Lines]]
   - [[#backups][Backups]]
   - [[#minibuffer-escape][Minibuffer escape]]
   - [[#electric][Electric]]
+  - [[#beacon-mode][Beacon Mode]]
 - [[#org-mode][ORG MODE]]
   - [[#enabling-table-of-content][Enabling Table of Content]]
   - [[#enabling-org-bullets][Enabling Org Bullets]]
   - [[#source-code-block-expansion][Source Code Block Expansion]]
   - [[#modern-org][MODERN ORG]]
+  - [[#org-roam][ORG-ROAM]]
 - [[#which-key][WHICH-KEY]]
 - [[#sudo-edit][SUDO EDIT]]
 - [[#all-the-icons][ALL THE ICONS]]
@@ -353,7 +355,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 #+end_src
 
-*  EMACS SANE DEFAULTS
+* EMACS SANE DEFAULTS
 
 ** Disable Menubar, Toolbar
 
@@ -390,6 +392,16 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (electric-indent-mode -1)
 (electric-pair-mode 1)
 (setq org-edit-src-content-indentation 0)
+#+end_src
+** Beacon Mode
+#+begin_src emacs-lisp
+(use-package beacon
+  :ensure t (:files (:defaults) :build nil)  ;; disables native compilation
+  :init
+  (setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
+        beacon-color "#ff9da4")        ;; Optional: Customize the blink color
+  :config
+  (beacon-mode 1))                     ;; Enable beacon globallybeacon-mode 1)
 #+end_src
 * ORG MODE
 ** Enabling Table of Content
@@ -446,10 +458,39 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (set-face-background 'fringe (face-attribute 'default :background))
   (setq org-modern-star '("◉" "○" "✸" "✿")
         org-modern-table t 
-        org-modern-checkbox '((X . "☑") (- . "❍") (\s . "☐"))
+        org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
         org-modern-block-fringe t))
 #+end_src
 
+
+** ORG-ROAM
+
+#+begin_src emacs-lisp
+(use-package org-roam
+  :ensure t
+  :init
+  (setq org-roam-v2-ack t)  ;; Acknowledge v2 upgrade prompt
+  :custom
+  (org-roam-directory (file-truename "~/org-roam"))  ;; Set your notes directory
+  :bind (("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture))
+  :config
+  (org-roam-db-autosync-enable))
+
+#+end_src
+
+*** ORG-ROAM-UI
+#+begin_src emacs-lisp
+(use-package org-roam-ui
+    :after org-roam
+    :hook (after-init . org-roam-ui-mode)
+    :custom
+    (org-roam-ui-sync-theme t)
+    (org-roam-ui-follow t)
+    (org-roam-ui-update-on-save t)
+    (org-roam-ui-open-on-start nil))
+#+end_src
 * WHICH-KEY
 
 #+begin_src emacs-lisp
@@ -531,7 +572,6 @@ This is an icon set that can be used with dashboard, dired, ibuffer and other Em
   (ivy-set-display-transformer 'ivy-switch-buffer
                                'ivy-rich-switch-buffer-transformer))
 #+end_src
-
 
 * SHELLS AND TERMINALS
 
@@ -875,7 +915,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 
 ** NEOTREE 
 
-
 * TODO NEOTREE
 Neotree is a file tree viewer.  When you open neotree, it jumps to the current file thanks to neo-smart-open.  The neo-window-fixed-size setting makes the neotree width be adjustable.  NeoTree provides following themes: classic, ascii, arrow, icons, and nerd.  Theme can be config'd by setting "two" themes for neo-theme: one for the GUI and one for the terminal.  I like to use 'SPC t' for 'toggle' keybindings, so I have used 'SPC t n' for toggle-neotree.
 
@@ -903,7 +942,6 @@ Neotree is a file tree viewer.  When you open neotree, it jumps to the current f
 ;;                 (setq auto-hscroll-mode nil)))))
 
 #+end_src
-
 
 * FLYCHECK
 Modern on-the-fly syntax checking extension for GNU Emacs
@@ -1023,5 +1061,3 @@ Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL ex
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
-
-

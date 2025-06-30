@@ -289,6 +289,14 @@ one, an error is signaled."
 (electric-pair-mode 1)
 (setq org-edit-src-content-indentation 0)
 
+(use-package beacon
+  :ensure t (:files (:defaults) :build nil)  ;; disables native compilation
+  :init
+  (setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
+        beacon-color "#ff9da4")        ;; Optional: Customize the blink color
+  :config
+  (beacon-mode 1))                     ;; Enable beacon globallybeacon-mode 1)
+
 (use-package toc-org
   :commands toc-org-enable
   :init (add-hook 'org-mode-hook 'toc-org-enable))
@@ -315,8 +323,29 @@ one, an error is signaled."
   (set-face-background 'fringe (face-attribute 'default :background))
   (setq org-modern-star '("◉" "○" "✸" "✿")
         org-modern-table t 
-        org-modern-checkbox '((X . "☑") (- . "❍") (\s . "☐"))
+        org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
         org-modern-block-fringe t))
+
+(use-package org-roam
+  :ensure t
+  :init
+  (setq org-roam-v2-ack t)  ;; Acknowledge v2 upgrade prompt
+  :custom
+  (org-roam-directory (file-truename "~/org-roam"))  ;; Set your notes directory
+  :bind (("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture))
+  :config
+  (org-roam-db-autosync-enable))
+
+(use-package org-roam-ui
+    :after org-roam
+    :hook (after-init . org-roam-ui-mode)
+    :custom
+    (org-roam-ui-sync-theme t)
+    (org-roam-ui-follow t)
+    (org-roam-ui-update-on-save t)
+    (org-roam-ui-open-on-start nil))
 
 (use-package which-key
   :init
