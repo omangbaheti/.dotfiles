@@ -24,6 +24,7 @@
   - [[#enabling-org-bullets][Enabling Org Bullets]]
   - [[#source-code-block-expansion][Source Code Block Expansion]]
   - [[#modern-org][MODERN ORG]]
+  - [[#org-agenda][ORG-AGENDA]]
   - [[#org-roam][ORG-ROAM]]
 - [[#which-key][WHICH-KEY]]
 - [[#sudo-edit][SUDO EDIT]]
@@ -41,11 +42,12 @@
 - [[#flycheck][FLYCHECK]]
 - [[#company][COMPANY]]
 - [[#lsp-mode][LSP-MODE]]
+  - [[#lsp-mode-config][LSP-Mode Config]]
+  - [[#language-support][LANGUAGE SUPPORT]]
   - [[#lsps][LSPs]]
   - [[#lsp-extensions][LSP Extensions]]
 - [[#projectile][PROJECTILE]]
 - [[#dashboard][DASHBOARD]]
-- [[#language-support][LANGUAGE SUPPORT]]
 - [[#jupyter][JUPYTER]]
 - [[#rainbow-mode][RAINBOW MODE]]
 
@@ -395,13 +397,13 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 #+end_src
 ** Beacon Mode
 #+begin_src emacs-lisp
-(use-package beacon
-  :ensure t (:files (:defaults) :build nil)  ;; disables native compilation
-  :init
-  (setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
-        beacon-color "#ff9da4")        ;; Optional: Customize the blink color
-  :config
-  (beacon-mode 1))                     ;; Enable beacon globallybeacon-mode 1)
+;;(use-package beacon
+  ;;:ensure t (:files (:defaults) :build nil)  ;; disables native compilation
+  ;;:init
+  ;;(setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
+        ;;beacon-color "#ff9da4")        ;; Optional: Customize the blink color
+  ;;:config
+  ;;(beacon-mode 1))                     ;; Enable beacon globallybeacon-mode 1)
 #+end_src
 * ORG MODE
 ** Enabling Table of Content
@@ -463,6 +465,11 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 #+end_src
 
 
+** ORG-AGENDA
+#+begin_src emacs-lisp
+
+#+end_src
+
 ** ORG-ROAM
 
 #+begin_src emacs-lisp
@@ -491,6 +498,8 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
     (org-roam-ui-update-on-save t)
     (org-roam-ui-open-on-start nil))
 #+end_src
+
+
 * WHICH-KEY
 
 #+begin_src emacs-lisp
@@ -973,19 +982,37 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 * TODO LSP-MODE
-** LSPs
+
+** LSP-Mode Config
 
 #+begin_src emacs-lisp
 (use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook 
-  (csharp-mode . lsp)
-  (python-mode . lsp)
   :init
-  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  (setq lsp-auto-guess-root nil) 
+  :hook 
+  (csharp-mode . lsp-deferred)
+  (python-mode . lsp-deferred)
+  (emacs-lisp-mode . lsp-deferred)
+  (nix-mode . lsp-deferred)
   :config
-  (lsp-enable-which-key-integration t))
+  (lsp-enable-which-key-integration t)
+  :commands (lsp lsp-deferred)) 
 #+end_src
+
+
+** LANGUAGE SUPPORT
+Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL expression language, Ada, ASM, AWK, C, C++, C#, Elixir, Fortran, Icon, IDL (CORBA), HEEx, IDLWAVE, Java, Javascript, Lua, M4, Makefiles, Metafont (TeX’s companion for font creation), Modula2, Object Pascal, Objective-C, Octave, Pascal, Perl, PHP, Pike, PostScript, Prolog, Python, Ruby, Simula, SQL, Tcl, TypeScript, Verilog, and VHDL. The recommended mode for Perl is called CPerl mode. Modes are also available for the scripting languages of the common GNU and Unix shells, and MS-DOS/MS-Windows ‘BAT’ files, JSON, DNS master files, CSS (Cascading Style Sheets), Dockerfiles, CMake files, and various sorts of configuration files. 
+
+#+begin_src emacs-lisp
+(use-package nix-mode
+  :mode "\\.nix\\'")
+#+end_src
+
+** LSPs
+
+#+begin_src emacs-lisp
+
+#+end_src>
 
 ** LSP Extensions
 
@@ -1039,13 +1066,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (dashboard-setup-startup-hook))
 #+end_src
 
-* LANGUAGE SUPPORT
-Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL expression language, Ada, ASM, AWK, C, C++, C#, Elixir, Fortran, Icon, IDL (CORBA), HEEx, IDLWAVE, Java, Javascript, Lua, M4, Makefiles, Metafont (TeX’s companion for font creation), Modula2, Object Pascal, Objective-C, Octave, Pascal, Perl, PHP, Pike, PostScript, Prolog, Python, Ruby, Simula, SQL, Tcl, TypeScript, Verilog, and VHDL. The recommended mode for Perl is called CPerl mode. Modes are also available for the scripting languages of the common GNU and Unix shells, and MS-DOS/MS-Windows ‘BAT’ files, JSON, DNS master files, CSS (Cascading Style Sheets), Dockerfiles, CMake files, and various sorts of configuration files. 
-
-#+begin_src emacs-lisp
-(use-package nix-mode
-  :mode "\\.nix\\'")
-#+end_src
 
 * JUPYTER
 

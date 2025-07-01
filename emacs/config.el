@@ -289,13 +289,13 @@ one, an error is signaled."
 (electric-pair-mode 1)
 (setq org-edit-src-content-indentation 0)
 
-(use-package beacon
-  :ensure t (:files (:defaults) :build nil)  ;; disables native compilation
-  :init
-  (setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
-        beacon-color "#ff9da4")        ;; Optional: Customize the blink color
-  :config
-  (beacon-mode 1))                     ;; Enable beacon globallybeacon-mode 1)
+;;(use-package beacon
+  ;;:ensure t (:files (:defaults) :build nil)  ;; disables native compilation
+  ;;:init
+  ;;(setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
+        ;;beacon-color "#ff9da4")        ;; Optional: Customize the blink color
+  ;;:config
+  ;;(beacon-mode 1))                     ;; Enable beacon globallybeacon-mode 1)
 
 (use-package toc-org
   :commands toc-org-enable
@@ -325,6 +325,8 @@ one, an error is signaled."
         org-modern-table t 
         org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
         org-modern-block-fringe t))
+
+
 
 (use-package org-roam
   :ensure t
@@ -758,14 +760,19 @@ one, an error is signaled."
   :hook (company-mode . company-box-mode))
 
 (use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :hook 
-  (csharp-mode . lsp)
-  (python-mode . lsp)
   :init
-  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  (setq lsp-auto-guess-root nil) 
+  :hook 
+  (csharp-mode . lsp-deferred)
+  (python-mode . lsp-deferred)
+  (emacs-lisp-mode . lsp-deferred)
+  (nix-mode . lsp-deferred)
   :config
-  (lsp-enable-which-key-integration t))
+  (lsp-enable-which-key-integration t)
+  :commands (lsp lsp-deferred))
+
+(use-package nix-mode
+  :mode "\\.nix\\'")
 
 ;;lsp ui extensions
 (use-package lsp-ui
@@ -805,9 +812,6 @@ one, an error is signaled."
                                     (bookmarks . "book")))
   :config
   (dashboard-setup-startup-hook))
-
-(use-package nix-mode
-  :mode "\\.nix\\'")
 
 (use-package jupyter
   :ensure (:host github :repo "emacs-jupyter/jupyter")
