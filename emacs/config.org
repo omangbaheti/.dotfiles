@@ -30,6 +30,10 @@
 - [[#sudo-edit][SUDO EDIT]]
 - [[#all-the-icons][ALL THE ICONS]]
 - [[#ivy--counsel][IVY + COUNSEL]]
+- [[#vertico][Vertico]]
+- [[#orderless][Orderless]]
+- [[#consult][Consult]]
+- [[#embark][embark]]
 - [[#shells-and-terminals][SHELLS AND TERMINALS]]
   - [[#eshell][Eshell]]
   - [[#vterm][Vterm]]
@@ -55,7 +59,7 @@
 ** Package Manager
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-(setq debug-on-error t)
+;; (setq debug-on-error t)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
@@ -549,38 +553,66 @@ This is an icon set that can be used with dashboard, dired, ibuffer and other Em
 + Ivy-rich allows us to add descriptions alongside the commands in M-x.
 
 #+begin_src emacs-lisp
-(use-package counsel
-  :after ivy
-  :config (counsel-mode))
+;; (use-package counsel
+;;   :after ivy
+;;   :config (counsel-mode))
 
-(use-package ivy
-  :bind
-  ;; ivy-resume resumes the last Ivy-based completion.
-  (("C-c C-r" . ivy-resume)
-   ("C-x B" . ivy-switch-buffer-other-window))
-  :custom
-  (setq ivy-use-virtual-buffers t)
-  (setq ivy-count-format "(%d/%d) ")
-  (setq enable-recursive-minibuffers t)
-  :config
-  (ivy-mode))
+;; (use-package ivy
+;;   :bind
+;;   ;; ivy-resume resumes the last Ivy-based completion.
+;;   (("C-c C-r" . ivy-resume)
+;;    ("C-x B" . ivy-switch-buffer-other-window))
+;;   :custom
+;;   (setq ivy-use-virtual-buffers t)
+;;   (setq ivy-count-format "(%d/%d) ")
+;;   (setq enable-recursive-minibuffers t)
+;;   :config
+;;   (ivy-mode))
 
-(use-package all-the-icons-ivy-rich
-  :ensure t
-  :init (all-the-icons-ivy-rich-mode 1))
+;; (use-package all-the-icons-ivy-rich
+;;   :ensure t
+;;   :init (all-the-icons-ivy-rich-mode 1))
 
-(use-package ivy-rich
-  :after ivy
-  :ensure t
-  :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
-  :custom
-  (ivy-virtual-abbreviate 'full
-			  ivy-rich-switch-buffer-align-virtual-buffer t
-			  ivy-rich-path-style 'abbrev)
-  :config
-  (ivy-set-display-transformer 'ivy-switch-buffer
-                               'ivy-rich-switch-buffer-transformer))
+;; (use-package ivy-rich
+;;   :after ivy
+;;   :ensure t
+;;   :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
+;;   :custom
+;;   (ivy-virtual-abbreviate 'full
+;; 			  ivy-rich-switch-buffer-align-virtual-buffer t
+;; 			  ivy-rich-path-style 'abbrev)
+;;   :config
+;;   (ivy-set-display-transformer 'ivy-switch-buffer
+;;                                'ivy-rich-switch-buffer-transformer))
 #+end_src
+
+* Vertico
+
+#+begin_src emacs-lisp
+(use-package vertico
+  ;; :straight (vertico :includes (vertico-directory vertico-quick vertico-indexed)
+  ;;                    :files (:defaults "extensions/*.el"))
+  :ensure t
+  :init
+  (vertico-mode)
+
+  ;; Different scroll margin
+  ;; (setq vertico-scroll-margin 0)
+
+  ;; Show more candidates
+  ;; (setq vertico-count 20)
+
+  ;; Grow and shrink the Vertico minibuffer
+  (setq vertico-resize t
+        ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+        vertico-cycle t))
+#+end_src
+
+* Orderless
+
+* Consult
+
+* embark
 
 * SHELLS AND TERMINALS
 
@@ -1072,7 +1104,15 @@ Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL ex
 #+begin_src emacs-lisp
 (use-package jupyter
   :ensure (:host github :repo "emacs-jupyter/jupyter")
-  :defer t)
+  :defer t
+  :config
+  (add-to-list 'org-babel-load-languages '(jupyter . t))
+  (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+  (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
+						       (:session . "py")
+						       (:kernel . "python3")
+						       (:tangle . "jupyter-python/tangled.py")
+						       (:exports . "both"))))
 #+end_src
 
 * RAINBOW MODE

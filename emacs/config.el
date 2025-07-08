@@ -1,4 +1,4 @@
-(setq debug-on-error t)
+;; (setq debug-on-error t)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
@@ -379,37 +379,55 @@ one, an error is signaled."
 (use-package all-the-icons-dired
   :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
 
-(use-package counsel
-  :after ivy
-  :config (counsel-mode))
+;; (use-package counsel
+;;   :after ivy
+;;   :config (counsel-mode))
 
-(use-package ivy
-  :bind
-  ;; ivy-resume resumes the last Ivy-based completion.
-  (("C-c C-r" . ivy-resume)
-   ("C-x B" . ivy-switch-buffer-other-window))
-  :custom
-  (setq ivy-use-virtual-buffers t)
-  (setq ivy-count-format "(%d/%d) ")
-  (setq enable-recursive-minibuffers t)
-  :config
-  (ivy-mode))
+;; (use-package ivy
+;;   :bind
+;;   ;; ivy-resume resumes the last Ivy-based completion.
+;;   (("C-c C-r" . ivy-resume)
+;;    ("C-x B" . ivy-switch-buffer-other-window))
+;;   :custom
+;;   (setq ivy-use-virtual-buffers t)
+;;   (setq ivy-count-format "(%d/%d) ")
+;;   (setq enable-recursive-minibuffers t)
+;;   :config
+;;   (ivy-mode))
 
-(use-package all-the-icons-ivy-rich
+;; (use-package all-the-icons-ivy-rich
+;;   :ensure t
+;;   :init (all-the-icons-ivy-rich-mode 1))
+
+;; (use-package ivy-rich
+;;   :after ivy
+;;   :ensure t
+;;   :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
+;;   :custom
+;;   (ivy-virtual-abbreviate 'full
+;; 			  ivy-rich-switch-buffer-align-virtual-buffer t
+;; 			  ivy-rich-path-style 'abbrev)
+;;   :config
+;;   (ivy-set-display-transformer 'ivy-switch-buffer
+;;                                'ivy-rich-switch-buffer-transformer))
+
+(use-package vertico
+  ;; :straight (vertico :includes (vertico-directory vertico-quick vertico-indexed)
+  ;;                    :files (:defaults "extensions/*.el"))
   :ensure t
-  :init (all-the-icons-ivy-rich-mode 1))
+  :init
+  (vertico-mode)
 
-(use-package ivy-rich
-  :after ivy
-  :ensure t
-  :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
-  :custom
-  (ivy-virtual-abbreviate 'full
-			  ivy-rich-switch-buffer-align-virtual-buffer t
-			  ivy-rich-path-style 'abbrev)
-  :config
-  (ivy-set-display-transformer 'ivy-switch-buffer
-                               'ivy-rich-switch-buffer-transformer))
+  ;; Different scroll margin
+  ;; (setq vertico-scroll-margin 0)
+
+  ;; Show more candidates
+  ;; (setq vertico-count 20)
+
+  ;; Grow and shrink the Vertico minibuffer
+  (setq vertico-resize t
+        ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+        vertico-cycle t))
 
 (use-package eshell-syntax-highlighting
   :after esh-mode
@@ -815,7 +833,15 @@ one, an error is signaled."
 
 (use-package jupyter
   :ensure (:host github :repo "emacs-jupyter/jupyter")
-  :defer t)
+  :defer t
+  :config
+  (add-to-list 'org-babel-load-languages '(jupyter . t))
+  (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+  (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
+						       (:session . "py")
+						       (:kernel . "python3")
+						       (:tangle . "jupyter-python/tangled.py")
+						       (:exports . "both"))))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
