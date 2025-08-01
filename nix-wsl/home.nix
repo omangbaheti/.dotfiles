@@ -36,6 +36,7 @@
       find = "fd";
       e="emacsclient -c";
       update-config = "sudo nixos-rebuild switch --flake .#nixos";
+      exp="explorer.exe .";
     };
 
     oh-my-zsh = {
@@ -45,7 +46,9 @@
     };
 
     initContent = ''
-   PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:$PATH
+   DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
+   LIBGL_ALWAYS_INDIRECT=1  
+PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:$PATH
      eval "$(zoxide init zsh)"
      #env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
      eval "$(oh-my-posh init zsh)"
