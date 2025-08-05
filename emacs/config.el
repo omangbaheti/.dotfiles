@@ -892,9 +892,30 @@ one, an error is signaled."
   (python-mode . lsp-deferred)
   ;;(emacs-lisp-mode . lsp-deferred)
   (nix-mode . lsp-deferred)
+  (org-src-mode . lsp-deferred)
+  :custom
+  (lsp-enabled-clients '(pyrefly))
+  (lsp-pyrefly-executable "pyrefly")
   :config
+  ;; (require 'lsp-org)
   (lsp-enable-which-key-integration t)
-  :commands (lsp lsp-deferred))
+
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection "pyrefly")
+    :activation-fn (lsp-activate-on "python")
+    :priority -1
+    :server-id 'pyrefly)) 
+
+  (setq lsp-completion-provider :company-capf)
+  :commands (lsp lsp-deferred lsp-org))
+
+(defun my/org-babel-edit-prep-python ()
+  (when (derived-mode-p 'python-mode)
+    (lsp)
+    (company-mode)))
+
+(add-hook 'org-src-mode-hook #'my/org-babel-edit-prep-python)
 
 (use-package nix-mode
   :mode "\\.nix\\'")
@@ -937,30 +958,6 @@ one, an error is signaled."
                                     (bookmarks . "book")))
   :config
   (dashboard-setup-startup-hook))
-
-;; (use-package jupyter
-;;   :ensure (:host github :repo "emacs-jupyter/jupyter")
-;;   :defer t
-;;   :config
-;;   ;; (add-to-list 'org-babel-load-languages '(jupyter . t))
-  
-;;   ;; (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
-  
-;;   (org-babel-do-load-languages
-;;    'org-babel-load-languages
-;;    '((emacs-lisp . t)
-;;      (julia . t)
-;;      (python . t)
-;;      (jupyter . t)))
-;;   ;; Generate kernel aliases from available kernelspecs
-;;   (org-babel-jupyter-aliases-from-kernelspecs)
-
-;;   (setq org-confirm-babel-evaluate nil)
-;;   (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
-;; 						       (:session . "py")
-;; 						       (:kernel . "python3")
-;; 						       (:tangle . "jupyter-python/tangled.py")
-;; 						       (:exports . "both"))))
 
 (use-package jupyter
   :ensure t

@@ -64,7 +64,10 @@
         inflect
         pyqt6
         pyqt6-sip
+        python-lsp-server
       ]))
+      R
+      rPackages.languageserver
       zulu8
       fd
       glib
