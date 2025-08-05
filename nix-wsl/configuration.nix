@@ -22,6 +22,7 @@
       fira-code
       fira-mono
       dejavu-sans-mono
+      symbols-only
     ];
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs;
@@ -42,7 +43,7 @@
       zsh
       oh-my-posh
       tealdeer
-      ispell
+      (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
       proselint
       ripgrep
       coreutils
@@ -64,6 +65,7 @@
         pyqt6
         pyqt6-sip
       ]))
+      zulu8
       fd
       glib
       clang

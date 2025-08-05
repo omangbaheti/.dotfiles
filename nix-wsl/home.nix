@@ -48,7 +48,7 @@
     initContent = ''
    DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
    LIBGL_ALWAYS_INDIRECT=1  
-PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:$PATH
+   PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:$PATH
      eval "$(zoxide init zsh)"
      #env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
      eval "$(oh-my-posh init zsh)"
@@ -104,6 +104,19 @@ PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:$PATH
   programs.emacs = {
     enable = true;
     package = pkgs.emacs;
+    #   {
+    #     withNativeCompilation = true;
+    #     dynamicModules = true;
+    #   };
+    extraPackages = (
+      epkgs: with epkgs; 
+        [ 
+          vterm 
+          zmq 
+          treesit-auto
+          treesit-grammars.with-all-grammars
+        ]
+    );
   };
 
   home.sessionVariables = {

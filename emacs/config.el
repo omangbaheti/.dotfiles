@@ -1,4 +1,5 @@
-;; (setq debug-on-error t)
+;;(setq debug-on-error t)
+(setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
@@ -38,6 +39,7 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
+
 ;; Install use-package support
 
 (elpaca elpaca-use-package
@@ -57,6 +59,7 @@
   (setq evil-want-integration t)
   (setq evil-vsplit-window-right t)
   (setq evil-split-window-below t)
+  (setq evil-search-module 'evil-search)
   (evil-mode))
 
 (use-package evil-collection
@@ -91,15 +94,16 @@
     :global-prefix "M-SPC") ;; access leader in insert mode
   (setq evil-want-keybinding nil)
   (leader-key
-    "SPC" '(counsel-M-x :wk "Counsel M-X")
+    "SPC" '(consult-mode-command :wk "Consult M-X")
     "." '(find-file :wk "Find file")
     "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
-    "f r" '(counsel-recentf :wk "Find Recent Files")
+    "f r" '(consult-recent-file :wk "Find Recent Files")
+    "f /" '(consult-line :wk "Find Line")
     "TAB TAB" '(comment-line :wk "Comment lines"))
 
   (leader-key
     "b" '(:ignore t :wk "buffer")
-    "b b" '(switch-to-buffer :wk "Switch buffer")
+    "b b" '(consult-buffer :wk "Switch buffer")
     "b i" '(ibuffer :wk "Ibuffer")
     "b k" '(kill-this-buffer :wk "Kill this buffer")
     "b n" '(next-buffer :wk "Next buffer")
@@ -113,7 +117,7 @@
     "e e" '(eval-expression :wk "Evaluate elisp expression")
     "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
     "e r" '(eval-region :wk "Evaluate elisp in region")
-    "e h" '(counsel-esh-history :which-key "Eshell History")
+    ;;"e h" '(counsel-esh-history :which-key "Eshell History")
     "e s" '(eshell :which-key "Eshell"))
   
   (leader-key
@@ -136,15 +140,16 @@
   (leader-key
     "p" '(projectile-command-map :wk "Projectile"))
   
-  ;;(leader-key
-    ;;"t n" '(neotree-toggle :wk "Toggle neotree file viewer")) 
+  (leader-key
+    "t n" '(neotree-toggle :wk "Toggle neotree file viewer")) 
   
   (leader-key
     "h" '(:ignore t :wk "Help")
+    "h p" '(describe-package :wk "Describe Package")
     "h f" '(describe-function :wk "Describe function")
     "h v" '(describe-variable :wk "Describe Variable")
-    "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el")) :wk "reload emacs config"))
-
+    "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config"))
+    ;;"h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el")) :wk "reload emacs config"))
   (leader-key
     "t" '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
@@ -168,6 +173,20 @@
     "w J" '(buf-move-down :wk "Buffer Move Down")
     "w K" '(buf-move-up :wk "Buffer Move Up")
     "w L" '(buf-move-right :wk "Buffer Move Right")))
+
+(defun keyboard-quit-dwim ()
+  (interactive)
+  (cond
+   ((region-active-p)
+    (keyboard-quit))
+   ((derived-mode-p 'completion-list-mode)
+    (delete-completion-window))
+   ((> (minibuffer-depth) 0)
+    (abort-recursive-edit))
+   (t
+    (keyboard-quit))))
+
+(define-key global-map (kbd "C-g") #'keyboard-quit-dwim)
 
 (require 'windmove)
 
@@ -372,48 +391,27 @@ one, an error is signaled."
     "fu" '(sudo-edit-find-file :wk "Sudo find file")
     "fU" '(sudo-edit :wk "Sudo Edit File")))
 
-(use-package all-the-icons
+(use-package nerd-icons
+  :ensure t)
+
+(use-package nerd-icons-completion
   :ensure t
-  :if (display-graphic-p))
+  :after marginalia
+  :config
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
-(use-package all-the-icons-dired
-  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+(use-package nerd-icons-corfu
+  :ensure t
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
-;; (use-package counsel
-;;   :after ivy
-;;   :config (counsel-mode))
-
-;; (use-package ivy
-;;   :bind
-;;   ;; ivy-resume resumes the last Ivy-based completion.
-;;   (("C-c C-r" . ivy-resume)
-;;    ("C-x B" . ivy-switch-buffer-other-window))
-;;   :custom
-;;   (setq ivy-use-virtual-buffers t)
-;;   (setq ivy-count-format "(%d/%d) ")
-;;   (setq enable-recursive-minibuffers t)
-;;   :config
-;;   (ivy-mode))
-
-;; (use-package all-the-icons-ivy-rich
-;;   :ensure t
-;;   :init (all-the-icons-ivy-rich-mode 1))
-
-;; (use-package ivy-rich
-;;   :after ivy
-;;   :ensure t
-;;   :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
-;;   :custom
-;;   (ivy-virtual-abbreviate 'full
-;; 			  ivy-rich-switch-buffer-align-virtual-buffer t
-;; 			  ivy-rich-path-style 'abbrev)
-;;   :config
-;;   (ivy-set-display-transformer 'ivy-switch-buffer
-;;                                'ivy-rich-switch-buffer-transformer))
+(use-package nerd-icons-dired
+  :ensure t
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
 
 (use-package vertico
-  ;; :straight (vertico :includes (vertico-directory vertico-quick vertico-indexed)
-  ;;                    :files (:defaults "extensions/*.el"))
   :ensure t
   :init
   (vertico-mode)
@@ -422,12 +420,105 @@ one, an error is signaled."
   ;; (setq vertico-scroll-margin 0)
 
   ;; Show more candidates
-  ;; (setq vertico-count 20)
+  (setq vertico-count 10)
 
   ;; Grow and shrink the Vertico minibuffer
   (setq vertico-resize t
         ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
         vertico-cycle t))
+
+(use-package marginalia
+  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+  ;; available in the *Completions* buffer, add it to the
+  ;; `completion-list-mode-map'.
+  :ensure t
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+
+  ;; The :init section is always executed.
+  :init
+
+  ;; Marginalia must be activated in the :init section of use-package such that
+  ;; the mode gets enabled right away. Note that this forces loading the package.
+  (marginalia-mode))
+
+(use-package orderless
+  :ensure t
+  :config
+  (setq completion-styles '(orderless basic))
+  (setq completion-category-defaults nil)
+  (setq completion-category-overrides nil))
+
+(use-package corfu
+  :ensure t
+  :hook (after-init . global-corfu-mode)
+  :bind (:map corfu-map ("<tab>" . corfu-complete))
+  :config
+  (setq tab-always-indent 'complete)
+  (setq corfu-preview-current nil)
+  (setq corfu-min-width 20)
+
+  (setq corfu-popupinfo-delay '(1.25 . 0.5))
+  (corfu-popupinfo-mode 1) ; shows documentation after `corfu-popupinfo-delay'
+
+  ;; Sort by input history (no need to modify `corfu-sort-function').
+  (with-eval-after-load 'savehist
+    (corfu-history-mode 1)
+    (add-to-list 'savehist-additional-variables 'corfu-history)))
+
+(use-package savehist
+  :ensure nil ; it is built-in
+  :hook (after-init . savehist-mode))
+
+(use-package consult
+
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+
+  ;; Tweak the register preview for `consult-register-load',
+  ;; `consult-register-store' and the built-in commands.  This improves the
+  ;; register formatting, adds thin separator lines, register sorting and hides
+  ;; the window mode line.
+  (advice-add #'register-preview :override #'consult-register-window)
+  (setq register-preview-delay 0.5)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key "M-.")
+  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (setq consult-buffer-sources '(consult--source-buffer))
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep consult-man
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; "C-+"
+  
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
+)
 
 (use-package eshell-syntax-highlighting
   :after esh-mode
@@ -446,6 +537,13 @@ one, an error is signaled."
       eshell-scroll-to-bottom-on-input t
       eshell-destroy-buffer-when-process-dies t
       eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh"))
+
+(use-package vterm
+:ensure t
+:config
+(setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
+(setq vterm-max-scrollback 5000)
+:hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
 
 (use-package doom-themes
   :ensure t
@@ -741,22 +839,22 @@ one, an error is signaled."
   :init (dirvish-override-dired-mode)
   :config (evil-define-key 'normal dirvish-mode-map (kbd "TAB") 'dirvish-subtree-toggle))
 
-;;(use-package neotree
-;;  :config
-;;  (setq neo-smart-open t
-;;        neo-show-hidden-files t
-;;        neo-window-width 55
-;;        neo-window-fixed-size nil
-;;        inhibit-compacting-font-caches t
-;;        projectile-switch-project-action 'neotree-projectile-action) 
-;;        ;; truncate long file names in neotree
-;;        (add-hook 'neo-after-create-hook
-;;           #'(lambda (_)
-;;               (with-current-buffer (get-buffer neo-buffer-name)
-;;                 (setq truncate-lines t)
-;;                 (setq word-wrap nil)
-;;                 (make-local-variable 'auto-hscroll-mode)
-;;                 (setq auto-hscroll-mode nil)))))
+(use-package neotree
+ :config
+ (setq neo-smart-open t
+       neo-show-hidden-files t
+       neo-window-width 55
+       neo-window-fixed-size nil
+       inhibit-compacting-font-caches t
+       projectile-switch-project-action 'neotree-projectile-action) 
+       ;; truncate long file names in neotree
+       (add-hook 'neo-after-create-hook
+          #'(lambda (_)
+              (with-current-buffer (get-buffer neo-buffer-name)
+                (setq truncate-lines t)
+                (setq word-wrap nil)
+                (make-local-variable 'auto-hscroll-mode)
+                (setq auto-hscroll-mode nil)))))
 
 (use-package flycheck
   :ensure t
@@ -777,13 +875,22 @@ one, an error is signaled."
   :diminish
   :hook (company-mode . company-box-mode))
 
+(use-package treesit-auto
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode)
+  (setq treesit-language-source-alist
+        '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
+
 (use-package lsp-mode
   :init
   (setq lsp-auto-guess-root nil) 
   :hook 
   (csharp-mode . lsp-deferred)
   (python-mode . lsp-deferred)
-  (emacs-lisp-mode . lsp-deferred)
+  ;;(emacs-lisp-mode . lsp-deferred)
   (nix-mode . lsp-deferred)
   :config
   (lsp-enable-which-key-integration t)
@@ -799,7 +906,7 @@ one, an error is signaled."
   (lsp-ui-doc-position 'bottom))
 
 ;; ivy integrations for lsp mode
-(use-package lsp-ivy)
+;; (use-package lsp-ivy)
 
 (use-package dap-mode)
 ;; (use-package dap-LANGUAGE) to load the dap adapter for your language
@@ -822,7 +929,7 @@ one, an error is signaled."
                           (agenda . 5 )
                           (bookmarks . 3)
 			  ;;Why is this throwing an error??
-                          ;;(projects . 3)
+                          ;; (projects . 3)
                           (registers . 3)))
   
   :custom
@@ -831,17 +938,128 @@ one, an error is signaled."
   :config
   (dashboard-setup-startup-hook))
 
+;; (use-package jupyter
+;;   :ensure (:host github :repo "emacs-jupyter/jupyter")
+;;   :defer t
+;;   :config
+;;   ;; (add-to-list 'org-babel-load-languages '(jupyter . t))
+  
+;;   ;; (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+  
+;;   (org-babel-do-load-languages
+;;    'org-babel-load-languages
+;;    '((emacs-lisp . t)
+;;      (julia . t)
+;;      (python . t)
+;;      (jupyter . t)))
+;;   ;; Generate kernel aliases from available kernelspecs
+;;   (org-babel-jupyter-aliases-from-kernelspecs)
+
+;;   (setq org-confirm-babel-evaluate nil)
+;;   (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
+;; 						       (:session . "py")
+;; 						       (:kernel . "python3")
+;; 						       (:tangle . "jupyter-python/tangled.py")
+;; 						       (:exports . "both"))))
+
 (use-package jupyter
-  :ensure (:host github :repo "emacs-jupyter/jupyter")
-  :defer t
+  :ensure t
+  :after org
   :config
-  (add-to-list 'org-babel-load-languages '(jupyter . t))
-  (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
-  (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
-						       (:session . "py")
-						       (:kernel . "python3")
-						       (:tangle . "jupyter-python/tangled.py")
-						       (:exports . "both"))))
+  ;; Enable Jupyter support in Org Babel
+  (with-eval-after-load 'org
+    (add-to-list 'org-babel-load-languages '(jupyter . t))
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (python . t)  ;; Optional: fallback to ob-python
+       (shell . t)
+       (jupyter . t)))
+
+    ;; Don't ask for confirmation before evaluating
+    (setq org-confirm-babel-evaluate nil)
+
+    ;; Code block editing quality-of-life
+    (setq org-src-fontify-natively t
+          org-src-tab-acts-natively t
+          org-src-preserve-indentation t)
+
+    ;; Show images after executing a block (e.g., matplotlib inline)
+    (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package auctex
+  :defer t
+  :config
+  ;; Basic AUCTeX settings
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq TeX-master nil)
+  
+  ;; Academic writing specific settings
+  (setq LaTeX-babel-hyphen nil) ; Prevent issues with academic citations
+  (setq LaTeX-electric-left-right-brace t)
+  (setq TeX-electric-escape t)
+  
+  ;; Preview settings for academic documents
+  (setq preview-scale-function 1.2)
+  (setq preview-default-option-list '("displaymath" "floats" "graphics" "textmath" "sections" "footnotes"))
+  
+  ;; Enable folding for large academic documents
+  (add-hook 'LaTeX-mode-hook 'TeX-fold-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode))
+
+
+
+(use-package citar
+  :bind (("C-c b" . citar-insert-citation)
+         :map minibuffer-local-map
+         ("M-b" . citar-insert-preset))
+  :custom
+  ;; Point to your bibliography files
+  (citar-bibliography '("~/Documents/references.bib" "~/Documents/additional-refs.bib"))
+  
+  ;; PDF and note directories for academic papers
+  (citar-library-paths '("~/Documents/papers/" "~/Documents/pdfs/"))
+  (citar-notes-paths '("~/Documents/notes/"))
+  
+  ;; Academic citation formats
+  (citar-at-point-function 'embark-act)
+  
+  :hook
+  (LaTeX-mode . citar-capf-setup)
+  (org-mode . citar-capf-setup))
+
+;; Enhanced bibliography completion
+(use-package citar-embark
+  :after citar embark
+  :config (citar-embark-mode))
+
+;; Word count for academic papers
+(use-package wc-mode
+  :hook (LaTeX-mode . wc-mode)
+  :config
+  (setq wc-modeline-format "WC[%tw/%tcw]"))
+
+;; Academic spell checking
+(use-package flyspell
+  :hook ((LaTeX-mode . flyspell-mode)
+         (org-mode . flyspell-mode))
+  :config
+  ;; Use aspell for better academic vocabulary
+  (setq ispell-program-name "aspell")
+  (setq ispell-dictionary "en_US")
+  
+  ;; Academic-specific word list
+  (setq ispell-personal-dictionary "~/.config/emacs/academic-dict.txt"))
+
+;; Grammar checking with langtool
+(use-package langtool
+  :bind ("C-c g" . langtool-check)
+  :config
+  (setq langtool-language-tool-jar "~/LanguageTool/languagetool-commandline.jar")
+  (setq langtool-default-language "en-US"))
