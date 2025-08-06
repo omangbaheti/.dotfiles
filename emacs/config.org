@@ -442,6 +442,13 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (electric-indent-mode -1)
 (electric-pair-mode 1)
 (setq org-edit-src-content-indentation 0)
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (setq-local electric-pair-inhibit-predicate
+                        `(lambda (c)
+                           (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+
 #+end_src
 ** Beacon Mode
 #+begin_src emacs-lisp
@@ -483,10 +490,18 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 | <q                     | '#+BEGIN_QUOTE' … '#+END_QUOTE'         |
 | <s                     | '#+BEGIN_SRC' … '#+END_SRC'             |
 | <v                     | '#+BEGIN_VERSE' … '#+END_VERSE'         |
-
+ 
 
 #+begin_src emacs-lisp
 (require 'org-tempo)
+
+(tempo-define-template "python-block"
+                       '("#+begin_src python :results output"
+                         n p n
+                         "#+end_src")
+                       "<py"
+                       "Insert Python block"
+                       'org-tempo-tags)
 #+end_src
 
 ** MODERN ORG
@@ -668,21 +683,12 @@ This is an icon set that can be used with dashboard, dired, ibuffer and other Em
   (setq corfu-preview-current nil)
   (setq corfu-min-width 20)
 
-  (setq corfu-popupinfo-delay '(1.25 . 0.5))
-  (corfu-popupinfo-mode 1) ; shows documentation after `corfu-popupinfo-delay'
-
-  ;; Sort by input history (no need to modify `corfu-sort-function').
-  (with-eval-after-load 'savehist
-    (corfu-history-mode 1)
-    (add-to-list 'savehist-additional-variables 'corfu-history)))
-
+  (setq corfu-popupinfo-delay '(0.5 . 0.5))
+  (corfu-popupinfo-mode 1)) ; shows documentation after `corfu-popupinfo-delay'
 #+end_src
 
 
 #+begin_src emacs-lisp
-(use-package savehist
-  :ensure nil ; it is built-in
-  :hook (after-init . savehist-mode))
 #+end_src
 
 * CONSULT
@@ -1175,32 +1181,17 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :hook 
   (csharp-mode . lsp-deferred)
   (python-mode . lsp-deferred)
-  ;;(emacs-lisp-mode . lsp-deferred)
   (nix-mode . lsp-deferred)
-  (org-src-mode . lsp-deferred)
-  :custom
-  (lsp-enabled-clients '(pyrefly))
-  (lsp-pyrefly-executable "pyrefly")
   :config
-  ;; (require 'lsp-org)
   (lsp-enable-which-key-integration t)
-
-  (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection "pyrefly")
-    :activation-fn (lsp-activate-on "python")
-    :priority -1
-    :server-id 'pyrefly)) 
-
-  (setq lsp-completion-provider :company-capf)
-  :commands (lsp lsp-deferred lsp-org))
-
-(defun my/org-babel-edit-prep-python ()
-  (when (derived-mode-p 'python-mode)
-    (lsp)
-    (company-mode)))
-
-(add-hook 'org-src-mode-hook #'my/org-babel-edit-prep-python)
+  (lsp-register-custom-settings
+   '(("pylsp.plugins.flake8.enabled" t t)
+     ("pylsp.plugins.autopep8.enabled" t t)
+     ("pylsp.plugins.black.enabled" t t)
+     ("pylsp-plugins.isort.enabled" t t)
+     ("pylsp.plugins.rope-autoimport.enabled" t t)))
+   (setq lsp-completion-provider :none)
+   :commands (lsp lsp-deferred))
 #+end_src
 
 

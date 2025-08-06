@@ -308,6 +308,12 @@ one, an error is signaled."
 (electric-pair-mode 1)
 (setq org-edit-src-content-indentation 0)
 
+(add-hook 'org-mode-hook
+          (lambda ()
+            (setq-local electric-pair-inhibit-predicate
+                        `(lambda (c)
+                           (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+
 ;;(use-package beacon
   ;;:ensure t (:files (:defaults) :build nil)  ;; disables native compilation
   ;;:init
@@ -325,6 +331,14 @@ one, an error is signaled."
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
 (require 'org-tempo)
+
+(tempo-define-template "python-block"
+                       '("#+begin_src python :results output"
+                         n p n
+                         "#+end_src")
+                       "<py"
+                       "Insert Python block"
+                       'org-tempo-tags)
 
 (use-package org-modern
   :ensure t
@@ -458,17 +472,10 @@ one, an error is signaled."
   (setq corfu-preview-current nil)
   (setq corfu-min-width 20)
 
-  (setq corfu-popupinfo-delay '(1.25 . 0.5))
-  (corfu-popupinfo-mode 1) ; shows documentation after `corfu-popupinfo-delay'
+  (setq corfu-popupinfo-delay '(0.5 . 0.5))
+  (corfu-popupinfo-mode 1)) ; shows documentation after `corfu-popupinfo-delay'
 
-  ;; Sort by input history (no need to modify `corfu-sort-function').
-  (with-eval-after-load 'savehist
-    (corfu-history-mode 1)
-    (add-to-list 'savehist-additional-variables 'corfu-history)))
 
-(use-package savehist
-  :ensure nil ; it is built-in
-  :hook (after-init . savehist-mode))
 
 (use-package consult
 
@@ -890,32 +897,17 @@ one, an error is signaled."
   :hook 
   (csharp-mode . lsp-deferred)
   (python-mode . lsp-deferred)
-  ;;(emacs-lisp-mode . lsp-deferred)
   (nix-mode . lsp-deferred)
-  (org-src-mode . lsp-deferred)
-  :custom
-  (lsp-enabled-clients '(pyrefly))
-  (lsp-pyrefly-executable "pyrefly")
   :config
-  ;; (require 'lsp-org)
   (lsp-enable-which-key-integration t)
-
-  (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection "pyrefly")
-    :activation-fn (lsp-activate-on "python")
-    :priority -1
-    :server-id 'pyrefly)) 
-
-  (setq lsp-completion-provider :company-capf)
-  :commands (lsp lsp-deferred lsp-org))
-
-(defun my/org-babel-edit-prep-python ()
-  (when (derived-mode-p 'python-mode)
-    (lsp)
-    (company-mode)))
-
-(add-hook 'org-src-mode-hook #'my/org-babel-edit-prep-python)
+  (lsp-register-custom-settings
+   '(("pylsp.plugins.flake8.enabled" t t)
+     ("pylsp.plugins.autopep8.enabled" t t)
+     ("pylsp.plugins.black.enabled" t t)
+     ("pylsp-plugins.isort.enabled" t t)
+     ("pylsp.plugins.rope-autoimport.enabled" t t)))
+   (setq lsp-completion-provider :none)
+   :commands (lsp lsp-deferred))
 
 (use-package nix-mode
   :mode "\\.nix\\'")
