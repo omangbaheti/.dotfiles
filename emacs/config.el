@@ -333,10 +333,19 @@ one, an error is signaled."
 (require 'org-tempo)
 
 (tempo-define-template "jupyter-python"
-                       '("#+begin_src jupyter-python :session py "
+                       '("#+begin_src jupyter-python :tangle temp.py :session py "
                          n p n
                          "#+end_src")
                        "<jpy"
+                       "Insert Jupyter Python block"
+                       'org-tempo-tags)
+
+
+(tempo-define-template "python"
+                       '("#+begin_src python :tangle temp.py :session py :results output"
+                         n p n
+                         "#+end_src")
+                       "<py"
                        "Insert Python block"
                        'org-tempo-tags)
 
@@ -471,9 +480,26 @@ one, an error is signaled."
   (setq tab-always-indent 'complete)
   (setq corfu-preview-current nil)
   (setq corfu-min-width 20)
-
+  (setq corfu-auto t)
+  (setq corfu-auto-delay 0.2)
+  (setq corfu-auto-prefix 1)
   (setq corfu-popupinfo-delay '(0.5 . 0.5))
   (corfu-popupinfo-mode 1)) ; shows documentation after `corfu-popupinfo-delay'
+
+
+(defun my/org-babel-edit-prep-jupyter-python (_)
+  (lsp-deferred)
+  (corfu-mode 1))
+
+(add-hook 'org-babel-edit-prep:jupyter-python #'my/org-babel-edit-prep-jupyter-python)
+
+
+(defun my/org-babel-edit-prep-python (_)
+  ;; Enable lsp and corfu in the edit buffer
+  (lsp-deferred)
+  (corfu-mode 1))
+
+(add-hook 'org-babel-edit-prep:python #'my/org-babel-edit-prep-python)
 
 (use-package corg
   :ensure (:host github :repo "isamert/corg.el"))
@@ -915,12 +941,49 @@ one, an error is signaled."
   (setq lsp-completion-provider :none)
   :commands (lsp lsp-deferred))
 
-(defun my/org-src-mode-setup ()
-  (when (derived-mode-p 'python-mode)
-    (lsp-deferred)
-    (corfu-mode)))
 
-(add-hook 'org-src-mode-hook #'my/org-src-mode-setup)
+;; Function to enable LSP and corfu in python src blocks
+;; (defun my-org-babel-lsp-setup ()
+;;   "Enable LSP and corfu for python blocks in org-mode."
+;;   (when (and (eq major-mode 'org-mode)
+;;              (org-in-src-block-p))
+;;     (let ((lang (org-element-property :language (org-element-at-point))))
+;;       (when (member lang '("python" "jupyter-python"))
+;;         (lsp-org)
+;;         (corfu-mode 1)))))
+
+;; ;; Hook to check when cursor moves in org-mode
+;; (defun my-org-lsp-hook ()
+;;   "Hook function to enable LSP/corfu based on cursor position."
+;;   (add-hook 'post-command-hook #'my-org-babel-lsp-setup nil t))
+
+;; (add-hook 'org-mode-hook #'my-org-lsp-hook)
+
+(defun my-org-python-insert-mode-setup ()
+  "Enable LSP and corfu when entering insert mode in python src blocks."
+  (when (and (eq major-mode 'org-mode)
+             (org-in-src-block-p))
+    (let* ((element (org-element-at-point))
+           (lang (org-element-property :language element)))
+      (when (member lang '("python" "jupyter-python"))
+        (lsp-org)
+        (corfu-mode 1)))))
+
+(defun my-org-python-normal-mode-cleanup ()
+  "Cleanup LSP when leaving insert mode in python src blocks."
+  (when (and (eq major-mode 'org-mode)
+             (org-in-src-block-p))
+    (let* ((element (org-element-at-point))
+           (lang (org-element-property :language element)))
+      (when (member lang '("python" "jupyter-python"))
+        ;; Optionally cleanup - you might want to keep LSP active
+        ;; (lsp-virtual-buffer-disconnect)
+        ;; (corfu-mode -1)
+        ))))
+
+;; Hook into evil state changes
+(add-hook 'evil-insert-state-entry-hook #'my-org-python-insert-mode-setup)
+(add-hook 'evil-insert-state-exit-hook #'my-org-python-normal-mode-cleanup)
 
 (use-package nix-mode
   :mode "\\.nix\\'")
