@@ -8,12 +8,13 @@
 { config, lib, pkgs, unstable, ... }:
 {
 
-
+  
   nix.settings.experimental-features = ["nix-command" "flakes"];
-
+  
   wsl.enable = true;
   wsl.defaultUser = "nixos";
   programs.zsh.enable = true;
+  
   users.defaultUserShell = pkgs.zsh;
   fonts.packages = with pkgs.nerd-fonts; 
     [ 

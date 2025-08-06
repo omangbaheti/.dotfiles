@@ -5,11 +5,11 @@
   # paths it should manage.
   home.username = "nixos"; # Replace with your username
   home.homeDirectory = "/home/nixos"; # Replace with your username
-
+        
   home.packages = with pkgs; [
     cmake
   ];
-  
+   
   # Git configuration
   programs.git = {
     enable = true;
@@ -77,7 +77,7 @@
   };
 
   services.ssh-agent.enable = true;
-
+  
   programs.ssh = {
     enable = true;
     addKeysToAgent = "yes";       # Automatically adds keys to the agent
@@ -87,7 +87,7 @@
       IdentityFile ~/.ssh/id_ed25519
   '';
   };
-
+  
   programs.keychain = {
     enable = true;
     keys = [ "id_ed25519" ];  # Replace with your SSH key filename

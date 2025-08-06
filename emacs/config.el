@@ -308,11 +308,11 @@ one, an error is signaled."
 (electric-pair-mode 1)
 (setq org-edit-src-content-indentation 0)
 
-(add-hook 'org-mode-hook
-          (lambda ()
-            (setq-local electric-pair-inhibit-predicate
-                        `(lambda (c)
-                           (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+(defun my-org-electric-pair-hook ()
+  (add-function :before-until (local 'electric-pair-inhibit-predicate)
+                (lambda (c) (eq c ?<))))
+
+(add-hook 'org-mode-hook #'my-org-electric-pair-hook)
 
 ;;(use-package beacon
   ;;:ensure t (:files (:defaults) :build nil)  ;; disables native compilation
@@ -332,11 +332,11 @@ one, an error is signaled."
 
 (require 'org-tempo)
 
-(tempo-define-template "python-block"
-                       '("#+begin_src python :results output"
+(tempo-define-template "jupyter-python"
+                       '("#+begin_src jupyter-python :session py "
                          n p n
                          "#+end_src")
-                       "<py"
+                       "<jpy"
                        "Insert Python block"
                        'org-tempo-tags)
 

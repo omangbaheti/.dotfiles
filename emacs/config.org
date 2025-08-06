@@ -443,11 +443,12 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (electric-pair-mode 1)
 (setq org-edit-src-content-indentation 0)
 
-(add-hook 'org-mode-hook
-          (lambda ()
-            (setq-local electric-pair-inhibit-predicate
-                        `(lambda (c)
-                           (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+(defun my-org-electric-pair-hook ()
+  (add-function :before-until (local 'electric-pair-inhibit-predicate)
+                (lambda (c) (eq c ?<))))
+
+(add-hook 'org-mode-hook #'my-org-electric-pair-hook)
+
 
 #+end_src
 ** Beacon Mode
@@ -468,7 +469,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   :commands toc-org-enable
   :init (add-hook 'org-mode-hook 'toc-org-enable))
 #+end_src
-
+ 
 ** Enabling Org Bullets
 
 #+begin_src emacs-lisp
@@ -495,11 +496,11 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 #+begin_src emacs-lisp
 (require 'org-tempo)
 
-(tempo-define-template "python-block"
-                       '("#+begin_src python :results output"
+(tempo-define-template "jupyter-python"
+                       '("#+begin_src jupyter-python :session py "
                          n p n
                          "#+end_src")
-                       "<py"
+                       "<jpy"
                        "Insert Python block"
                        'org-tempo-tags)
 #+end_src
