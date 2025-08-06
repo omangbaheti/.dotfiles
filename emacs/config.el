@@ -1,4 +1,4 @@
-;;(setq debug-on-error t)
+;; (setq debug-on-error t)
 (setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -361,17 +361,17 @@ one, an error is signaled."
 
 
 
-(use-package org-roam
-  :ensure t
-  :init
-  (setq org-roam-v2-ack t)  ;; Acknowledge v2 upgrade prompt
-  :custom
-  (org-roam-directory (file-truename "~/org-roam"))  ;; Set your notes directory
-  :bind (("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n c" . org-roam-capture))
-  :config
-  (org-roam-db-autosync-enable))
+;; (use-package org-roam
+;;   :ensure t
+;;   :init
+;;   (setq org-roam-v2-ack t)  ;; Acknowledge v2 upgrade prompt
+;;   :custom
+;;   (org-roam-directory (file-truename "~/org-roam"))  ;; Set your notes directory
+;;   :bind (("C-c n f" . org-roam-node-find)
+;;          ("C-c n i" . org-roam-node-insert)
+;;          ("C-c n c" . org-roam-capture))
+;;   :config
+;;   (org-roam-db-autosync-enable))
 
 (use-package org-roam-ui
     :after org-roam
@@ -474,6 +474,10 @@ one, an error is signaled."
 
   (setq corfu-popupinfo-delay '(0.5 . 0.5))
   (corfu-popupinfo-mode 1)) ; shows documentation after `corfu-popupinfo-delay'
+
+(use-package corg
+  :ensure (:host github :repo "isamert/corg.el"))
+(add-hook 'org-mode-hook #'corg-setup)
 
 
 
@@ -892,12 +896,14 @@ one, an error is signaled."
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 
 (use-package lsp-mode
+  :ensure (:host github :repo "emacs-lsp/lsp-mode")
   :init
   (setq lsp-auto-guess-root nil) 
   :hook 
   (csharp-mode . lsp-deferred)
-  (python-mode . lsp-deferred)
+  ((python-mode python-ts-mode) . lsp-deferred)
   (nix-mode . lsp-deferred)
+  (ess-r-mode . lsp-deferred)
   :config
   (lsp-enable-which-key-integration t)
   (lsp-register-custom-settings
@@ -906,8 +912,15 @@ one, an error is signaled."
      ("pylsp.plugins.black.enabled" t t)
      ("pylsp-plugins.isort.enabled" t t)
      ("pylsp.plugins.rope-autoimport.enabled" t t)))
-   (setq lsp-completion-provider :none)
-   :commands (lsp lsp-deferred))
+  (setq lsp-completion-provider :none)
+  :commands (lsp lsp-deferred))
+
+(defun my/org-src-mode-setup ()
+  (when (derived-mode-p 'python-mode)
+    (lsp-deferred)
+    (corfu-mode)))
+
+(add-hook 'org-src-mode-hook #'my/org-src-mode-setup)
 
 (use-package nix-mode
   :mode "\\.nix\\'")
@@ -1035,16 +1048,16 @@ one, an error is signaled."
   (setq wc-modeline-format "WC[%tw/%tcw]"))
 
 ;; Academic spell checking
-(use-package flyspell
-  :hook ((LaTeX-mode . flyspell-mode)
-         (org-mode . flyspell-mode))
-  :config
-  ;; Use aspell for better academic vocabulary
-  (setq ispell-program-name "aspell")
-  (setq ispell-dictionary "en_US")
+;; (use-package flyspell
+;;   :hook ((LaTeX-mode . flyspell-mode)
+;;          (org-mode . flyspell-mode))
+;;   :config
+;;   ;; Use aspell for better academic vocabulary
+;;   (setq ispell-program-name "aspell")
+;;   (setq ispell-dictionary "en_US")
   
-  ;; Academic-specific word list
-  (setq ispell-personal-dictionary "~/.config/emacs/academic-dict.txt"))
+;;   ;; Academic-specific word list
+;;   (setq ispell-personal-dictionary "~/.config/emacs/academic-dict.txt"))
 
 ;; Grammar checking with langtool
 (use-package langtool
