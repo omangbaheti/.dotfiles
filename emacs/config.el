@@ -326,6 +326,7 @@ one, an error is signaled."
                 (lambda (c) (eq c ?<))))
 
 (add-hook 'org-mode-hook #'my-org-electric-pair-hook)
+;; (add-hook 'org-src-mode-hook #'electric-indent-local-mode)
 
 ;;(use-package beacon
   ;;:ensure t (:files (:defaults) :build nil)  ;; disables native compilation
@@ -505,9 +506,10 @@ one, an error is signaled."
 (use-package corfu
   :ensure t
   :hook (after-init . global-corfu-mode)
-  :bind (:map corfu-map ("<tab>" . corfu-complete))
+  :bind (:map corfu-map ("C-<tab>" . corfu-complete))
   :config
-  (setq tab-always-indent 'complete)
+  ;; (setq tab-always-indent 'complete)
+  (setq tab-always-indent nil)
   (setq corfu-preview-current nil)
   (setq corfu-min-width 20)
   (setq corfu-auto t)
@@ -516,6 +518,17 @@ one, an error is signaled."
   (setq corfu-popupinfo-delay '(0.5 . 0.5))
   (corfu-popupinfo-mode 1)) ; shows documentation after `corfu-popupinfo-delay'
 
+(with-eval-after-load 'corfu
+  (define-key corfu-map (kbd "TAB") nil)
+  (define-key corfu-map (kbd "<tab>") nil))
+
+
+(add-hook 'org-src-mode-hook #'my-org-src-corfu-setup)
+
+(defun my-org-src-corfu-setup ()
+  "Setup Corfu keybindings for org-src blocks."
+  (when (bound-and-true-p corfu-mode)
+    (local-set-key (kbd "C-<tab>") #'corfu-complete)))
 
 (defun my/org-babel-edit-prep-jupyter-python (_)
   (lsp-deferred)
@@ -526,14 +539,24 @@ one, an error is signaled."
   (lsp-deferred)
   (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
 
+(defun my/org-tab-dwim ()
+  "Context-aware TAB in org-mode."
+  (interactive)
+  (if (org-in-src-block-p)
+      ;; (indent-according-to-mode)
+      (indent-for-tab-command)  ; Just indent in src blocks
+    (org-cycle)))              ; Normal org behavior elsewhere
+
+;; Bind this to TAB in org-mode
+(define-key org-mode-map (kbd "TAB") #'my/org-tab-dwim)
+(define-key org-mode-map (kbd "<tab>") #'my/org-tab-dwim)
+
 (add-hook 'org-babel-edit-prep:jupyter-python #'my/org-babel-edit-prep-jupyter-python)
 (add-hook 'org-babel-edit-prep:python #'my/org-babel-edit-prep-python)
 
 (use-package corg
   :ensure (:host github :repo "isamert/corg.el"))
 (add-hook 'org-mode-hook #'corg-setup)
-
-
 
 (use-package consult
 
@@ -987,6 +1010,9 @@ one, an error is signaled."
 
 ;; (add-hook 'org-mode-hook #'my-org-lsp-hook)
 
+
+
+
 (defun my-org-python-insert-mode-setup ()
   "Enable LSP and corfu when entering insert mode in python src blocks."
   (when (and (eq major-mode 'org-mode)
@@ -1006,7 +1032,7 @@ one, an error is signaled."
       (when (member lang '("python" "jupyter-python"))
         ;; Optionally cleanup - you might want to keep LSP active
         ;; (lsp-virtual-buffer-disconnect)
-        ;; (corfu-mode -1)
+         (corfu-mode -1)
         ))))
 
 ;; Hook into evil state changes
