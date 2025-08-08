@@ -130,6 +130,19 @@
     "m T" '(org-todo-list :wk "Org todo list"))
 
   (leader-key
+    :states '(normal)
+    "m n" '(org-babel-next-src-block :wk "Next src block")
+    "m p" '(org-babel-previous-src-block :wk "Previous src block"))
+
+  (leader-key
+    :states '(normal visual)
+    "m s" '(:ignore t :wk "Insert Source Block Templates")
+    "m s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
+    "m s p" '(tempo-template-python :wk "Insert Python block")
+    "m s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
+)
+
+  (leader-key
     "m b" '(:ignore t :wk "Tables")
     "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
 
@@ -322,6 +335,10 @@ one, an error is signaled."
   ;;:config
   ;;(beacon-mode 1))                     ;; Enable beacon globallybeacon-mode 1)
 
+(setq org-src-fontify-natively t)
+(setq font-lock-multiline t)
+(setq jit-lock-defer-time 0) ; Immediate fontification
+
 (use-package toc-org
   :commands toc-org-enable
   :init (add-hook 'org-mode-hook 'toc-org-enable))
@@ -347,6 +364,14 @@ one, an error is signaled."
                          "#+end_src")
                        "<py"
                        "Insert Python block"
+                       'org-tempo-tags)
+
+(tempo-define-template "emacs-lisp"
+                       '("#+begin_src emacs-lisp"
+                         n p n
+                         "#+end_src")
+                       "<el"
+                       "Insert Emacs Lisp block"
                        'org-tempo-tags)
 
 (use-package org-modern
@@ -489,16 +514,14 @@ one, an error is signaled."
 
 (defun my/org-babel-edit-prep-jupyter-python (_)
   (lsp-deferred)
-  (corfu-mode 1))
-
-(add-hook 'org-babel-edit-prep:jupyter-python #'my/org-babel-edit-prep-jupyter-python)
-
+  (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
 
 (defun my/org-babel-edit-prep-python (_)
   ;; Enable lsp and corfu in the edit buffer
   (lsp-deferred)
-  (corfu-mode 1))
+  (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
 
+(add-hook 'org-babel-edit-prep:jupyter-python #'my/org-babel-edit-prep-jupyter-python)
 (add-hook 'org-babel-edit-prep:python #'my/org-babel-edit-prep-python)
 
 (use-package corg
