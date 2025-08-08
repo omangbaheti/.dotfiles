@@ -393,6 +393,11 @@ one, an error is signaled."
         org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
         org-modern-block-fringe t))
 
+(use-package org-modern-indent
+  :ensure (:host github :repo "jdtsmith/org-modern-indent")
+  :config ; add late to hook
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+
 
 
 ;; (use-package org-roam

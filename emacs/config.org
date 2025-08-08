@@ -569,6 +569,13 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
         org-modern-table t 
         org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
         org-modern-block-fringe t))
+
+(use-package org-modern-indent
+  :ensure (:host github :repo "jdtsmith/org-modern-indent")
+  :config ; add late to hook
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+
+
 #+end_src
 
 
