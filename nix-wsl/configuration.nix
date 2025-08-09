@@ -53,6 +53,7 @@
       (python3.withPackages (ps: with ps; [
         numpy
         pandas
+        dill
         requests
         matplotlib
         scipy

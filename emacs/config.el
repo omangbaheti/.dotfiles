@@ -93,6 +93,13 @@
     :prefix "SPC" ;; set leader
     :global-prefix "M-SPC") ;; access leader in insert mode
   (setq evil-want-keybinding nil)
+  
+  (general-define-key
+   :states 'normal
+   :keymaps 'override
+   "<escape>" (lambda ()
+                (interactive)
+                (evil-ex-nohighlight)))
   (leader-key
     "SPC" '(consult-mode-command :wk "Consult M-X")
     "." '(find-file :wk "Find file")
@@ -109,7 +116,9 @@
     "b n" '(next-buffer :wk "Next buffer")
     "b p" '(previous-buffer :wk "Previous buffer")
     "b r" '(revert-buffer :wk "Reload buffer"))
-  
+  (leader-key
+    "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring"))
+
   (leader-key
     "e" '(:ignore t :wk "Evaluate")
     "e b" '(eval-buffer :wk "Evaluate the elisp in buffer")
@@ -139,8 +148,7 @@
     "m s" '(:ignore t :wk "Insert Source Block Templates")
     "m s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
     "m s p" '(tempo-template-python :wk "Insert Python block")
-    "m s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
-)
+    "m s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block"))
 
   (leader-key
     "m b" '(:ignore t :wk "Tables")
@@ -162,7 +170,7 @@
     "h f" '(describe-function :wk "Describe function")
     "h v" '(describe-variable :wk "Describe Variable")
     "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config"))
-    ;;"h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el")) :wk "reload emacs config"))
+  ;;"h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el")) :wk "reload emacs config"))
   (leader-key
     "t" '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
@@ -311,6 +319,7 @@ one, an error is signaled."
 
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
+(setq truncate-lines nil)
 
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 
@@ -397,6 +406,7 @@ one, an error is signaled."
 (use-package org-modern-indent
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
   :config ; add late to hook
+  (org-modern-indent-mode 1)
   (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
 
@@ -1087,14 +1097,15 @@ one, an error is signaled."
   :config
   ;; Enable Jupyter support in Org Babel
   (with-eval-after-load 'org
-    (add-to-list 'org-babel-load-languages '(jupyter . t))
+    ;; (add-to-list 'org-babel-load-languages '(jupyter . t))
     (org-babel-do-load-languages
      'org-babel-load-languages
      '((emacs-lisp . t)
        (python . t)  ;; Optional: fallback to ob-python
        (shell . t)
-       (jupyter . t)))
-
+       (jupyter . t)
+       (R . t)
+       ))
     ;; Don't ask for confirmation before evaluating
     (setq org-confirm-babel-evaluate nil)
 
