@@ -25,15 +25,19 @@
   - [[#enabling-org-bullets][Enabling Org Bullets]]
   - [[#source-code-block-expansion][Source Code Block Expansion]]
   - [[#modern-org][MODERN ORG]]
+  - [[#olivetti-centering][OLIVETTI (Centering)]]
   - [[#org-agenda][ORG-AGENDA]]
   - [[#org-roam][ORG-ROAM]]
 - [[#which-key][WHICH-KEY]]
 - [[#sudo-edit][SUDO EDIT]]
-- [[#nerd-icons][NERD ICONS]]
+- [[#icons][ICONS]]
+  - [[#nerd-icons][NERD ICONS]]
+  - [[#emojis][EMOJIS]]
 - [[#vertico][VERTICO]]
 - [[#marginalia][MARGINALIA]]
 - [[#orderless][ORDERLESS]]
 - [[#corfu][CORFU]]
+- [[#prescient][PRESCIENT]]
 - [[#corg][CORG]]
 - [[#consult][CONSULT]]
 - [[#embark][EMBARK]]
@@ -490,6 +494,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (setq org-src-fontify-natively t)
 (setq font-lock-multiline t)
 (setq jit-lock-defer-time 0) ; Immediate fontification
+;; (setq org-adapt-indentation t)
 #+end_src
 
 
@@ -551,13 +556,9 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
                        "<el"
                        "Insert Emacs Lisp block"
                        'org-tempo-tags)
-
-
-
 #+end_src
 
 ** MODERN ORG
-
 #+begin_src emacs-lisp
 (use-package org-modern
   :ensure t
@@ -576,7 +577,11 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (setq org-modern-star '("◉" "○" "✸" "✿")
         org-modern-table t 
         org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
-        org-modern-block-fringe t))
+        org-modern-block-fringe nil 
+        org-modern-priority
+        '((?A . "󱗗")  ;; High
+          (?B . "󰐃")  ;; Medium
+          (?C . "󰒲")))) ;; Low 
 
 (use-package org-modern-indent
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
@@ -584,12 +589,45 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (org-modern-indent-mode 1)
   (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
+#+end_src
+** OLIVETTI (Centering)
+
+#+begin_src emacs-lisp
+(use-package olivetti
+  :ensure t
+  :diminish olivetti-mode
+  :bind (("<left-margin> <mouse-1>" . ignore)
+         ("<right-margin> <mouse-1>" . ignore)
+         ("C-c {" . olivetti-shrink)
+         ("C-c }" . olivetti-expand)
+         ("C-c |" . olivetti-set-width))
+  :custom
+  (olivetti-body-width 0.65)          ; 70% of window width
+  (olivetti-minimum-body-width 80)   ; Minimum width in characters
+  (olivetti-recall-visual-line-mode-entry-state t)
+  :hook
+  ((text-mode . olivetti-mode)
+   (markdown-mode . olivetti-mode)
+   (org-mode . olivetti-mode)))
 
 #+end_src
 
-
 ** ORG-AGENDA
 #+begin_src emacs-lisp
+
+(with-eval-after-load 'org
+  (setq org-agenda-files '("~/Notes/Agenda/agenda.org"))
+  (setq org-agenda-skip-timestamp-if-done t
+        org-agenda-skip-deadline-if-done t
+        org-agenda-skip-scheduled-if-done t
+        org-agenda-skip-scheduled-if-deadline-is-shown t
+        org-agenda-skip-timestamp-if-deadline-is-shown t)
+  (setq org-agenda-span 1
+        org-agenda-start-day "+0d")
+(setq org-agenda-current-time-string "")
+(setq org-agenda-time-grid '((daily) () "" ""))
+
+)
 
 #+end_src
 
@@ -607,7 +645,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 ;;          ("C-c n c" . org-roam-capture))
 ;;   :config
 ;;   (org-roam-db-autosync-enable))
-
 #+end_src
 
 *** ORG-ROAM-UI
@@ -654,9 +691,9 @@ Sudo-edit gives us the ability to open files with sudo privileges or switch over
     "fU" '(sudo-edit :wk "Sudo Edit File")))
 #+end_src
 
-* NERD ICONS 
-This is an icon set that can be used with dashboard, dired, ibuffer and other Emacs programs.
-  
+* ICONS 
+ 
+** NERD ICONS  
 #+begin_src emacs-lisp
 (use-package nerd-icons
   :ensure t)
@@ -677,10 +714,19 @@ This is an icon set that can be used with dashboard, dired, ibuffer and other Em
   :ensure t
   :hook
   (dired-mode . nerd-icons-dired-mode))
-
 #+end_src
 
-
+** EMOJIS
+#+begin_src emacs-lisp
+(use-package emojify
+  :config
+  (when (member "Segoe UI Emoji" (font-family-list))
+    (set-fontset-font
+     t 'symbol (font-spec :family "Segoe UI Emoji") nil 'prepend))
+  (setq emojify-display-style 'unicode)
+  (setq emojify-emoji-styles '(unicode))
+  (bind-key* (kbd "C-c .") #'emojify-insert-emoji)) 
+#+end_src
 * VERTICO 
 
 #+begin_src emacs-lisp
@@ -700,6 +746,8 @@ This is an icon set that can be used with dashboard, dired, ibuffer and other Em
         ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
         vertico-cycle t))
 #+end_src
+
+
 
 * MARGINALIA
 
@@ -786,12 +834,27 @@ This is an icon set that can be used with dashboard, dired, ibuffer and other Em
 (add-hook 'org-babel-edit-prep:python #'my/org-babel-edit-prep-python)
 #+end_src
 
+
+* PRESCIENT
+
+Enabling Frequency + Recency Sorting of options in vertico 
+
+#+begin_src emacs-lisp
+(use-package prescient
+  :config
+  (prescient-persist-mode))
+
+(use-package vertico-prescient
+  :after vertico
+  :config
+  (vertico-prescient-mode))
+#+end_src
+
 * CORG
 #+begin_src emacs-lisp
 (use-package corg
   :ensure (:host github :repo "isamert/corg.el"))
 (add-hook 'org-mode-hook #'corg-setup)
-
 #+end_src
 
 
@@ -1191,7 +1254,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 
 
 * FILEMANAGER
-
 #+begin_src emacs-lisp
 (use-package dirvish
   :after evil
@@ -1361,7 +1423,7 @@ Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL ex
 
 #+begin_src emacs-lisp
 
-#+end_src>
+#+end_src
 
 ** LSP Extensions
 
