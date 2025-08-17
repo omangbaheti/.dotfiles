@@ -348,6 +348,7 @@ one, an error is signaled."
 (setq org-src-fontify-natively t)
 (setq font-lock-multiline t)
 (setq jit-lock-defer-time 0) ; Immediate fontification
+;; (setq org-adapt-indentation t)
 
 (use-package toc-org
   :commands toc-org-enable
@@ -366,7 +367,6 @@ one, an error is signaled."
                        "<jpy"
                        "Insert Jupyter Python block"
                        'org-tempo-tags)
-
 
 (tempo-define-template "python"
                        '("#+begin_src python :tangle temp.py :session py :results output"
@@ -401,7 +401,11 @@ one, an error is signaled."
   (setq org-modern-star '("◉" "○" "✸" "✿")
         org-modern-table t 
         org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
-        org-modern-block-fringe t))
+        org-modern-block-fringe nil 
+        org-modern-priority
+        '((?A . "󱗗")  ;; High
+          (?B . "󰐃")  ;; Medium
+          (?C . "󰒲")))) ;; Low 
 
 (use-package org-modern-indent
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
@@ -409,7 +413,36 @@ one, an error is signaled."
   (org-modern-indent-mode 1)
   (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
+(use-package olivetti
+  :ensure t
+  :diminish olivetti-mode
+  :bind (("<left-margin> <mouse-1>" . ignore)
+         ("<right-margin> <mouse-1>" . ignore)
+         ("C-c {" . olivetti-shrink)
+         ("C-c }" . olivetti-expand)
+         ("C-c |" . olivetti-set-width))
+  :custom
+  (olivetti-body-width 0.65)          ; 70% of window width
+  (olivetti-minimum-body-width 80)   ; Minimum width in characters
+  (olivetti-recall-visual-line-mode-entry-state t)
+  :hook
+  ((text-mode . olivetti-mode)
+   (markdown-mode . olivetti-mode)
+   (org-mode . olivetti-mode)))
 
+(with-eval-after-load 'org
+  (setq org-agenda-files '("~/Notes/Agenda/agenda.org"))
+  (setq org-agenda-skip-timestamp-if-done t
+        org-agenda-skip-deadline-if-done t
+        org-agenda-skip-scheduled-if-done t
+        org-agenda-skip-scheduled-if-deadline-is-shown t
+        org-agenda-skip-timestamp-if-deadline-is-shown t)
+  (setq org-agenda-span 1
+        org-agenda-start-day "+0d")
+(setq org-agenda-current-time-string "")
+(setq org-agenda-time-grid '((daily) () "" ""))
+
+)
 
 ;; (use-package org-roam
 ;;   :ensure t
@@ -475,6 +508,15 @@ one, an error is signaled."
   :hook
   (dired-mode . nerd-icons-dired-mode))
 
+(use-package emojify
+  :config
+  (when (member "Segoe UI Emoji" (font-family-list))
+    (set-fontset-font
+     t 'symbol (font-spec :family "Segoe UI Emoji") nil 'prepend))
+  (setq emojify-display-style 'unicode)
+  (setq emojify-emoji-styles '(unicode))
+  (bind-key* (kbd "C-c .") #'emojify-insert-emoji))
+
 (use-package vertico
   :ensure t
   :init
@@ -490,6 +532,11 @@ one, an error is signaled."
   (setq vertico-resize t
         ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
         vertico-cycle t))
+
+(use-package affe
+  :config
+  ;; Manual preview key for `affe-grep'
+  (consult-customize affe-grep :preview-key "M-."))
 
 (use-package marginalia
   ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
@@ -511,7 +558,8 @@ one, an error is signaled."
   :config
   (setq completion-styles '(orderless basic))
   (setq completion-category-defaults nil)
-  (setq completion-category-overrides nil))
+  (setq completion-category-overrides 
+        '((file (styles partial-completion orderless)))))
 
 (use-package corfu
   :ensure t
@@ -563,6 +611,15 @@ one, an error is signaled."
 
 (add-hook 'org-babel-edit-prep:jupyter-python #'my/org-babel-edit-prep-jupyter-python)
 (add-hook 'org-babel-edit-prep:python #'my/org-babel-edit-prep-python)
+
+(use-package prescient
+  :config
+  (prescient-persist-mode))
+
+(use-package vertico-prescient
+  :after vertico
+  :config
+  (vertico-prescient-mode))
 
 (use-package corg
   :ensure (:host github :repo "isamert/corg.el"))
@@ -958,21 +1015,6 @@ one, an error is signaled."
   :ensure t
   :config (add-hook 'after-init-hook #'global-flycheck-mode))
 
-(use-package company
-  :defer 2
-  :custom
-  (company-begin-commands '(self-insert-command))
-  (company-idle-delay .1)
-  (company-minimum-prefix-length 2)
-  (company-show-numbers t)
-  (company-tooltip-align-annotations 't)
-  (global-company-mode t))
-
-(use-package company-box
-  :after company
-  :diminish
-  :hook (company-mode . company-box-mode))
-
 (use-package treesit-auto
   :custom
   (treesit-auto-install 'prompt)
@@ -982,87 +1024,47 @@ one, an error is signaled."
   (setq treesit-language-source-alist
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 
-(use-package lsp-mode
-  :ensure (:host github :repo "emacs-lsp/lsp-mode")
+(use-package lsp-bridge
+  :ensure t
   :init
-  (setq lsp-auto-guess-root nil) 
-  :hook 
-  (csharp-mode . lsp-deferred)
-  ((python-mode python-ts-mode) . lsp-deferred)
-  (nix-mode . lsp-deferred)
-  (ess-r-mode . lsp-deferred)
-  :config
-  (lsp-enable-which-key-integration t)
-  (lsp-register-custom-settings
-   '(("pylsp.plugins.flake8.enabled" t t)
-     ("pylsp.plugins.autopep8.enabled" t t)
-     ("pylsp.plugins.black.enabled" t t)
-     ("pylsp-plugins.isort.enabled" t t)
-     ("pylsp.plugins.rope-autoimport.enabled" t t)))
-  (setq lsp-completion-provider :none)
-  :commands (lsp lsp-deferred))
+  (setq lsp-bridge-enable-diagnostics t
+        lsp-bridge-enable-signature-help t
+        lsp-bridge-enable-hover-diagnostic t
+        lsp-bridge-enable-auto-format-code nil
+        lsp-bridge-enable-completion-in-minibuffer nil
+        lsp-bridge-enable-log nil
+        lsp-bridge-org-babel-lang-list nil       
+        lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
+        lsp-bridge-use-popup t
+        lsp-bridge-python-lsp-server "pylsp"
+	lsp-bridge-nix-lsp-server "nil"
+        lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
+  (setq lsp-bridge-enable-log t))
 
 
-;; Function to enable LSP and corfu in python src blocks
-;; (defun my-org-babel-lsp-setup ()
-;;   "Enable LSP and corfu for python blocks in org-mode."
-;;   (when (and (eq major-mode 'org-mode)
-;;              (org-in-src-block-p))
-;;     (let ((lang (org-element-property :language (org-element-at-point))))
-;;       (when (member lang '("python" "jupyter-python"))
-;;         (lsp-org)
-;;         (corfu-mode 1)))))
-
-;; ;; Hook to check when cursor moves in org-mode
-;; (defun my-org-lsp-hook ()
-;;   "Hook function to enable LSP/corfu based on cursor position."
-;;   (add-hook 'post-command-hook #'my-org-babel-lsp-setup nil t))
-
-;; (add-hook 'org-mode-hook #'my-org-lsp-hook)
+;; Python support 
+(add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+(add-hook 'python-ts-mode-hook #'lsp-bridge-mode)
 
 
-
-
-(defun my-org-python-insert-mode-setup ()
-  "Enable LSP and corfu when entering insert mode in python src blocks."
-  (when (and (eq major-mode 'org-mode)
-             (org-in-src-block-p))
-    (let* ((element (org-element-at-point))
-           (lang (org-element-property :language element)))
-      (when (member lang '("python" "jupyter-python"))
-        (lsp-org)
-        (corfu-mode 1)))))
-
-(defun my-org-python-normal-mode-cleanup ()
-  "Cleanup LSP when leaving insert mode in python src blocks."
-  (when (and (eq major-mode 'org-mode)
-             (org-in-src-block-p))
-    (let* ((element (org-element-at-point))
-           (lang (org-element-property :language element)))
-      (when (member lang '("python" "jupyter-python"))
-        ;; Optionally cleanup - you might want to keep LSP active
-        ;; (lsp-virtual-buffer-disconnect)
-         (corfu-mode -1)
-        ))))
-
-;; Hook into evil state changes
-(add-hook 'evil-insert-state-entry-hook #'my-org-python-insert-mode-setup)
-(add-hook 'evil-insert-state-exit-hook #'my-org-python-normal-mode-cleanup)
-
+;; Nix integration
 (use-package nix-mode
-  :mode "\\.nix\\'")
+  :ensure t
+  :mode "\\.nix\\'"
+  :hook (nix-mode . lsp-bridge-mode))
 
-;;lsp ui extensions
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'bottom))
+;; C# integration (tree-sitter mode only)
+(add-hook 'csharp-ts-mode-hook #'lsp-bridge-mode)
 
-;; ivy integrations for lsp mode
-;; (use-package lsp-ivy)
+;; ;; C# integration
+;; (use-package csharp-mode
+;;   :ensure t
+;;   :mode "\\.cs\\'"
+;;   :hook (csharp-mode . lsp-bridge-mode))
 
-(use-package dap-mode)
-;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+;;org-babel support
+(with-eval-after-load 'org
+  (add-to-list 'org-src-lang-modes '("jupyter-python" . python)))
 
 (use-package projectile
   :config
@@ -1104,8 +1106,7 @@ one, an error is signaled."
        (python . t)  ;; Optional: fallback to ob-python
        (shell . t)
        (jupyter . t)
-       (R . t)
-       ))
+       (R . t)))
     ;; Don't ask for confirmation before evaluating
     (setq org-confirm-babel-evaluate nil)
 
@@ -1115,7 +1116,17 @@ one, an error is signaled."
           org-src-preserve-indentation t)
 
     ;; Show images after executing a block (e.g., matplotlib inline)
-    (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)))
+    (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
+
+  :hook
+  ;; Completion in org buffers (headings, inline code, etc.)
+  (org-mode . lsp-bridge-mode)
+  ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+  (org-src-mode . (lambda () (lsp-bridge-mode 1)))
+  :config
+  (setq org-src-tab-acts-natively t
+        org-src-preserve-indentation t
+        org-edit-src-content-indentation 0))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -1193,3 +1204,15 @@ one, an error is signaled."
   :config
   (setq langtool-language-tool-jar "~/LanguageTool/languagetool-commandline.jar")
   (setq langtool-default-language "en-US"))
+
+(use-package syncthing
+  :ensure (:host github :repo "KeyWeeUsr/emacs-syncthing")
+  :commands (syncthing)
+  :init
+  ;; Optional: autoload a convenience keybinding
+  ;; (keymap-global-set "C-c s" #'syncthing)
+  :config
+  ;; On first run, set your API key via:
+  ;;   M-x customize-group RET syncthing RET
+  ;; or just run M-x syncthing and follow prompts.
+  )

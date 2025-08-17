@@ -34,6 +34,7 @@
   - [[#nerd-icons][NERD ICONS]]
   - [[#emojis][EMOJIS]]
 - [[#vertico][VERTICO]]
+  - [[#affe][AFFE]]
 - [[#marginalia][MARGINALIA]]
 - [[#orderless][ORDERLESS]]
 - [[#corfu][CORFU]]
@@ -51,13 +52,9 @@
   - [[#neotree][NEOTREE]]
 - [[#neotree-1][NEOTREE]]
 - [[#flycheck][FLYCHECK]]
-- [[#company][COMPANY]]
 - [[#tree-sitter][TREE-SITTER]]
-- [[#lsp-mode][LSP-MODE]]
-  - [[#lsp-mode-config][LSP-Mode Config]]
-  - [[#language-support][LANGUAGE SUPPORT]]
-  - [[#lsps][LSPs]]
-  - [[#lsp-extensions][LSP Extensions]]
+- [[#lsps][LSPs]]
+  - [[#yasnippet][YASNIPPET]]
 - [[#projectile][PROJECTILE]]
 - [[#dashboard][DASHBOARD]]
 - [[#jupyter][JUPYTER]]
@@ -66,6 +63,7 @@
   - [[#reftex][Reftex]]
   - [[#citar][Citar]]
   - [[#misc-writing-tools][Misc writing tools]]
+- [[#syncthing][SYNCTHING]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -540,7 +538,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
                        "Insert Jupyter Python block"
                        'org-tempo-tags)
 
-
 (tempo-define-template "python"
                        '("#+begin_src python :tangle temp.py :session py :results output"
                          n p n
@@ -747,7 +744,13 @@ Sudo-edit gives us the ability to open files with sudo privileges or switch over
         vertico-cycle t))
 #+end_src
 
-
+** AFFE
+#+begin_src emacs-lisp
+(use-package affe
+  :config
+  ;; Manual preview key for `affe-grep'
+  (consult-customize affe-grep :preview-key "M-."))
+#+end_src
 
 * MARGINALIA
 
@@ -776,7 +779,8 @@ Sudo-edit gives us the ability to open files with sudo privileges or switch over
   :config
   (setq completion-styles '(orderless basic))
   (setq completion-category-defaults nil)
-  (setq completion-category-overrides nil))
+  (setq completion-category-overrides 
+        '((file (styles partial-completion orderless))))) 
 #+end_src
 
 
@@ -856,7 +860,6 @@ Enabling Frequency + Recency Sorting of options in vertico
   :ensure (:host github :repo "isamert/corg.el"))
 (add-hook 'org-mode-hook #'corg-setup)
 #+end_src
-
 
 
 * CONSULT
@@ -1304,29 +1307,8 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 
-* COMPANY
-[[https://company-mode.github.io/][Company]] is a text completion framework for Emacs. The name stands for "complete anything".  Completion will start automatically after you type a few letters. Use M-n and M-p to select, <return> to complete or <tab> to complete the common part.
-
-#+begin_src emacs-lisp
-(use-package company
-  :defer 2
-  :custom
-  (company-begin-commands '(self-insert-command))
-  (company-idle-delay .1)
-  (company-minimum-prefix-length 2)
-  (company-show-numbers t)
-  (company-tooltip-align-annotations 't)
-  (global-company-mode t))
-
-(use-package company-box
-  :after company
-  :diminish
-  :hook (company-mode . company-box-mode))
-#+end_src
-
 * TREE-SITTER
 #+begin_src emacs-lisp
-
 (use-package treesit-auto
   :custom
   (treesit-auto-install 'prompt)
@@ -1337,110 +1319,61 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 #+end_src
 
-* TODO LSP-MODE
-
-** LSP-Mode Config
+* LSPs
 
 #+begin_src emacs-lisp
-(use-package lsp-mode
-  :ensure (:host github :repo "emacs-lsp/lsp-mode")
+
+(use-package lsp-bridge
+  :ensure t
   :init
-  (setq lsp-auto-guess-root nil) 
-  :hook 
-  (csharp-mode . lsp-deferred)
-  ((python-mode python-ts-mode) . lsp-deferred)
-  (nix-mode . lsp-deferred)
-  (ess-r-mode . lsp-deferred)
-  :config
-  (lsp-enable-which-key-integration t)
-  (lsp-register-custom-settings
-   '(("pylsp.plugins.flake8.enabled" t t)
-     ("pylsp.plugins.autopep8.enabled" t t)
-     ("pylsp.plugins.black.enabled" t t)
-     ("pylsp-plugins.isort.enabled" t t)
-     ("pylsp.plugins.rope-autoimport.enabled" t t)))
-  (setq lsp-completion-provider :none)
-  :commands (lsp lsp-deferred))
+  (setq lsp-bridge-enable-diagnostics t
+        lsp-bridge-enable-signature-help t
+        lsp-bridge-enable-hover-diagnostic t
+        lsp-bridge-enable-auto-format-code nil
+        lsp-bridge-enable-completion-in-minibuffer nil
+        lsp-bridge-enable-log nil
+        lsp-bridge-org-babel-lang-list nil       
+        lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
+        lsp-bridge-use-popup t
+        lsp-bridge-python-lsp-server "pylsp"
+	lsp-bridge-nix-lsp-server "nil"
+        lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
+  (setq lsp-bridge-enable-log t))
 
 
-;; Function to enable LSP and corfu in python src blocks
-;; (defun my-org-babel-lsp-setup ()
-;;   "Enable LSP and corfu for python blocks in org-mode."
-;;   (when (and (eq major-mode 'org-mode)
-;;              (org-in-src-block-p))
-;;     (let ((lang (org-element-property :language (org-element-at-point))))
-;;       (when (member lang '("python" "jupyter-python"))
-;;         (lsp-org)
-;;         (corfu-mode 1)))))
-
-;; ;; Hook to check when cursor moves in org-mode
-;; (defun my-org-lsp-hook ()
-;;   "Hook function to enable LSP/corfu based on cursor position."
-;;   (add-hook 'post-command-hook #'my-org-babel-lsp-setup nil t))
-
-;; (add-hook 'org-mode-hook #'my-org-lsp-hook)
+;; Python support 
+(add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+(add-hook 'python-ts-mode-hook #'lsp-bridge-mode)
 
 
-
-
-(defun my-org-python-insert-mode-setup ()
-  "Enable LSP and corfu when entering insert mode in python src blocks."
-  (when (and (eq major-mode 'org-mode)
-             (org-in-src-block-p))
-    (let* ((element (org-element-at-point))
-           (lang (org-element-property :language element)))
-      (when (member lang '("python" "jupyter-python"))
-        (lsp-org)
-        (corfu-mode 1)))))
-
-(defun my-org-python-normal-mode-cleanup ()
-  "Cleanup LSP when leaving insert mode in python src blocks."
-  (when (and (eq major-mode 'org-mode)
-             (org-in-src-block-p))
-    (let* ((element (org-element-at-point))
-           (lang (org-element-property :language element)))
-      (when (member lang '("python" "jupyter-python"))
-        ;; Optionally cleanup - you might want to keep LSP active
-        ;; (lsp-virtual-buffer-disconnect)
-         (corfu-mode -1)
-        ))))
-
-;; Hook into evil state changes
-(add-hook 'evil-insert-state-entry-hook #'my-org-python-insert-mode-setup)
-(add-hook 'evil-insert-state-exit-hook #'my-org-python-normal-mode-cleanup)
-#+end_src
-
-
-** LANGUAGE SUPPORT
-Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL expression language, Ada, ASM, AWK, C, C++, C#, Elixir, Fortran, Icon, IDL (CORBA), HEEx, IDLWAVE, Java, Javascript, Lua, M4, Makefiles, Metafont (TeX’s companion for font creation), Modula2, Object Pascal, Objective-C, Octave, Pascal, Perl, PHP, Pike, PostScript, Prolog, Python, Ruby, Simula, SQL, Tcl, TypeScript, Verilog, and VHDL. The recommended mode for Perl is called CPerl mode. Modes are also available for the scripting languages of the common GNU and Unix shells, and MS-DOS/MS-Windows ‘BAT’ files, JSON, DNS master files, CSS (Cascading Style Sheets), Dockerfiles, CMake files, and various sorts of configuration files. 
-
-#+begin_src emacs-lisp
+;; Nix integration
 (use-package nix-mode
-  :mode "\\.nix\\'")
+  :ensure t
+  :mode "\\.nix\\'"
+  :hook (nix-mode . lsp-bridge-mode))
+
+;; C# integration (tree-sitter mode only)
+(add-hook 'csharp-ts-mode-hook #'lsp-bridge-mode)
+
+;; ;; C# integration
+;; (use-package csharp-mode
+;;   :ensure t
+;;   :mode "\\.cs\\'"
+;;   :hook (csharp-mode . lsp-bridge-mode))
+
+;;org-babel support
+(with-eval-after-load 'org
+  (add-to-list 'org-src-lang-modes '("jupyter-python" . python)))
+
 #+end_src
 
-** LSPs
-
-#+begin_src emacs-lisp
-
+** YASNIPPET
+#+begin_src jupyter-python :tangle temp.py :session py 
+;; Packages you need
+(use-package yasnippet
+  :hook ((after-init . yas-reload-all)
+         (prog-mode . yas-minor-mode)))
 #+end_src
-
-** LSP Extensions
-
-#+begin_src emacs-lisp
-;;lsp ui extensions
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (lsp-ui-doc-position 'bottom))
-
-;; ivy integrations for lsp mode
-;; (use-package lsp-ivy)
-
-(use-package dap-mode)
-;; (use-package dap-LANGUAGE) to load the dap adapter for your language
-#+end_src
-
 
 * PROJECTILE
 [[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.
@@ -1496,8 +1429,7 @@ Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL ex
        (python . t)  ;; Optional: fallback to ob-python
        (shell . t)
        (jupyter . t)
-       (R . t)
-       ))
+       (R . t)))
     ;; Don't ask for confirmation before evaluating
     (setq org-confirm-babel-evaluate nil)
 
@@ -1507,7 +1439,17 @@ Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL ex
           org-src-preserve-indentation t)
 
     ;; Show images after executing a block (e.g., matplotlib inline)
-    (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)))
+    (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
+
+  :hook
+  ;; Completion in org buffers (headings, inline code, etc.)
+  (org-mode . lsp-bridge-mode)
+  ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+  (org-src-mode . (lambda () (lsp-bridge-mode 1)))
+  :config
+  (setq org-src-tab-acts-natively t
+        org-src-preserve-indentation t
+        org-edit-src-content-indentation 0))
 #+end_src
 
 
@@ -1614,3 +1556,18 @@ Emacs has programming language modes for Lisp, Scheme, the Scheme-based DSSSL ex
 
 #+end_src
 
+* SYNCTHING
+
+#+begin_src emacs-lisp
+(use-package syncthing
+  :ensure (:host github :repo "KeyWeeUsr/emacs-syncthing")
+  :commands (syncthing)
+  :init
+  ;; Optional: autoload a convenience keybinding
+  ;; (keymap-global-set "C-c s" #'syncthing)
+  :config
+  ;; On first run, set your API key via:
+  ;;   M-x customize-group RET syncthing RET
+  ;; or just run M-x syncthing and follow prompts.
+  )
+#+end_src

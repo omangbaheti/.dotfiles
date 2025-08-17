@@ -115,6 +115,7 @@
           zmq 
           treesit-auto
           treesit-grammars.with-all-grammars
+	  lsp-bridge
         ]
     );
   };

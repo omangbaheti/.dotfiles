@@ -41,6 +41,7 @@
       fzf
       gtk4
       emacs30
+      firefox
       zsh
       oh-my-posh
       tealdeer
