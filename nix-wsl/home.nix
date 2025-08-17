@@ -59,9 +59,6 @@
         *) return 1 ;;
         esac
      }
-     if ! emacsclient -e "(server-running-p)" | grep -q t; then
-        emacs --daemon
-     fi
 
      function lazygit 
      {
@@ -101,6 +98,10 @@
     nix-direnv.enable = true;
   };
 
+  services.emacs = {
+    enable = true;
+  };
+
   programs.emacs = {
     enable = true;
     package = pkgs.emacs;
@@ -119,6 +120,11 @@
         ]
     );
   };
+
+  services.syncthing = {
+    enable = true;
+  };
+
 
   home.sessionVariables = {
     EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";

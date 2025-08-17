@@ -170,7 +170,6 @@
     "h f" '(describe-function :wk "Describe function")
     "h v" '(describe-variable :wk "Describe Variable")
     "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config"))
-  ;;"h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el")) :wk "reload emacs config"))
   (leader-key
     "t" '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
@@ -193,7 +192,97 @@
     "w H" '(buf-move-left :wk "Buffer Move Left")
     "w J" '(buf-move-down :wk "Buffer Move Down")
     "w K" '(buf-move-up :wk "Buffer Move Up")
-    "w L" '(buf-move-right :wk "Buffer Move Right")))
+    "w L" '(buf-move-right :wk "Buffer Move Right"))
+
+
+;; ---------------------------------------------------------------------------
+;; 1.  Keep the motion keys in Dired/Dirvish (no leader, immediate execution)
+;; ---------------------------------------------------------------------------
+(general-define-key
+ :states '(normal emacs)
+ :keymaps '(dired-mode-map dirvish-mode-map)
+
+ ;; Navigation ---------------------------------------------------------------
+ "h"  'dired-up-directory
+ "l"  'dired-find-file
+ "j"  'dired-next-line
+ "k"  'dired-previous-line
+ "gg" 'beginning-of-buffer
+ "G"  'end-of-buffer
+
+ ;; File operations ----------------------------------------------------------
+ "RET" 'dired-find-file
+ "TAB" 'dired-find-file-other-window
+ "q"   'quit-window
+ "gr"  'revert-buffer
+
+ ;; Marking ------------------------------------------------------------------
+ "m" 'dired-mark
+ "u" 'dired-unmark
+ "U" 'dired-unmark-all-marks
+ "t" 'dired-toggle-marks
+
+ ;; File management ----------------------------------------------------------
+ "d" 'dired-flag-file-deletion
+ "x" 'dired-do-flagged-delete
+ "D" 'dired-do-delete
+ "C" 'dired-do-copy
+ "R" 'dired-do-rename
+ "+" 'dired-create-directory
+
+ ;; Shell commands -----------------------------------------------------------
+ "!" 'dired-do-shell-command
+ "&" 'dired-do-async-shell-command)
+
+;; ---------------------------------------------------------------------------
+;; 2.  Add a leader submenu that which-key can display (prefix:  SPC d …)
+;; ---------------------------------------------------------------------------
+
+;; (defvar my/dired-map (make-sparse-keymap))
+;; (leader-key
+;;   :keymaps '(dired-mode-map dirvish-mode-map)
+;;   "d" `(:keymap ,my/dired-map :wk "dired/dirvish"))  ;; install the map
+;;   ;; common operations -------------------------------------------------------
+;;   "d h" '(dired-up-directory          :wk "parent dir")
+;;   "d l" '(dired-find-file             :wk "open / enter")
+;;   "d m" '(dired-mark                  :wk "mark")
+;;   "d u" '(dired-unmark                :wk "unmark")
+;;   "d d" '(dired-flag-file-deletion    :wk "flag delete")
+;;   "d x" '(dired-do-flagged-delete     :wk "execute deletions")
+;;   "d r" '(dired-do-rename             :wk "rename / move")
+;;   "d c" '(dired-do-copy               :wk "copy")
+;;   "d +" '(dired-create-directory      :wk "mkdir")
+;;   "d !" '(dired-do-shell-command      :wk "shell cmd")
+;;   "d g" '(revert-buffer               :wk "refresh")
+
+;;   ;; Dirvish extras ----------------------------------------------------------
+;;   "d ?" '(dirvish-dispatch            :wk "dirvish menu")
+;;   "d a" '(dirvish-quick-access        :wk "quick access")
+;;   "d s" '(dirvish-quicksort           :wk "sort")
+;;   "d y" '(dirvish-yank-menu           :wk "yank menu")
+;;   "d v" '(dirvish-vc-menu             :wk "VC menu")
+;;   "d t" '(dirvish-layout-toggle       :wk "toggle layout")
+;;   "d T" '(dirvish-subtree-toggle      :wk "toggle subtree")
+;;   "d f" '(dirvish-file-info-menu      :wk "file info")
+;;   "d F" '(dirvish-history-go-forward  :wk "history →")
+;;   "d B" '(dirvish-history-go-backward :wk "history ←")
+;; 
+)
+
+;; Set pulse highlight to green
+(setq pulse-flag t)
+(setq pulse-delay 0.04)
+(setq pulse-iterations 10)
+;; Define a custom green face for pulsing
+(defface my-pulse-face
+  '((t (:background "#a3be8c")))  ; Bright green
+  "Face for green pulse highlighting")
+;; Use the custom green face
+(defun meain/evil-yank-advice (orig-fn beg end &rest args)
+  "Highlight yanked region in green momentarily."
+  (pulse-momentary-highlight-region beg end 'my-pulse-face)
+  (apply orig-fn beg end args))
+(advice-add 'evil-yank :around 'meain/evil-yank-advice)
 
 (defun keyboard-quit-dwim ()
   (interactive)
@@ -440,9 +529,7 @@ one, an error is signaled."
   (setq org-agenda-span 1
         org-agenda-start-day "+0d")
 (setq org-agenda-current-time-string "")
-(setq org-agenda-time-grid '((daily) () "" ""))
-
-)
+(setq org-agenda-time-grid '((daily) () "" "")))
 
 ;; (use-package org-roam
 ;;   :ensure t
@@ -481,6 +568,29 @@ one, an error is signaled."
         which-key-max-description-length 25
         which-key-allow-imprecise-window-fit nil 
         which-key-separator " → " ))
+
+;; Sync FROM Windows clipboard TO kill ring (when focusing Emacs)
+(defun wsl-auto-sync-clipboard ()
+  "Auto-sync Windows clipboard to kill ring on focus"
+  (condition-case nil
+      (let ((clipboard-content 
+             (string-trim (shell-command-to-string "powershell.exe -command 'Get-Clipboard'"))))
+        (when (and (not (string-empty-p clipboard-content))
+                   (or (= (length kill-ring) 0)
+                       (not (string= clipboard-content (current-kill 0 t)))))
+          (kill-new clipboard-content)))
+    (error nil)))
+
+;; Sync FROM kill ring TO Windows clipboard (when copying in Emacs)  
+(defun wsl-copy-clip (&rest _args)
+  (let ((temp-file (make-temp-file "winclip")))
+    (write-region (current-kill 0 t) nil temp-file)
+    (shell-command (concat "clip.exe < " temp-file))
+    (delete-file temp-file)))
+
+;; Enable both directions
+(add-hook 'focus-in-hook 'wsl-auto-sync-clipboard)
+(advice-add 'kill-new :after #'wsl-copy-clip)
 
 (use-package sudo-edit
   :config 
@@ -533,6 +643,11 @@ one, an error is signaled."
         ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
         vertico-cycle t))
 
+(use-package zoxide
+  :config
+  :custom
+  (zoxide-add-to-history t))
+
 (use-package affe
   :config
   ;; Manual preview key for `affe-grep'
@@ -545,12 +660,8 @@ one, an error is signaled."
   :ensure t
   :bind (:map minibuffer-local-map
          ("M-A" . marginalia-cycle))
-
   ;; The :init section is always executed.
   :init
-
-  ;; Marginalia must be activated in the :init section of use-package such that
-  ;; the mode gets enabled right away. Note that this forces loading the package.
   (marginalia-mode))
 
 (use-package orderless
@@ -576,41 +687,41 @@ one, an error is signaled."
   (setq corfu-popupinfo-delay '(0.5 . 0.5))
   (corfu-popupinfo-mode 1)) ; shows documentation after `corfu-popupinfo-delay'
 
-(with-eval-after-load 'corfu
-  (define-key corfu-map (kbd "TAB") nil)
-  (define-key corfu-map (kbd "<tab>") nil))
+;; (with-eval-after-load 'corfu
+;;   (define-key corfu-map (kbd "TAB") nil)
+;;   (define-key corfu-map (kbd "<tab>") nil))
 
 
-(add-hook 'org-src-mode-hook #'my-org-src-corfu-setup)
+;; (add-hook 'org-src-mode-hook #'my-org-src-corfu-setup)
 
-(defun my-org-src-corfu-setup ()
-  "Setup Corfu keybindings for org-src blocks."
-  (when (bound-and-true-p corfu-mode)
-    (local-set-key (kbd "C-<tab>") #'corfu-complete)))
+;; (defun my-org-src-corfu-setup ()
+;;   "Setup Corfu keybindings for org-src blocks."
+;;   (when (bound-and-true-p corfu-mode)
+;;     (local-set-key (kbd "C-<tab>") #'corfu-complete)))
 
-(defun my/org-babel-edit-prep-jupyter-python (_)
-  (lsp-deferred)
-  (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
+;; (defun my/org-babel-edit-prep-jupyter-python (_)
+;;   (lsp-deferred)
+;;   (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
 
-(defun my/org-babel-edit-prep-python (_)
-  ;; Enable lsp and corfu in the edit buffer
-  (lsp-deferred)
-  (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
+;; (defun my/org-babel-edit-prep-python (_)
+;;   ;; Enable lsp and corfu in the edit buffer
+;;   (lsp-deferred)
+;;   (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
 
-(defun my/org-tab-dwim ()
-  "Context-aware TAB in org-mode."
-  (interactive)
-  (if (org-in-src-block-p)
-      ;; (indent-according-to-mode)
-      (indent-for-tab-command)  ; Just indent in src blocks
-    (org-cycle)))              ; Normal org behavior elsewhere
+;; (defun my/org-tab-dwim ()
+;;   "Context-aware TAB in org-mode."
+;;   (interactive)
+;;   (if (org-in-src-block-p)
+;;       ;; (indent-according-to-mode)
+;;       (indent-for-tab-command)  ; Just indent in src blocks
+;;     (org-cycle)))              ; Normal org behavior elsewhere
 
-;; Bind this to TAB in org-mode
-(define-key org-mode-map (kbd "TAB") #'my/org-tab-dwim)
-(define-key org-mode-map (kbd "<tab>") #'my/org-tab-dwim)
+;; ;; Bind this to TAB in org-mode
+;; (define-key org-mode-map (kbd "TAB") #'my/org-tab-dwim)
+;; (define-key org-mode-map (kbd "<tab>") #'my/org-tab-dwim)
 
-(add-hook 'org-babel-edit-prep:jupyter-python #'my/org-babel-edit-prep-jupyter-python)
-(add-hook 'org-babel-edit-prep:python #'my/org-babel-edit-prep-python)
+;; (add-hook 'org-babel-edit-prep:jupyter-python #'my/org-babel-edit-prep-jupyter-python)
+;; (add-hook 'org-babel-edit-prep:python #'my/org-babel-edit-prep-python)
 
 (use-package prescient
   :config
@@ -658,7 +769,7 @@ one, an error is signaled."
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (setq consult-buffer-sources '(consult--source-buffer))
   (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-theme :preview-key '(:debounce 0.1 any)
    consult-ripgrep consult-git-grep consult-grep consult-man
    consult-bookmark consult-recent-file consult-xref
    consult--source-bookmark consult--source-file-register
@@ -674,6 +785,12 @@ one, an error is signaled."
   ;; You may want to use `embark-prefix-help-command' or which-key instead.
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
 )
+
+(defun consult-fd-home ()
+  "Run consult-fd searching from home directory."
+  (interactive)
+  (let ((default-directory "~/"))
+    (consult-fd)))
 
 (use-package eshell-syntax-highlighting
   :after esh-mode
@@ -1204,15 +1321,3 @@ one, an error is signaled."
   :config
   (setq langtool-language-tool-jar "~/LanguageTool/languagetool-commandline.jar")
   (setq langtool-default-language "en-US"))
-
-(use-package syncthing
-  :ensure (:host github :repo "KeyWeeUsr/emacs-syncthing")
-  :commands (syncthing)
-  :init
-  ;; Optional: autoload a convenience keybinding
-  ;; (keymap-global-set "C-c s" #'syncthing)
-  :config
-  ;; On first run, set your API key via:
-  ;;   M-x customize-group RET syncthing RET
-  ;; or just run M-x syncthing and follow prompts.
-  )
