@@ -112,7 +112,7 @@
     "b" '(:ignore t :wk "buffer")
     "b b" '(consult-buffer :wk "Switch buffer")
     "b i" '(ibuffer :wk "Ibuffer")
-    "b k" '(kill-this-buffer :wk "Kill this buffer")
+    "b k" '(kill-buffer :wk "Kill buffer")
     "b n" '(next-buffer :wk "Next buffer")
     "b p" '(previous-buffer :wk "Previous buffer")
     "b r" '(revert-buffer :wk "Reload buffer"))
@@ -159,6 +159,8 @@
     "m d t" '(org-time-stamp :wk "Org time stamp"))
   
   (leader-key
+    "'" '(vterm-toggle :wk "Toggle Vterm"))
+  (leader-key
     "p" '(projectile-command-map :wk "Projectile"))
   
   (leader-key
@@ -169,7 +171,10 @@
     "h p" '(describe-package :wk "Describe Package")
     "h f" '(describe-function :wk "Describe function")
     "h v" '(describe-variable :wk "Describe Variable")
-    "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config"))
+    "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
+    "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs")
+    )
+
   (leader-key
     "t" '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
@@ -195,79 +200,79 @@
     "w L" '(buf-move-right :wk "Buffer Move Right"))
 
 
-;; ---------------------------------------------------------------------------
-;; 1.  Keep the motion keys in Dired/Dirvish (no leader, immediate execution)
-;; ---------------------------------------------------------------------------
-(general-define-key
- :states '(normal emacs)
- :keymaps '(dired-mode-map dirvish-mode-map)
+  ;; ---------------------------------------------------------------------------
+  ;; 1.  Keep the motion keys in Dired/Dirvish (no leader, immediate execution)
+  ;; ---------------------------------------------------------------------------
+  (general-define-key
+   :states '(normal emacs)
+   :keymaps '(dired-mode-map dirvish-mode-map)
 
- ;; Navigation ---------------------------------------------------------------
- "h"  'dired-up-directory
- "l"  'dired-find-file
- "j"  'dired-next-line
- "k"  'dired-previous-line
- "gg" 'beginning-of-buffer
- "G"  'end-of-buffer
+   ;; Navigation ---------------------------------------------------------------
+   "h"  'dired-up-directory
+   "l"  'dired-find-file
+   "j"  'dired-next-line
+   "k"  'dired-previous-line
+   "gg" 'beginning-of-buffer
+   "G"  'end-of-buffer
 
- ;; File operations ----------------------------------------------------------
- "RET" 'dired-find-file
- "TAB" 'dired-find-file-other-window
- "q"   'quit-window
- "gr"  'revert-buffer
+   ;; File operations ----------------------------------------------------------
+   "RET" 'dired-find-file
+   "TAB" 'dired-find-file-other-window
+   "q"   'quit-window
+   "gr"  'revert-buffer
 
- ;; Marking ------------------------------------------------------------------
- "m" 'dired-mark
- "u" 'dired-unmark
- "U" 'dired-unmark-all-marks
- "t" 'dired-toggle-marks
+   ;; Marking ------------------------------------------------------------------
+   "m" 'dired-mark
+   "u" 'dired-unmark
+   "U" 'dired-unmark-all-marks
+   "t" 'dired-toggle-marks
 
- ;; File management ----------------------------------------------------------
- "d" 'dired-flag-file-deletion
- "x" 'dired-do-flagged-delete
- "D" 'dired-do-delete
- "C" 'dired-do-copy
- "R" 'dired-do-rename
- "+" 'dired-create-directory
+   ;; File management ----------------------------------------------------------
+   "d" 'dired-flag-file-deletion
+   "x" 'dired-do-flagged-delete
+   "D" 'dired-do-delete
+   "C" 'dired-do-copy
+   "R" 'dired-do-rename
+   "+" 'dired-create-directory
 
- ;; Shell commands -----------------------------------------------------------
- "!" 'dired-do-shell-command
- "&" 'dired-do-async-shell-command)
+   ;; Shell commands -----------------------------------------------------------
+   "!" 'dired-do-shell-command
+   "&" 'dired-do-async-shell-command)
 
-;; ---------------------------------------------------------------------------
-;; 2.  Add a leader submenu that which-key can display (prefix:  SPC d …)
-;; ---------------------------------------------------------------------------
+  ;; ---------------------------------------------------------------------------
+  ;; 2.  Add a leader submenu that which-key can display (prefix:  SPC d …)
+  ;; ---------------------------------------------------------------------------
 
-;; (defvar my/dired-map (make-sparse-keymap))
-;; (leader-key
-;;   :keymaps '(dired-mode-map dirvish-mode-map)
-;;   "d" `(:keymap ,my/dired-map :wk "dired/dirvish"))  ;; install the map
-;;   ;; common operations -------------------------------------------------------
-;;   "d h" '(dired-up-directory          :wk "parent dir")
-;;   "d l" '(dired-find-file             :wk "open / enter")
-;;   "d m" '(dired-mark                  :wk "mark")
-;;   "d u" '(dired-unmark                :wk "unmark")
-;;   "d d" '(dired-flag-file-deletion    :wk "flag delete")
-;;   "d x" '(dired-do-flagged-delete     :wk "execute deletions")
-;;   "d r" '(dired-do-rename             :wk "rename / move")
-;;   "d c" '(dired-do-copy               :wk "copy")
-;;   "d +" '(dired-create-directory      :wk "mkdir")
-;;   "d !" '(dired-do-shell-command      :wk "shell cmd")
-;;   "d g" '(revert-buffer               :wk "refresh")
+  ;; (defvar my/dired-map (make-sparse-keymap))
+  ;; (leader-key
+  ;;   :keymaps '(dired-mode-map dirvish-mode-map)
+  ;;   "d" `(:keymap ,my/dired-map :wk "dired/dirvish"))  ;; install the map
+  ;;   ;; common operations -------------------------------------------------------
+  ;;   "d h" '(dired-up-directory          :wk "parent dir")
+  ;;   "d l" '(dired-find-file             :wk "open / enter")
+  ;;   "d m" '(dired-mark                  :wk "mark")
+  ;;   "d u" '(dired-unmark                :wk "unmark")
+  ;;   "d d" '(dired-flag-file-deletion    :wk "flag delete")
+  ;;   "d x" '(dired-do-flagged-delete     :wk "execute deletions")
+  ;;   "d r" '(dired-do-rename             :wk "rename / move")
+  ;;   "d c" '(dired-do-copy               :wk "copy")
+  ;;   "d +" '(dired-create-directory      :wk "mkdir")
+  ;;   "d !" '(dired-do-shell-command      :wk "shell cmd")
+  ;;   "d g" '(revert-buffer               :wk "refresh")
 
-;;   ;; Dirvish extras ----------------------------------------------------------
-;;   "d ?" '(dirvish-dispatch            :wk "dirvish menu")
-;;   "d a" '(dirvish-quick-access        :wk "quick access")
-;;   "d s" '(dirvish-quicksort           :wk "sort")
-;;   "d y" '(dirvish-yank-menu           :wk "yank menu")
-;;   "d v" '(dirvish-vc-menu             :wk "VC menu")
-;;   "d t" '(dirvish-layout-toggle       :wk "toggle layout")
-;;   "d T" '(dirvish-subtree-toggle      :wk "toggle subtree")
-;;   "d f" '(dirvish-file-info-menu      :wk "file info")
-;;   "d F" '(dirvish-history-go-forward  :wk "history →")
-;;   "d B" '(dirvish-history-go-backward :wk "history ←")
-;; 
-)
+  ;;   ;; Dirvish extras ----------------------------------------------------------
+  ;;   "d ?" '(dirvish-dispatch            :wk "dirvish menu")
+  ;;   "d a" '(dirvish-quick-access        :wk "quick access")
+  ;;   "d s" '(dirvish-quicksort           :wk "sort")
+  ;;   "d y" '(dirvish-yank-menu           :wk "yank menu")
+  ;;   "d v" '(dirvish-vc-menu             :wk "VC menu")
+  ;;   "d t" '(dirvish-layout-toggle       :wk "toggle layout")
+  ;;   "d T" '(dirvish-subtree-toggle      :wk "toggle subtree")
+  ;;   "d f" '(dirvish-file-info-menu      :wk "file info")
+  ;;   "d F" '(dirvish-history-go-forward  :wk "history →")
+  ;;   "d B" '(dirvish-history-go-backward :wk "history ←")
+  ;; 
+  )
 
 ;; Set pulse highlight to green
 (setq pulse-flag t)
@@ -424,7 +429,6 @@ one, an error is signaled."
                 (lambda (c) (eq c ?<))))
 
 (add-hook 'org-mode-hook #'my-org-electric-pair-hook)
-;; (add-hook 'org-src-mode-hook #'electric-indent-local-mode)
 
 ;;(use-package beacon
   ;;:ensure t (:files (:defaults) :build nil)  ;; disables native compilation
@@ -437,7 +441,6 @@ one, an error is signaled."
 (setq org-src-fontify-natively t)
 (setq font-lock-multiline t)
 (setq jit-lock-defer-time 0) ; Immediate fontification
-;; (setq org-adapt-indentation t)
 
 (use-package toc-org
   :commands toc-org-enable
@@ -570,27 +573,69 @@ one, an error is signaled."
         which-key-separator " → " ))
 
 ;; Sync FROM Windows clipboard TO kill ring (when focusing Emacs)
-(defun wsl-auto-sync-clipboard ()
-  "Auto-sync Windows clipboard to kill ring on focus"
-  (condition-case nil
-      (let ((clipboard-content 
-             (string-trim (shell-command-to-string "powershell.exe -command 'Get-Clipboard'"))))
-        (when (and (not (string-empty-p clipboard-content))
-                   (or (= (length kill-ring) 0)
-                       (not (string= clipboard-content (current-kill 0 t)))))
-          (kill-new clipboard-content)))
-    (error nil)))
+;; (defun wsl-auto-sync-clipboard ()
+;;   "Auto-sync Windows clipboard to kill ring on focus"
+;;   (condition-case nil
+;;       (let ((clipboard-content 
+;;              (string-trim 
+;;               (replace-regexp-in-string "\r" "" 
+;;                 (shell-command-to-string "powershell.exe -command 'Get-Clipboard'")))))
+;;         (when (and (not (string-empty-p clipboard-content))
+;;                    (or (= (length kill-ring) 0)
+;;                        (not (string= clipboard-content (current-kill 0 t)))))
+;;           (kill-new clipboard-content)))
+;;     (error nil)))
 
-;; Sync FROM kill ring TO Windows clipboard (when copying in Emacs)  
-(defun wsl-copy-clip (&rest _args)
-  (let ((temp-file (make-temp-file "winclip")))
-    (write-region (current-kill 0 t) nil temp-file)
-    (shell-command (concat "clip.exe < " temp-file))
-    (delete-file temp-file)))
 
-;; Enable both directions
-(add-hook 'focus-in-hook 'wsl-auto-sync-clipboard)
-(advice-add 'kill-new :after #'wsl-copy-clip)
+;; ;; Sync FROM kill ring TO Windows clipboard (when copying in Emacs)  
+;; (defun wsl-copy-clip (&rest _args)
+;;   (let ((temp-file (make-temp-file "winclip")))
+;;     (write-region (current-kill 0 t) nil temp-file)
+;;     (shell-command (concat "clip.exe < " temp-file))
+;;     (delete-file temp-file)))
+
+;; ;; Enable both directions
+;; (add-hook 'focus-in-hook 'wsl-auto-sync-clipboard)
+;; (advice-add 'kill-new :after #'wsl-copy-clip)
+
+(defun my-org-paste-image ()
+  "Paste an image into a time stamped unique-named file in the
+same directory as the org-buffer and insert a link to this file."
+  (interactive)
+  (let* ((target-file
+          (concat
+           (make-temp-name
+            (concat (buffer-file-name)
+                    "_"
+                    (format-time-string "%Y%m%d_%H%M%S_"))) ".png"))
+         (wsl-path
+          (concat (as-windows-path(file-name-directory target-file))
+                  "\\"
+                  (file-name-nondirectory target-file)))
+         (ps-script
+          (concat "(Get-Clipboard -Format image).Save('" wsl-path "')")))
+
+    (powershell ps-script)
+
+    (if (file-exists-p target-file)
+        (progn (insert (concat "[[" target-file "]]"))
+               (org-display-inline-images))
+      (user-error
+       "Error pasting the image, make sure you have an image in the clipboard!"))
+    ))
+
+(defun as-windows-path (unix-path)
+;;   "Takes a unix path and returns a matching WSL path
+;; (e.g. \\\\wsel$\\Ubuntu-20.04\\tmp)"
+;;   ;; substring removes the trailing \n
+  (substring
+   (shell-command-to-string
+    (concat "wslpath -w " unix-path)) 0 -1))
+
+(defun powershell (script)
+  "executes the given script within a powershell and returns its return value"
+  (call-process "powershell.exe" nil nil nil
+                "-Command" (concat "& {" script "}")))
 
 (use-package sudo-edit
   :config 
@@ -816,6 +861,12 @@ one, an error is signaled."
 (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
 (setq vterm-max-scrollback 5000)
 :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
+
+
+(use-package vterm-toggle
+  :ensure t
+  :config
+  (setq vterm-toggle-fullscreen-p t))
 
 (use-package doom-themes
   :ensure t
@@ -1109,7 +1160,7 @@ one, an error is signaled."
 (use-package dirvish
   :after evil
   :init (dirvish-override-dired-mode)
-  :config (evil-define-key 'normal dirvish-mode-map (kbd "TAB") 'dirvish-subtree-toggle))
+)
 
 (use-package neotree
  :config
@@ -1321,3 +1372,15 @@ one, an error is signaled."
   :config
   (setq langtool-language-tool-jar "~/LanguageTool/languagetool-commandline.jar")
   (setq langtool-default-language "en-US"))
+
+;; (use-package holo-layer
+;;   :ensure (:host github 
+;;                  :repo "manateelazycat/holo-layer"
+;;                  :files ("*.el" "*.py" "icon_cache/*"))
+;;   :config
+;;   (setq holo-layer-enable-cursor-animation t)
+;;   (setq holo-layer-enable-type-animation t)
+;;   (setq holo-layer-cursor-animation-interval 1)  ; Animation refresh interval
+;;   (setq holo-layer-cursor-color "#ff6b6b")        ; Cursor color
+;;   (setq holo-layer-cursor-alpha 200)
+;;   (setq holo-layer-enable-debug t))
