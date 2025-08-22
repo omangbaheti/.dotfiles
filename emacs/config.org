@@ -29,16 +29,13 @@
   - [[#olivetti-centering][OLIVETTI (Centering)]]
   - [[#org-agenda][ORG-AGENDA]]
   - [[#org-roam][ORG-ROAM]]
+  - [[#ansi-support][ANSI SUPPORT]]
 - [[#which-key][WHICH-KEY]]
-- [[#clipboard-sync][CLIPBOARD SYNC]]
-  - [[#syncing-screenshots][SYNCING SCREENSHOTS]]
 - [[#sudo-edit][SUDO EDIT]]
 - [[#icons][ICONS]]
   - [[#nerd-icons][NERD ICONS]]
-  - [[#emojis][EMOJIS]]
 - [[#vertico][VERTICO]]
   - [[#zoxide][ZOXIDE]]
-  - [[#affe][AFFE]]
 - [[#marginalia][MARGINALIA]]
 - [[#orderless][ORDERLESS]]
 - [[#corfu][CORFU]]
@@ -64,10 +61,8 @@
 - [[#jupyter][JUPYTER]]
 - [[#rainbow-mode][RAINBOW MODE]]
 - [[#latex][LATEX]]
-  - [[#reftex][Reftex]]
   - [[#citar][Citar]]
   - [[#misc-writing-tools][Misc writing tools]]
-- [[#hololayer][HOLOLAYER]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -201,6 +196,7 @@
     "b n" '(next-buffer :wk "Next buffer")
     "b p" '(previous-buffer :wk "Previous buffer")
     "b r" '(revert-buffer :wk "Reload buffer"))
+
   (leader-key
     "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring"))
 
@@ -542,6 +538,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (set-fringe-mode 10)               ; give some breathing room
 (menu-bar-mode -1)                 ; disable menubar
 (blink-cursor-mode 0)              ; disable blinking cursor
+(pixel-scroll-precision-mode 1)
 #+end_src
 
 ** Display Line Numbers and Truncated Lines
@@ -755,7 +752,24 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
     (org-roam-ui-open-on-start nil))
 #+end_src
 
+** ANSI SUPPORT
+#+begin_src emacs-lisp
+(require 'ansi-color)
 
+(defun my-ansi-colorize-buffer ()
+  (ansi-color-apply-on-region (point-min) (point-max)))
+
+(add-hook 'org-babel-after-execute-hook
+          (lambda ()
+            (when (eq major-mode 'org-mode)
+              (save-excursion
+                (goto-char (org-babel-where-is-src-block-result nil nil))
+                (when (looking-at org-babel-result-regexp)
+                  (let ((beg (match-end 0))
+                        (end (org-babel-result-end)))
+                    (ansi-color-apply-on-region beg end)))))))
+
+#+end_src
 * WHICH-KEY
 
 #+begin_src emacs-lisp
@@ -777,81 +791,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
         which-key-separator " → " ))
 #+end_src
 
-
-* CLIPBOARD SYNC
-
-#+begin_src emacs-lisp
-;; Sync FROM Windows clipboard TO kill ring (when focusing Emacs)
-;; (defun wsl-auto-sync-clipboard ()
-;;   "Auto-sync Windows clipboard to kill ring on focus"
-;;   (condition-case nil
-;;       (let ((clipboard-content 
-;;              (string-trim 
-;;               (replace-regexp-in-string "\r" "" 
-;;                 (shell-command-to-string "powershell.exe -command 'Get-Clipboard'")))))
-;;         (when (and (not (string-empty-p clipboard-content))
-;;                    (or (= (length kill-ring) 0)
-;;                        (not (string= clipboard-content (current-kill 0 t)))))
-;;           (kill-new clipboard-content)))
-;;     (error nil)))
-
-
-;; ;; Sync FROM kill ring TO Windows clipboard (when copying in Emacs)  
-;; (defun wsl-copy-clip (&rest _args)
-;;   (let ((temp-file (make-temp-file "winclip")))
-;;     (write-region (current-kill 0 t) nil temp-file)
-;;     (shell-command (concat "clip.exe < " temp-file))
-;;     (delete-file temp-file)))
-
-;; ;; Enable both directions
-;; (add-hook 'focus-in-hook 'wsl-auto-sync-clipboard)
-;; (advice-add 'kill-new :after #'wsl-copy-clip)
-#+end_src
-
-** SYNCING SCREENSHOTS
-
-Stolen From Here [[https://dev.to/bitschupser/how-to-paste-images-into-emacs-org-mode-running-in-windows-subsystem-for-linux-2pc0][Pasting Screenshots For Emacs in WSL]]
-
-#+begin_src emacs-lisp
-(defun my-org-paste-image ()
-  "Paste an image into a time stamped unique-named file in the
-same directory as the org-buffer and insert a link to this file."
-  (interactive)
-  (let* ((target-file
-          (concat
-           (make-temp-name
-            (concat (buffer-file-name)
-                    "_"
-                    (format-time-string "%Y%m%d_%H%M%S_"))) ".png"))
-         (wsl-path
-          (concat (as-windows-path(file-name-directory target-file))
-                  "\\"
-                  (file-name-nondirectory target-file)))
-         (ps-script
-          (concat "(Get-Clipboard -Format image).Save('" wsl-path "')")))
-
-    (powershell ps-script)
-
-    (if (file-exists-p target-file)
-        (progn (insert (concat "[[" target-file "]]"))
-               (org-display-inline-images))
-      (user-error
-       "Error pasting the image, make sure you have an image in the clipboard!"))
-    ))
-
-(defun as-windows-path (unix-path)
-;;   "Takes a unix path and returns a matching WSL path
-;; (e.g. \\\\wsel$\\Ubuntu-20.04\\tmp)"
-;;   ;; substring removes the trailing \n
-  (substring
-   (shell-command-to-string
-    (concat "wslpath -w " unix-path)) 0 -1))
-
-(defun powershell (script)
-  "executes the given script within a powershell and returns its return value"
-  (call-process "powershell.exe" nil nil nil
-                "-Command" (concat "& {" script "}")))
-#+end_src
 
 * SUDO EDIT
 Sudo-edit gives us the ability to open files with sudo privileges or switch over to editing with sudo privileges if we initially opened the file without such privileges.
@@ -888,17 +827,6 @@ Sudo-edit gives us the ability to open files with sudo privileges or switch over
   (dired-mode . nerd-icons-dired-mode))
 #+end_src
 
-** EMOJIS
-#+begin_src emacs-lisp
-(use-package emojify
-  :config
-  (when (member "Segoe UI Emoji" (font-family-list))
-    (set-fontset-font
-     t 'symbol (font-spec :family "Segoe UI Emoji") nil 'prepend))
-  (setq emojify-display-style 'unicode)
-  (setq emojify-emoji-styles '(unicode))
-  (bind-key* (kbd "C-c .") #'emojify-insert-emoji)) 
-#+end_src
 * VERTICO 
 
 #+begin_src emacs-lisp
@@ -926,14 +854,6 @@ Sudo-edit gives us the ability to open files with sudo privileges or switch over
   :config
   :custom
   (zoxide-add-to-history t))
-#+end_src
-
-** AFFE
-#+begin_src emacs-lisp
-(use-package affe
-  :config
-  ;; Manual preview key for `affe-grep'
-  (consult-customize affe-grep :preview-key "M-."))
 #+end_src
 
 * MARGINALIA
@@ -1108,23 +1028,23 @@ Enabling Frequency + Recency Sorting of options in vertico
 Eshell is an emacs 'shell' written in Elisp
 
 #+begin_src emacs-lisp
-(use-package eshell-syntax-highlighting
-  :after esh-mode
-  :config
-  (eshell-syntax-highlighting-global-mode +1))
+;; (use-package eshell-syntax-highlighting
+;;   :after esh-mode
+;;   :config
+;;   (eshell-syntax-highlighting-global-mode +1))
 
-;;eshell-syntax-highlighting -- adds zsh-like syntax highlighting
-;;eshell-rc-script -- your profile for eshell similar to .zshrc
-;;eshell-aliases-file -- sets aliases file for the eshell
+;; ;;eshell-syntax-highlighting -- adds zsh-like syntax highlighting
+;; ;;eshell-rc-script -- your profile for eshell similar to .zshrc
+;; ;;eshell-aliases-file -- sets aliases file for the eshell
 
-(setq eshell-rc-script (concat user-emacs-directory "eshell/profile")
-      eshell-aliases-file (concat user-emacs-directory "eshell/aliases")
-      eshell-history-size 5000
-      eshell-buffer-maximum-lines 5000
-      eshell-hist-ignoredups t
-      eshell-scroll-to-bottom-on-input t
-      eshell-destroy-buffer-when-process-dies t
-      eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh")) 
+;; (setq eshell-rc-script (concat user-emacs-directory "eshell/profile")
+;;       eshell-aliases-file (concat user-emacs-directory "eshell/aliases")
+;;       eshell-history-size 5000
+;;       eshell-buffer-maximum-lines 5000
+;;       eshell-hist-ignoredups t
+;;       eshell-scroll-to-bottom-on-input t
+;;       eshell-destroy-buffer-when-process-dies t
+;;       eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh")) 
 #+end_src
 
 
@@ -1453,9 +1373,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 #+begin_src emacs-lisp
 (use-package dirvish
   :after evil
-  :init (dirvish-override-dired-mode)
-)
-
+  :init (dirvish-override-dired-mode))
 #+end_src
 
 ** NEOTREE 
@@ -1515,9 +1433,12 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 * LSPs
 
 #+begin_src emacs-lisp
-
 (use-package lsp-bridge
   :ensure t
+  :hook
+  (org-mode . lsp-bridge-mode)
+  ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+  (org-src-mode . (lambda () (lsp-bridge-mode 1)))
   :init
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
@@ -1530,9 +1451,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
-        lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
-  (setq lsp-bridge-enable-log t))
-
+        lsp-bridge-csharp-lsp-server "omnisharp-roslyn"))
 
 ;; Python support 
 (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
@@ -1547,12 +1466,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 ;; C# integration (tree-sitter mode only)
 (add-hook 'csharp-ts-mode-hook #'lsp-bridge-mode)
-
-;; ;; C# integration
-;; (use-package csharp-mode
-;;   :ensure t
-;;   :mode "\\.cs\\'"
-;;   :hook (csharp-mode . lsp-bridge-mode))
 
 ;;org-babel support
 (with-eval-after-load 'org
@@ -1614,6 +1527,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :after org
   :config
   ;; Enable Jupyter support in Org Babel
+  (require 'ob-jupyter)
   (with-eval-after-load 'org
     ;; (add-to-list 'org-babel-load-languages '(jupyter . t))
     (org-babel-do-load-languages
@@ -1633,16 +1547,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
     ;; Show images after executing a block (e.g., matplotlib inline)
     (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
-
-  :hook
-  ;; Completion in org buffers (headings, inline code, etc.)
-  (org-mode . lsp-bridge-mode)
-  ;; Ensure src-edit buffers (C-c ') get lsp-bridge
-  (org-src-mode . (lambda () (lsp-bridge-mode 1)))
-  :config
-  (setq org-src-tab-acts-natively t
-        org-src-preserve-indentation t
-        org-edit-src-content-indentation 0))
+)
 #+end_src
 
 
@@ -1683,10 +1588,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+end_src
 
-
-** Reftex
-#+begin_src emacs-lisp
-#+end_src
 
 
 ** Citar
@@ -1749,19 +1650,4 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+end_src
 
-* HOLOLAYER
-
-#+begin_src emacs-lisp
-;; (use-package holo-layer
-;;   :ensure (:host github 
-;;                  :repo "manateelazycat/holo-layer"
-;;                  :files ("*.el" "*.py" "icon_cache/*"))
-;;   :config
-;;   (setq holo-layer-enable-cursor-animation t)
-;;   (setq holo-layer-enable-type-animation t)
-;;   (setq holo-layer-cursor-animation-interval 1)  ; Animation refresh interval
-;;   (setq holo-layer-cursor-color "#ff6b6b")        ; Cursor color
-;;   (setq holo-layer-cursor-alpha 200)
-;;   (setq holo-layer-enable-debug t))
-#+end_src
 
