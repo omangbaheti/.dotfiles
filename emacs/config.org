@@ -38,13 +38,10 @@
   - [[#zoxide][ZOXIDE]]
 - [[#marginalia][MARGINALIA]]
 - [[#orderless][ORDERLESS]]
-- [[#corfu][CORFU]]
 - [[#prescient][PRESCIENT]]
-- [[#corg][CORG]]
 - [[#consult][CONSULT]]
 - [[#embark][EMBARK]]
 - [[#shells-and-terminals][SHELLS AND TERMINALS]]
-  - [[#eshell][Eshell]]
   - [[#vterm][Vterm]]
 - [[#theming][THEMING]]
   - [[#doom-themes][Doom Themes]]
@@ -60,9 +57,8 @@
 - [[#dashboard][DASHBOARD]]
 - [[#jupyter][JUPYTER]]
 - [[#rainbow-mode][RAINBOW MODE]]
-- [[#latex][LATEX]]
-  - [[#citar][Citar]]
-  - [[#misc-writing-tools][Misc writing tools]]
+- [[#git][GIT]]
+- [[#deadgrep][DEADGREP]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -253,8 +249,7 @@
     "h f" '(describe-function :wk "Describe function")
     "h v" '(describe-variable :wk "Describe Variable")
     "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
-    "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs")
-    )
+    "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
 
   (leader-key
     "t" '(:ignore t :wk "Toggle")
@@ -884,61 +879,6 @@ Sudo-edit gives us the ability to open files with sudo privileges or switch over
 #+end_src
 
 
-* CORFU
-#+begin_src emacs-lisp
-(use-package corfu
-  :ensure t
-  :hook (after-init . global-corfu-mode)
-  :bind (:map corfu-map ("C-<tab>" . corfu-complete))
-  :config
-  ;; (setq tab-always-indent 'complete)
-  (setq tab-always-indent nil)
-  (setq corfu-preview-current nil)
-  (setq corfu-min-width 20)
-  (setq corfu-auto t)
-  (setq corfu-auto-delay 0.2)
-  (setq corfu-auto-prefix 1)
-  (setq corfu-popupinfo-delay '(0.5 . 0.5))
-  (corfu-popupinfo-mode 1)) ; shows documentation after `corfu-popupinfo-delay'
-
-;; (with-eval-after-load 'corfu
-;;   (define-key corfu-map (kbd "TAB") nil)
-;;   (define-key corfu-map (kbd "<tab>") nil))
-
-
-;; (add-hook 'org-src-mode-hook #'my-org-src-corfu-setup)
-
-;; (defun my-org-src-corfu-setup ()
-;;   "Setup Corfu keybindings for org-src blocks."
-;;   (when (bound-and-true-p corfu-mode)
-;;     (local-set-key (kbd "C-<tab>") #'corfu-complete)))
-
-;; (defun my/org-babel-edit-prep-jupyter-python (_)
-;;   (lsp-deferred)
-;;   (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
-
-;; (defun my/org-babel-edit-prep-python (_)
-;;   ;; Enable lsp and corfu in the edit buffer
-;;   (lsp-deferred)
-;;   (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
-
-;; (defun my/org-tab-dwim ()
-;;   "Context-aware TAB in org-mode."
-;;   (interactive)
-;;   (if (org-in-src-block-p)
-;;       ;; (indent-according-to-mode)
-;;       (indent-for-tab-command)  ; Just indent in src blocks
-;;     (org-cycle)))              ; Normal org behavior elsewhere
-
-;; ;; Bind this to TAB in org-mode
-;; (define-key org-mode-map (kbd "TAB") #'my/org-tab-dwim)
-;; (define-key org-mode-map (kbd "<tab>") #'my/org-tab-dwim)
-
-;; (add-hook 'org-babel-edit-prep:jupyter-python #'my/org-babel-edit-prep-jupyter-python)
-;; (add-hook 'org-babel-edit-prep:python #'my/org-babel-edit-prep-python)
-#+end_src
-
-
 * PRESCIENT
 
 Enabling Frequency + Recency Sorting of options in vertico 
@@ -952,13 +892,6 @@ Enabling Frequency + Recency Sorting of options in vertico
   :after vertico
   :config
   (vertico-prescient-mode))
-#+end_src
-
-* CORG
-#+begin_src emacs-lisp 
-(use-package corg
-  :ensure (:host github :repo "isamert/corg.el"))
-(add-hook 'org-mode-hook #'corg-setup)
 #+end_src
 
 
@@ -1024,29 +957,6 @@ Enabling Frequency + Recency Sorting of options in vertico
 
 * SHELLS AND TERMINALS
 
-** Eshell
-Eshell is an emacs 'shell' written in Elisp
-
-#+begin_src emacs-lisp
-;; (use-package eshell-syntax-highlighting
-;;   :after esh-mode
-;;   :config
-;;   (eshell-syntax-highlighting-global-mode +1))
-
-;; ;;eshell-syntax-highlighting -- adds zsh-like syntax highlighting
-;; ;;eshell-rc-script -- your profile for eshell similar to .zshrc
-;; ;;eshell-aliases-file -- sets aliases file for the eshell
-
-;; (setq eshell-rc-script (concat user-emacs-directory "eshell/profile")
-;;       eshell-aliases-file (concat user-emacs-directory "eshell/aliases")
-;;       eshell-history-size 5000
-;;       eshell-buffer-maximum-lines 5000
-;;       eshell-hist-ignoredups t
-;;       eshell-scroll-to-bottom-on-input t
-;;       eshell-destroy-buffer-when-process-dies t
-;;       eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh")) 
-#+end_src
-
 
 ** Vterm
 Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets the shell to be used in M-x shell, M-x term, M-x ansi-term and M-x vterm.  By default, the shell is set to 'fish' but could change it to 'bash' or 'zsh' if you prefer.
@@ -1058,8 +968,8 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 :config
 (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
 (setq vterm-max-scrollback 5000)
+(setq vterm-shell-args '("-l"))
 :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
-
 
 (use-package vterm-toggle
   :ensure t
@@ -1559,95 +1469,106 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 
-* LATEX
+# * LATEX
 
-#+begin_src emacs-lisp
+# #+begin_src emacs-lisp
 
-(use-package auctex
-  :defer t
-  :config
-  ;; Basic AUCTeX settings
-  (setq TeX-auto-save t)
-  (setq TeX-parse-self t)
-  (setq TeX-master nil)
+# (use-package auctex
+#   :defer t
+#   :config
+#   ;; Basic AUCTeX settings
+#   (setq TeX-auto-save t)
+#   (setq TeX-parse-self t)
+#   (setq TeX-master nil)
   
-  ;; Academic writing specific settings
-  (setq LaTeX-babel-hyphen nil) ; Prevent issues with academic citations
-  (setq LaTeX-electric-left-right-brace t)
-  (setq TeX-electric-escape t)
+#   ;; Academic writing specific settings
+#   (setq LaTeX-babel-hyphen nil) ; Prevent issues with academic citations
+#   (setq LaTeX-electric-left-right-brace t)
+#   (setq TeX-electric-escape t)
   
-  ;; Preview settings for academic documents
-  (setq preview-scale-function 1.2)
-  (setq preview-default-option-list '("displaymath" "floats" "graphics" "textmath" "sections" "footnotes"))
+#   ;; Preview settings for academic documents
+#   (setq preview-scale-function 1.2)
+#   (setq preview-default-option-list '("displaymath" "floats" "graphics" "textmath" "sections" "footnotes"))
   
-  ;; Enable folding for large academic documents
-  (add-hook 'LaTeX-mode-hook 'TeX-fold-mode)
-  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  (add-hook 'LaTeX-mode-hook 'flyspell-mode))
+#   ;; Enable folding for large academic documents
+#   (add-hook 'LaTeX-mode-hook 'TeX-fold-mode)
+#   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+#   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+#   (add-hook 'LaTeX-mode-hook 'flyspell-mode))
 
-#+end_src
+# #+end_src
 
 
 
-** Citar
-#+begin_src emacs-lisp
-(use-package citar
-  :bind (("C-c b" . citar-insert-citation)
-         :map minibuffer-local-map
-         ("M-b" . citar-insert-preset))
-  :custom
-  ;; Point to your bibliography files
-  (citar-bibliography '("~/Documents/references.bib" "~/Documents/additional-refs.bib"))
+# ** Citar
+# #+begin_src emacs-lisp
+# (use-package citar
+#   :bind (("C-c b" . citar-insert-citation)
+#          :map minibuffer-local-map
+#          ("M-b" . citar-insert-preset))
+#   :custom
+#   ;; Point to your bibliography files
+#   (citar-bibliography '("~/Documents/references.bib" "~/Documents/additional-refs.bib"))
   
-  ;; PDF and note directories for academic papers
-  (citar-library-paths '("~/Documents/papers/" "~/Documents/pdfs/"))
-  (citar-notes-paths '("~/Documents/notes/"))
+#   ;; PDF and note directories for academic papers
+#   (citar-library-paths '("~/Documents/papers/" "~/Documents/pdfs/"))
+#   (citar-notes-paths '("~/Documents/notes/"))
   
-  ;; Academic citation formats
-  (citar-at-point-function 'embark-act)
+#   ;; Academic citation formats
+#   (citar-at-point-function 'embark-act)
   
-  :hook
-  (LaTeX-mode . citar-capf-setup)
-  (org-mode . citar-capf-setup))
+#   :hook
+#   (LaTeX-mode . citar-capf-setup)
+#   (org-mode . citar-capf-setup))
 
-;; Enhanced bibliography completion
-(use-package citar-embark
-  :after citar embark
-  :config (citar-embark-mode))
-#+end_src
+# ;; Enhanced bibliography completion
+# (use-package citar-embark
+#   :after citar embark
+#   :config (citar-embark-mode))
+# #+end_src
  
 
-** Misc writing tools
+# ** Misc writing tools
+
+# #+begin_src emacs-lisp
+
+# ;; Word count for academic papers
+# (use-package wc-mode
+#   :hook (LaTeX-mode . wc-mode)
+#   :config
+#   (setq wc-modeline-format "WC[%tw/%tcw]"))
+
+# ;; Academic spell checking
+# ;; (use-package flyspell
+# ;;   :hook ((LaTeX-mode . flyspell-mode)
+# ;;          (org-mode . flyspell-mode))
+# ;;   :config
+# ;;   ;; Use aspell for better academic vocabulary
+# ;;   (setq ispell-program-name "aspell")
+# ;;   (setq ispell-dictionary "en_US")
+  
+# ;;   ;; Academic-specific word list
+# ;;   (setq ispell-personal-dictionary "~/.config/emacs/academic-dict.txt"))
+
+# ;; Grammar checking with langtool
+# (use-package langtool
+#   :bind ("C-c g" . langtool-check)
+#   :config
+#   (setq langtool-language-tool-jar "~/LanguageTool/languagetool-commandline.jar")
+#   (setq langtool-default-language "en-US"))
+# #+end_src
+
+* GIT
 
 #+begin_src emacs-lisp
-
-;; Word count for academic papers
-(use-package wc-mode
-  :hook (LaTeX-mode . wc-mode)
-  :config
-  (setq wc-modeline-format "WC[%tw/%tcw]"))
-
-;; Academic spell checking
-;; (use-package flyspell
-;;   :hook ((LaTeX-mode . flyspell-mode)
-;;          (org-mode . flyspell-mode))
-;;   :config
-;;   ;; Use aspell for better academic vocabulary
-;;   (setq ispell-program-name "aspell")
-;;   (setq ispell-dictionary "en_US")
-  
-;;   ;; Academic-specific word list
-;;   (setq ispell-personal-dictionary "~/.config/emacs/academic-dict.txt"))
-
-;; Grammar checking with langtool
-(use-package langtool
-  :bind ("C-c g" . langtool-check)
-  :config
-  (setq langtool-language-tool-jar "~/LanguageTool/languagetool-commandline.jar")
-  (setq langtool-default-language "en-US"))
-
-
+(use-package git-timemachine
+  :ensure (:host codeberg :repo "pidu/git-timemachine"))
 #+end_src
 
 
+* DEADGREP
+#+begin_src emacs-lisp
+(use-package deadgrep
+  :ensure t
+  :bind (("C-c H" . deadgrep)))
+#+end_src
