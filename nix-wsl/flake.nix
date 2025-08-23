@@ -39,6 +39,7 @@
                     {
                       home-manager.useGlobalPkgs = true;
                       home-manager.useUserPackages = true;
+                      home-manager.extraSpecialArgs = { inherit unstable; };
                       home-manager.users.nixos = import ./home.nix;
                       system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
                     }
