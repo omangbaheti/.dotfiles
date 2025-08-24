@@ -122,7 +122,6 @@
 
 #+BEGIN_SRC emacs-lisp
 (setq evil-want-keybinding nil)
-;; Expands to: (elpaca evil (use-package evil :demand t))
 (use-package evil
   :init
   (setq evil-want-keybinging nil)
@@ -153,7 +152,27 @@
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 #+END_SRC
 
+*** Evil-Snipe
 
+
+*** Evil-goggles
+
+#+begin_src emacs-lisp
+(use-package evil-goggles
+  :ensure t
+  :config
+  (evil-goggles-mode)
+  (setq evil-goggles-enable-paste t)
+  (setq evil-goggles-enable-yank t)
+  (setq evil-goggles-duration 0.100) 
+  ;; Define custom colors instead of using diff faces
+  (custom-set-faces
+   '(evil-goggles-delete-face ((t (:background "#ff6c6b" :foreground "white"))))
+   '(evil-goggles-paste-face ((t (:background "#98be65" :foreground "black"))))
+   '(evil-goggles-yank-face ((t (:background "#ECBE7B" :foreground "black"))))
+   '(evil-goggles-indent-face ((t (:background "#27474E" :foreground "black"))))
+   '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
+#+end_src
 ** General Keybindings
 
 #+BEGIN_SRC emacs-lisp
@@ -354,22 +373,6 @@
 #+END_SRC
 
 ** YANK FEEDBACK
-#+begin_src emacs-lisp
-;; Set pulse highlight to green
-(setq pulse-flag t)
-(setq pulse-delay 0.04)
-(setq pulse-iterations 10)
-;; Define a custom green face for pulsing
-(defface my-pulse-face
-  '((t (:background "#a3be8c")))  ; Bright green
-  "Face for green pulse highlighting")
-;; Use the custom green face
-(defun meain/evil-yank-advice (orig-fn beg end &rest args)
-  "Highlight yanked region in green momentarily."
-  (pulse-momentary-highlight-region beg end 'my-pulse-face)
-  (apply orig-fn beg end args))
-(advice-add 'evil-yank :around 'meain/evil-yank-advice)
-#+end_src 
 
 * CLOSING MINIBUFFERS
 
