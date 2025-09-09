@@ -61,12 +61,15 @@
         jupyter
         jupyterlab
         seaborn
+        xlib
         epc
         sexpdata
         six
         inflect
         pyqt6
         pyqt6-sip
+        pyqt6-webengine
+        qrcode
         python-lsp-server
       ]))
       R
@@ -74,6 +77,7 @@
       zulu8
       fd
       glib
+      gdb
       clang
       cmake
       gcc
@@ -92,6 +96,8 @@
       statix
       omnisharp-roslyn
       unstable.pyrefly
+      harper
+      ltex-ls-plus
     ];
 
   # This value determines the NixOS release from which the default
