@@ -57,8 +57,13 @@
 - [[#dashboard][DASHBOARD]]
 - [[#jupyter][JUPYTER]]
 - [[#rainbow-mode][RAINBOW MODE]]
+- [[#latex][LATEX]]
+  - [[#pdf-tools][Pdf-Tools]]
+  - [[#citar][Citar]]
+  - [[#misc-writing-tools][Misc writing tools]]
 - [[#git][GIT]]
 - [[#deadgrep][DEADGREP]]
+- [[#spacious-padding][SPACIOUS PADDING]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -1347,7 +1352,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
 (use-package lsp-bridge
-  :ensure t
+  :ensure nil 
   :hook
   (org-mode . lsp-bridge-mode)
   ;; Ensure src-edit buffers (C-c ') get lsp-bridge
@@ -1364,13 +1369,14 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
-        lsp-bridge-csharp-lsp-server "omnisharp-roslyn"))
+	lsp-bridge-tex-lsp-server "texlab"
+        lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
+  )
 
 ;; Python support 
 (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
 (add-hook 'python-ts-mode-hook #'lsp-bridge-mode)
-
-
+(add-hook 'LaTeX-mode-hook #'lsp-bridge-mode)
 ;; Nix integration
 (use-package nix-mode
   :ensure t
@@ -1386,12 +1392,24 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+end_src
 
+
 ** YASNIPPET
 #+begin_src jupyter-python :tangle temp.py :session py 
 ;; Packages you need
 (use-package yasnippet
   :hook ((after-init . yas-reload-all)
          (prog-mode . yas-minor-mode)))
+
+(use-package yasnippet
+  :ensure t
+  :hook ((after-init . yas-reload-all)
+         (prog-mode . yas-minor-mode))
+  :config
+  (yas-global-mode 1))
+
+;; Make sure lsp-bridge works with yasnippet
+(setq lsp-bridge-enable-completion-in-string t)
+
 #+end_src
 
 * PROJECTILE
@@ -1472,94 +1490,115 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 
-# * LATEX
+* LATEX
 
-# #+begin_src emacs-lisp
-
-# (use-package auctex
-#   :defer t
-#   :config
-#   ;; Basic AUCTeX settings
-#   (setq TeX-auto-save t)
-#   (setq TeX-parse-self t)
-#   (setq TeX-master nil)
+#+begin_src emacs-lisp
+(use-package auctex
+  :defer t
+  :config
+  ;; Basic AUCTeX settings
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq TeX-master nil)
   
-#   ;; Academic writing specific settings
-#   (setq LaTeX-babel-hyphen nil) ; Prevent issues with academic citations
-#   (setq LaTeX-electric-left-right-brace t)
-#   (setq TeX-electric-escape t)
+  ;; PDF viewer configuration
+  (setq TeX-view-program-selection '((output-pdf "PDF Tools")))
+  (setq TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
+  (setq TeX-source-correlate-start-server t)
+  ;; Auto-refresh PDF buffer after compilation
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+  ;; Academic writing specific settings
+  (setq LaTeX-babel-hyphen nil) ; Prevent issues with academic citations
+  (setq LaTeX-electric-left-right-brace t)
+  (setq TeX-electric-escape nil)
   
-#   ;; Preview settings for academic documents
-#   (setq preview-scale-function 1.2)
-#   (setq preview-default-option-list '("displaymath" "floats" "graphics" "textmath" "sections" "footnotes"))
+  ;; Preview settings for academic documents
+  (setq preview-scale-function 1.2)
+  (setq preview-default-option-list '("displaymath" "floats" "graphics" "textmath" "sections" "footnotes"))
+  (setq-default TeX-output-dir "build")
+  ;; Enable folding for large academic documents
+  (add-hook 'LaTeX-mode-hook 'TeX-fold-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode))
+#+end_src
+
+
+** Pdf-Tools
+
+#+begin_src emacs-lisp
+(use-package pdf-tools
+  :ensure t
+  :config
+  (pdf-tools-install)
+  (setq-default pdf-view-display-size 'fit-page)
+  (setq pdf-annot-activate-created-annotations t)
+  (setq pdf-cache-image-limit 15)
+  (setq pdf-view-resize-factor 1.1)
   
-#   ;; Enable folding for large academic documents
-#   (add-hook 'LaTeX-mode-hook 'TeX-fold-mode)
-#   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-#   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-#   (add-hook 'LaTeX-mode-hook 'flyspell-mode))
-
-# #+end_src
-
-
-
-# ** Citar
-# #+begin_src emacs-lisp
-# (use-package citar
-#   :bind (("C-c b" . citar-insert-citation)
-#          :map minibuffer-local-map
-#          ("M-b" . citar-insert-preset))
-#   :custom
-#   ;; Point to your bibliography files
-#   (citar-bibliography '("~/Documents/references.bib" "~/Documents/additional-refs.bib"))
+  ;; Sync settings
+  (setq pdf-sync-forward-display-action
+        '(display-buffer-reuse-window (reusable-frames . t)))
+  (setq pdf-sync-backward-display-action
+        '(display-buffer-reuse-window (reusable-frames . t)))
   
-#   ;; PDF and note directories for academic papers
-#   (citar-library-paths '("~/Documents/papers/" "~/Documents/pdfs/"))
-#   (citar-notes-paths '("~/Documents/notes/"))
+  :bind (:map pdf-view-mode-map
+         ("C-s" . isearch-forward)
+         ("h" . pdf-annot-add-highlight-markup-annotation)
+         ("t" . pdf-annot-add-text-annotation)
+         ("D" . pdf-annot-delete))
   
-#   ;; Academic citation formats
-#   (citar-at-point-function 'embark-act)
+  :hook (pdf-view-mode . (lambda ()
+                           (cua-mode 0)
+                           (display-line-numbers-mode 0))))
+
+#+end_src
+
+** Citar
+#+begin_src emacs-lisp
+(use-package citar
+  :bind (("C-c b" . citar-insert-citation)
+         :map minibuffer-local-map
+         ("M-b" . citar-insert-preset))
+  :custom
+  ;; Point to your bibliography files
+  (citar-bibliography '("~/Documents/references.bib" "~/Documents/additional-refs.bib"))
   
-#   :hook
-#   (LaTeX-mode . citar-capf-setup)
-#   (org-mode . citar-capf-setup))
-
-# ;; Enhanced bibliography completion
-# (use-package citar-embark
-#   :after citar embark
-#   :config (citar-embark-mode))
-# #+end_src
- 
-
-# ** Misc writing tools
-
-# #+begin_src emacs-lisp
-
-# ;; Word count for academic papers
-# (use-package wc-mode
-#   :hook (LaTeX-mode . wc-mode)
-#   :config
-#   (setq wc-modeline-format "WC[%tw/%tcw]"))
-
-# ;; Academic spell checking
-# ;; (use-package flyspell
-# ;;   :hook ((LaTeX-mode . flyspell-mode)
-# ;;          (org-mode . flyspell-mode))
-# ;;   :config
-# ;;   ;; Use aspell for better academic vocabulary
-# ;;   (setq ispell-program-name "aspell")
-# ;;   (setq ispell-dictionary "en_US")
+  ;; PDF and note directories for academic papers
+  (citar-library-paths '("~/Documents/papers/" "~/Documents/pdfs/"))
+  (citar-notes-paths '("~/Documents/notes/"))
   
-# ;;   ;; Academic-specific word list
-# ;;   (setq ispell-personal-dictionary "~/.config/emacs/academic-dict.txt"))
+  ;; Academic citation formats
+  (citar-at-point-function 'embark-act)
+  
+  :hook
+  (LaTeX-mode . citar-capf-setup)
+  (org-mode . citar-capf-setup))
 
-# ;; Grammar checking with langtool
-# (use-package langtool
-#   :bind ("C-c g" . langtool-check)
-#   :config
-#   (setq langtool-language-tool-jar "~/LanguageTool/languagetool-commandline.jar")
-#   (setq langtool-default-language "en-US"))
-# #+end_src
+;; Enhanced bibliography completion
+(use-package citar-embark
+  :after citar embark
+  :config (citar-embark-mode))
+ #+end_src 
+
+** Misc writing tools
+
+#+begin_src emacs-lisp
+
+;; Word count for academic papers
+(use-package wc-mode
+  :hook (LaTeX-mode . wc-mode)
+  :config
+  (setq wc-modeline-format "WC[%tw/%tcw]"))
+
+(use-package langtool
+  :bind ("C-c g" . langtool-check)
+  :config
+  (setq langtool-language-tool-jar nil)  ; Don't use JAR file
+  (setq langtool-java-classpath nil)     ; Use command-line tool instead
+  (setq langtool-bin "languagetool-commandline")  ; Use the executable
+  (setq langtool-default-language "en-US"))
+#+end_src
 
 * GIT
 
@@ -1574,4 +1613,15 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 (use-package deadgrep
   :ensure t
   :bind (("C-c H" . deadgrep)))
+#+end_src
+
+
+* SPACIOUS PADDING
+
+
+#+begin_src emacs-lisp
+(use-package spacious-padding
+  :ensure t
+  :config
+  (spacious-padding-mode 1))
 #+end_src
