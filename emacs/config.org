@@ -7,6 +7,7 @@
 - [[#important-programs-to-load-first][IMPORTANT PROGRAMS TO LOAD FIRST]]
   - [[#package-manager][Package Manager]]
   - [[#load-evil-mode][Load Evil Mode]]
+  - [[#hydra][HYDRA]]
   - [[#general-keybindings][General Keybindings]]
   - [[#yank-feedback][YANK FEEDBACK]]
 - [[#closing-minibuffers][CLOSING MINIBUFFERS]]
@@ -29,6 +30,8 @@
   - [[#olivetti-centering][OLIVETTI (Centering)]]
   - [[#org-agenda][ORG-AGENDA]]
   - [[#org-supertag][ORG-SUPERTAG]]
+  - [[#org-roam][ORG ROAM]]
+  - [[#org-capture][ORG-CAPTURE]]
   - [[#ansi-support][ANSI SUPPORT]]
 - [[#which-key][WHICH-KEY]]
 - [[#sudo-edit][SUDO EDIT]]
@@ -62,12 +65,13 @@
   - [[#citar][Citar]]
   - [[#misc-writing-tools][Misc writing tools]]
 - [[#git][GIT]]
+- [[#transient][TRANSIENT]]
+- [[#svg-lib][SVG-LIB]]
 - [[#deadgrep][DEADGREP]]
 - [[#spacious-padding][SPACIOUS PADDING]]
 - [[#todo][TODO]]
   - [[#nano-agenda][NANO AGENDA]]
   - [[#code-complexity][CODE COMPLEXITY]]
-- [[#transient][TRANSIENT]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -165,7 +169,6 @@
 
 
 *** Evil-goggles
-
 #+begin_src emacs-lisp
 (use-package evil-goggles
   :ensure t
@@ -182,16 +185,22 @@
    '(evil-goggles-indent-face ((t (:background "#27474E" :foreground "black"))))
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 #+end_src
+
+
+** HYDRA
+#+begin_src emacs-lisp
+(use-package hydra
+  :ensure t)
+
+(use-package use-package-hydra
+  :ensure t)
+#+end_src
+
 ** General Keybindings
 #+BEGIN_SRC emacs-lisp
 (use-package general
   :config
   (general-evil-setup)
-
-  ;; Define the submenu keymap BEFORE using it
-  ;; (defvar my/dired-map (make-sparse-keymap)
-    ;; "Prefix keymap for SPC d … in Dired/Dirvish.")  ;; ensure bound early [2][7]
-
   ;; set up 'SPC' as the global leader key
   (general-create-definer leader-key
     :states '(normal insert visual emacs)
@@ -216,6 +225,12 @@
     "TAB TAB" '(comment-line :wk "Comment lines"))
 
   (leader-key
+    "a" '(:ignore t :wk "Agenda")
+    "a o" '(nano-agenda :wk "Open Agenda")
+    "a p" '(nano-agenda-popup :wk "Open Agenda popup")
+)
+
+  (leader-key
     "b" '(:ignore t :wk "buffer")
     "b b" '(consult-buffer :wk "Switch buffer")
     "b i" '(ibuffer :wk "Ibuffer")
@@ -238,7 +253,6 @@
   
   (leader-key
     "m" '(:ignore t :wk "Org")
-    "m a" '(org-agenda :wk "Org agenda")
     "m e" '(org-export-dispatch :wk "Org export dispatch")
     "m i" '(org-toggle-item :wk "Org toggle item")
     "m t" '(org-todo :wk "Org todo")
@@ -265,6 +279,9 @@
     "m d" '(:ignore t :wk "Date/deadline")
     "m d t" '(org-time-stamp :wk "Org time stamp"))
   
+  (leader-key
+    "m c" '(:ignore t :wk "Org Capture")
+    "m c s" '(org-capture :wk "Org Capture"))
   (leader-key
     "'" '(vterm-toggle :wk "Toggle Vterm"))
   (leader-key
@@ -506,15 +523,18 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (add-hook 'org-mode-hook #'my-org-electric-pair-hook)
 
 #+end_src
+
 ** Beacon Mode
 #+begin_src emacs-lisp
-;;(use-package beacon
-  ;;:ensure t (:files (:defaults) :build nil)  ;; disables native compilation
-  ;;:init
-  ;;(setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
-        ;;beacon-color "#ff9da4")        ;; Optional: Customize the blink color
-  ;;:config
-  ;;(beacon-mode 1))                     ;; Enable beacon globallybeacon-mode 1)
+(use-package beacon
+  :ensure t 
+  :init
+  (setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
+        beacon-color "#ff9da4"
+        beacon-blink-when-window-scrolls nil 
+	beacon-blink-when-point-moves-vertically t)        
+  :config
+  (beacon-mode 1))                     ;; Enable beacon globally beacon-mode 1)
 #+end_src
 
 * ORG MODE
@@ -555,7 +575,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 | <q                     | '#+BEGIN_QUOTE' … '#+END_QUOTE'         |
 | <s                     | '#+BEGIN_SRC' … '#+END_SRC'             |
 | <v                     | '#+BEGIN_VERSE' … '#+END_VERSE'         |
- 
 
 #+begin_src emacs-lisp
 (require 'org-tempo)
@@ -660,11 +679,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 ** ORG-SUPERTAG
 
 #+begin_src emacs-lisp
-
-;; (use-package org-supertag
-;;   :ensure (org-supertag :host github :repo "yibie/org-supertag")
-;;   :after org)
-;; ;; org-supertag 5.0+ (pure Elisp)
 (use-package org-supertag
   :ensure (org-supertag :host github :repo "yibie/org-supertag")
   :after org
@@ -695,8 +709,54 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 #+end_src
 
-#+RESULTS:
-: [nil 26823 55181 769684 nil elpaca-process-queues nil nil 335000 nil]
+** ORG ROAM
+
+#+begin_src emacs-lisp
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory (file-truename "/path/to/org-files/"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+         ;; Dailies
+         ("C-c n j" . org-roam-dailies-capture-today))
+  :config
+  ;; If you're using a vertical completion framework, you might want a more informative completion interface
+  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (org-roam-db-autosync-mode)
+  ;; If using org-roam-protocol
+  (require 'org-roam-protocol))
+#+end_src
+
+*** ORG ROAM UI
+
+#+begin_src emacs-lisp
+(use-package org-roam-ui
+  :ensure
+    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+#+end_src
+
+** ORG-CAPTURE
+
+#+begin_src emacs-lisp
+(use-package capture-org-template
+  :ensure (:host github :repo "ration/capture-org-template.el")
+  :config 
+  (setq org-capture-templates (capture-org-template "~/.dotfiles/emacs/capture.org")))
+#+end_src
 
 ** ANSI SUPPORT
 #+begin_src emacs-lisp
@@ -901,10 +961,55 @@ Enabling Frequency + Recency Sorting of options in vertico
 (defun consult-fd-home ()
   "Run consult-fd searching from home directory."
   (interactive)
-  (let ((default-directory "~/"))
+  (let ((default-directory "/mnt/c/Users"))
     (consult-fd)))
 #+end_src
 * EMBARK 
+#+begin_src emacs-lisp
+
+(use-package embark
+  :ensure t
+
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  ;; Show the Embark target at point via Eldoc. You may adjust the
+  ;; Eldoc strategy, if you want to see the documentation from
+  ;; multiple providers. Beware that using this can be a little
+  ;; jarring since the message shown in the minibuffer can be more
+  ;; than one line, causing the modeline to move up and down:
+
+  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+  ;; Add Embark to the mouse context menu. Also enable `context-menu-mode'.
+  ;; (context-menu-mode 1)
+  ;; (add-hook 'context-menu-functions #'embark-context-menu 100)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+;; Consult users will also want the embark-consult package.
+(use-package embark-consult
+  :ensure t ; only need to install it, embark loads it after consult if found
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
+
+#+RESULTS:
+: [nil 26816 49665 473338 nil elpaca-process-queues nil nil 568000 nil]
 
 * SHELLS AND TERMINALS
 
@@ -1505,11 +1610,11 @@ Modern on-the-fly syntax checking extension for GNU Emacs
          ("M-b" . citar-insert-preset))
   :custom
   ;; Point to your bibliography files
-  (citar-bibliography '("~/Documents/references.bib" "~/Documents/additional-refs.bib"))
-  
+  (citar-bibliography '("/mnt/c/Users/obaheti/Documents/Papers/Library.bib"))
+ 
   ;; PDF and note directories for academic papers
-  (citar-library-paths '("~/Documents/papers/" "~/Documents/pdfs/"))
-  (citar-notes-paths '("~/Documents/notes/"))
+  (citar-library-paths '("/mnt/c/Users/obaheti/Documents/Papers/"))
+  ;; (citar-notes-paths '("~/Documents/notes/"))
   
   ;; Academic citation formats
   (citar-at-point-function 'embark-act)
@@ -1551,6 +1656,23 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 
+* TRANSIENT
+Its a built-in emacs package, its here only so that elpaca can manage it instead of emacs package manager
+#+begin_src emacs-lisp
+(use-package transient
+  :ensure t)
+#+end_src
+
+* SVG-LIB
+
+#+begin_src emacs-lisp
+(use-package svg-lib
+  :ensure t
+  :config
+  ;; Enable the mode globally
+  )
+#+end_src
+
 * DEADGREP
 #+begin_src emacs-lisp
 (use-package deadgrep
@@ -1570,14 +1692,13 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 
 * TODO
-
 ** NANO AGENDA
 https://github.com/rougier/nano-agenda
 
 #+begin_src emacs-lisp
 ;; Requires Emacs package.el configured to use GNU ELPA
 (use-package nano-agenda
-  :ensure t
+  :ensure (:type git :host github :repo "rougier/nano-agenda" :branch "rewrite")
   :commands (nano-agenda)
   :init
   ;; Point to Org agenda files (adjust to match the actual files)
@@ -1588,20 +1709,30 @@ https://github.com/rougier/nano-agenda
   ;; Available palettes are defined by nano-agenda; common choices include 'nano and 'material
   (setq nano-agenda-calendar-palette 'nano)
 
-  ;; Optional: show non-timestamped entries (supported since 0.2.2)
-  (setq nano-agenda-include-no-timestamp t)
-
   ;; Optional: number of agenda days shown on the right pane
   (setq nano-agenda-days 7)
 
   ;; Optional: start week on Monday
   (setq calendar-week-start-day 1)
+  :config
+  (defun nano-agenda-popup ()
+    "Open nano-agenda in a small temporary side window."
+    (interactive)
+    (let ((buf (get-buffer-create "*nano-agenda*")))
+    ;; Generate agenda if not already running
+    (unless (nano-agenda-open-p)
+       (nano-agenda))
+      (display-buffer-in-side-window buf
+                                     '((side . bottom)
+                                       (window-height . 0.3)))))
 
-  :bind
-  (("C-c a n" . nano-agenda)))
+      (defun nano-agenda-open-p ()
+	"Return t if a buffer named *nano-agenda* is open."
+	(get-buffer "*nano-agenda*")))
 
 
 #+end_src
+
 
 ** CODE COMPLEXITY
 https://github.com/emacs-vs/codemetrics
@@ -1609,10 +1740,3 @@ https://github.com/emacs-vs/line-reminder
 https://github.com/emacs-vs/rainbow-csv
 https://github.com/rougier/nano-mu4e
 https://github.com/rougier/notebook-mode
-* TRANSIENT
-
-#+begin_src emacs-lisp
-(use-package transient
-  :ensure t)
-#+end_src
-

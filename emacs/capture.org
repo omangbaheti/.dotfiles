@@ -1,0 +1,89 @@
+:PROPERTIES:
+:CATEGORY: Org Capture Templates
+:END:
+* Generic TODO
+  :PROPERTIES:
+  :DESCRIPTION: Generic TODO item in the Inbox
+  :KEY:      t
+  :TYPE:     entry
+  :TARGET:   file+headline "~/Org/todo.org" "Inbox"   
+  :END:
+** TODO %?
+* Org Capture Text
+  :PROPERTIES:
+  :DESCRIPTION: Captured text from browser
+  :KEY:        l
+  :TYPE:       entry
+  :TARGET:     file+headline "~/Org/todo.org" "Protocol"
+  :OPTIONS: :empty-lines 1
+  :END:
+*** TODO %?x
+    %u
+    #+begin_example
+    %i
+    #+end_example
+    Source: %:link
+* Org Capture
+  :PROPERTIES:
+  :KEY:        L
+  :TYPE:       entry
+  :TARGET:     file+headline "~/Org/todo.org" "Protocol"
+  :OPTIONS: :empty-lines 1
+  :DESCRIPTION: Captured link from browser
+  :END:
+** TODO %?
+   %u
+   Source: %:link
+* Meeting
+  :PROPERTIES:
+  :KEY:      o
+  :TARGET:   file+olp "~/Org/meetings.org" "Meetings"
+  :DESCRIPTION: Generic meeting notes
+  :END:
+**** %T %?
+     SCHEDULED: %T
+* TODO Email                               
+  :PROPERTIES:
+  :DESCRIPTION: TODO mu4e emails with a deadline in two days
+  :KEY:      P
+  :TARGET:   file+olp "~/Org/todo.org" "Inbox"
+  :END:
+** TODO %:fromname: %a %?
+   DEADLINE: %(org-insert-time-stamp (org-read-date nil t "+2d"))
+* Groceries plain list item
+:PROPERTIES:
+:KEY:      s
+:TARGET:   file+olp "~/Org/todo.org" "Groceries"
+:TYPE: checkitem
+:DESCRIPTION: Add grocery item to list
+:OPTIONS: :immediate-finish t
+:END:
+[ ] %^{ITEM}, $%^{COST}
+
+* Templates under prefix 'p'
+ :PROPERTIES:
+ :DESCRIPTION: Templates under prefix 'p'
+ :TYPE: prefix
+ :KEY:      p
+ :TARGET:
+ :END:
+* Sub-template under prefix 'p' todo
+ :PROPERTIES:
+ :DESCRIPTION: p-local todo
+ :TYPE: entry
+ :KEY:      pt
+ :TARGET:   file+headline +org-capture-project-todo-file "Inbox"
+ :OPTIONS: :prepend t
+ :END:
+** TODO %?
+%i
+%a
+* Add new capture template
+  :PROPERTIES:
+  :KEY:      M
+  :TARGET:   file "~/Org/capture.org"
+  :DESCRIPTION: Add new capture template. Prompt for key and description
+  :END:
+** %^{Capture name}
+  %^{KEY}p%^{TARGET|file "~/Org/todo.org"}p%^{DESCRIPTION}p
+*** %?
