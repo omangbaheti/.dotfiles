@@ -52,7 +52,6 @@
 (elpaca-wait)
 
 (setq evil-want-keybinding nil)
-;; Expands to: (elpaca evil (use-package evil :demand t))
 (use-package evil
   :init
   (setq evil-want-keybinging nil)
@@ -82,9 +81,28 @@
 ;;Useful for configuring built-in emacs features.
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
+(use-package evil-goggles
+  :ensure t
+  :config
+  (evil-goggles-mode)
+  (setq evil-goggles-enable-paste t)
+  (setq evil-goggles-enable-yank t)
+  (setq evil-goggles-duration 0.100) 
+  ;; Define custom colors instead of using diff faces
+  (custom-set-faces
+   '(evil-goggles-delete-face ((t (:background "#ff6c6b" :foreground "white"))))
+   '(evil-goggles-paste-face ((t (:background "#98be65" :foreground "black"))))
+   '(evil-goggles-yank-face ((t (:background "#ECBE7B" :foreground "black"))))
+   '(evil-goggles-indent-face ((t (:background "#27474E" :foreground "black"))))
+   '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
+
 (use-package general
   :config
   (general-evil-setup)
+
+  ;; Define the submenu keymap BEFORE using it
+  ;; (defvar my/dired-map (make-sparse-keymap)
+    ;; "Prefix keymap for SPC d … in Dired/Dirvish.")  ;; ensure bound early [2][7]
 
   ;; set up 'SPC' as the global leader key
   (general-create-definer leader-key
@@ -92,6 +110,7 @@
     :keymaps 'override
     :prefix "SPC" ;; set leader
     :global-prefix "M-SPC") ;; access leader in insert mode
+
   (setq evil-want-keybinding nil)
   
   (general-define-key
@@ -116,6 +135,7 @@
     "b n" '(next-buffer :wk "Next buffer")
     "b p" '(previous-buffer :wk "Previous buffer")
     "b r" '(revert-buffer :wk "Reload buffer"))
+
   (leader-key
     "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring"))
 
@@ -126,7 +146,6 @@
     "e e" '(eval-expression :wk "Evaluate elisp expression")
     "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
     "e r" '(eval-region :wk "Evaluate elisp in region")
-    ;;"e h" '(counsel-esh-history :which-key "Eshell History")
     "e s" '(eshell :which-key "Eshell"))
   
   (leader-key
@@ -172,8 +191,7 @@
     "h f" '(describe-function :wk "Describe function")
     "h v" '(describe-variable :wk "Describe Variable")
     "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
-    "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs")
-    )
+    "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
 
   (leader-key
     "t" '(:ignore t :wk "Toggle")
@@ -197,97 +215,7 @@
     "w H" '(buf-move-left :wk "Buffer Move Left")
     "w J" '(buf-move-down :wk "Buffer Move Down")
     "w K" '(buf-move-up :wk "Buffer Move Up")
-    "w L" '(buf-move-right :wk "Buffer Move Right"))
-
-
-  ;; ---------------------------------------------------------------------------
-  ;; 1.  Keep the motion keys in Dired/Dirvish (no leader, immediate execution)
-  ;; ---------------------------------------------------------------------------
-  (general-define-key
-   :states '(normal emacs)
-   :keymaps '(dired-mode-map dirvish-mode-map)
-
-   ;; Navigation ---------------------------------------------------------------
-   "h"  'dired-up-directory
-   "l"  'dired-find-file
-   "j"  'dired-next-line
-   "k"  'dired-previous-line
-   "gg" 'beginning-of-buffer
-   "G"  'end-of-buffer
-
-   ;; File operations ----------------------------------------------------------
-   "RET" 'dired-find-file
-   "TAB" 'dired-find-file-other-window
-   "q"   'quit-window
-   "gr"  'revert-buffer
-
-   ;; Marking ------------------------------------------------------------------
-   "m" 'dired-mark
-   "u" 'dired-unmark
-   "U" 'dired-unmark-all-marks
-   "t" 'dired-toggle-marks
-
-   ;; File management ----------------------------------------------------------
-   "d" 'dired-flag-file-deletion
-   "x" 'dired-do-flagged-delete
-   "D" 'dired-do-delete
-   "C" 'dired-do-copy
-   "R" 'dired-do-rename
-   "+" 'dired-create-directory
-
-   ;; Shell commands -----------------------------------------------------------
-   "!" 'dired-do-shell-command
-   "&" 'dired-do-async-shell-command)
-
-  ;; ---------------------------------------------------------------------------
-  ;; 2.  Add a leader submenu that which-key can display (prefix:  SPC d …)
-  ;; ---------------------------------------------------------------------------
-
-  ;; (defvar my/dired-map (make-sparse-keymap))
-  ;; (leader-key
-  ;;   :keymaps '(dired-mode-map dirvish-mode-map)
-  ;;   "d" `(:keymap ,my/dired-map :wk "dired/dirvish"))  ;; install the map
-  ;;   ;; common operations -------------------------------------------------------
-  ;;   "d h" '(dired-up-directory          :wk "parent dir")
-  ;;   "d l" '(dired-find-file             :wk "open / enter")
-  ;;   "d m" '(dired-mark                  :wk "mark")
-  ;;   "d u" '(dired-unmark                :wk "unmark")
-  ;;   "d d" '(dired-flag-file-deletion    :wk "flag delete")
-  ;;   "d x" '(dired-do-flagged-delete     :wk "execute deletions")
-  ;;   "d r" '(dired-do-rename             :wk "rename / move")
-  ;;   "d c" '(dired-do-copy               :wk "copy")
-  ;;   "d +" '(dired-create-directory      :wk "mkdir")
-  ;;   "d !" '(dired-do-shell-command      :wk "shell cmd")
-  ;;   "d g" '(revert-buffer               :wk "refresh")
-
-  ;;   ;; Dirvish extras ----------------------------------------------------------
-  ;;   "d ?" '(dirvish-dispatch            :wk "dirvish menu")
-  ;;   "d a" '(dirvish-quick-access        :wk "quick access")
-  ;;   "d s" '(dirvish-quicksort           :wk "sort")
-  ;;   "d y" '(dirvish-yank-menu           :wk "yank menu")
-  ;;   "d v" '(dirvish-vc-menu             :wk "VC menu")
-  ;;   "d t" '(dirvish-layout-toggle       :wk "toggle layout")
-  ;;   "d T" '(dirvish-subtree-toggle      :wk "toggle subtree")
-  ;;   "d f" '(dirvish-file-info-menu      :wk "file info")
-  ;;   "d F" '(dirvish-history-go-forward  :wk "history →")
-  ;;   "d B" '(dirvish-history-go-backward :wk "history ←")
-  ;; 
-  )
-
-;; Set pulse highlight to green
-(setq pulse-flag t)
-(setq pulse-delay 0.04)
-(setq pulse-iterations 10)
-;; Define a custom green face for pulsing
-(defface my-pulse-face
-  '((t (:background "#a3be8c")))  ; Bright green
-  "Face for green pulse highlighting")
-;; Use the custom green face
-(defun meain/evil-yank-advice (orig-fn beg end &rest args)
-  "Highlight yanked region in green momentarily."
-  (pulse-momentary-highlight-region beg end 'my-pulse-face)
-  (apply orig-fn beg end args))
-(advice-add 'evil-yank :around 'meain/evil-yank-advice)
+    "w L" '(buf-move-right :wk "Buffer Move Right")))
 
 (defun keyboard-quit-dwim ()
   (interactive)
@@ -410,6 +338,7 @@ one, an error is signaled."
 (set-fringe-mode 10)               ; give some breathing room
 (menu-bar-mode -1)                 ; disable menubar
 (blink-cursor-mode 0)              ; disable blinking cursor
+(pixel-scroll-precision-mode 1)
 
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
@@ -534,26 +463,52 @@ one, an error is signaled."
 (setq org-agenda-current-time-string "")
 (setq org-agenda-time-grid '((daily) () "" "")))
 
-;; (use-package org-roam
-;;   :ensure t
-;;   :init
-;;   (setq org-roam-v2-ack t)  ;; Acknowledge v2 upgrade prompt
-;;   :custom
-;;   (org-roam-directory (file-truename "~/org-roam"))  ;; Set your notes directory
-;;   :bind (("C-c n f" . org-roam-node-find)
-;;          ("C-c n i" . org-roam-node-insert)
-;;          ("C-c n c" . org-roam-capture))
-;;   :config
-;;   (org-roam-db-autosync-enable))
+;; (use-package org-supertag
+;;   :ensure (org-supertag :host github :repo "yibie/org-supertag")
+;;   :after org)
+;; ;; org-supertag 5.0+ (pure Elisp)
+(use-package org-supertag
+  :ensure (org-supertag :host github :repo "yibie/org-supertag")
+  :after org
+  :init
+  ;; Index these directories; adjust to preferred note roots.
+  (setq org-supertag-sync-directories '("~/Notes/"))
+  :commands
+  (org-supertag-view-node
+   org-supertag-query
+   org-supertag-view-kanban
+   org-supertag-view-discover
+   org-supertag-view-chat-open)
+  :hook
+  (org-mode . (lambda ()
+                (require 'org-supertag)
+                (local-set-key (kbd "C-c s n") #'org-supertag-view-node)
+                (local-set-key (kbd "C-c s q") #'org-supertag-query)
+                (local-set-key (kbd "C-c s k") #'org-supertag-view-kanban)
+                (local-set-key (kbd "C-c s d") #'org-supertag-view-discover)
+                (local-set-key (kbd "C-c s c") #'org-supertag-view-chat-open)))
+  :config
+  ;; Example: custom field type
+;;   (add-to-list 'org-supertag-field-types
+;;                '(rating . (:validator org-supertag-validate-rating
+;;                            :formatter org-supertag-format-rating
+;;                            :description "Rating (1-5)")))
+)
 
-(use-package org-roam-ui
-    :after org-roam
-    :hook (after-init . org-roam-ui-mode)
-    :custom
-    (org-roam-ui-sync-theme t)
-    (org-roam-ui-follow t)
-    (org-roam-ui-update-on-save t)
-    (org-roam-ui-open-on-start nil))
+(require 'ansi-color)
+
+(defun my-ansi-colorize-buffer ()
+  (ansi-color-apply-on-region (point-min) (point-max)))
+
+(add-hook 'org-babel-after-execute-hook
+          (lambda ()
+            (when (eq major-mode 'org-mode)
+              (save-excursion
+                (goto-char (org-babel-where-is-src-block-result nil nil))
+                (when (looking-at org-babel-result-regexp)
+                  (let ((beg (match-end 0))
+                        (end (org-babel-result-end)))
+                    (ansi-color-apply-on-region beg end)))))))
 
 (use-package which-key
   :init
@@ -571,71 +526,6 @@ one, an error is signaled."
         which-key-max-description-length 25
         which-key-allow-imprecise-window-fit nil 
         which-key-separator " → " ))
-
-;; Sync FROM Windows clipboard TO kill ring (when focusing Emacs)
-;; (defun wsl-auto-sync-clipboard ()
-;;   "Auto-sync Windows clipboard to kill ring on focus"
-;;   (condition-case nil
-;;       (let ((clipboard-content 
-;;              (string-trim 
-;;               (replace-regexp-in-string "\r" "" 
-;;                 (shell-command-to-string "powershell.exe -command 'Get-Clipboard'")))))
-;;         (when (and (not (string-empty-p clipboard-content))
-;;                    (or (= (length kill-ring) 0)
-;;                        (not (string= clipboard-content (current-kill 0 t)))))
-;;           (kill-new clipboard-content)))
-;;     (error nil)))
-
-
-;; ;; Sync FROM kill ring TO Windows clipboard (when copying in Emacs)  
-;; (defun wsl-copy-clip (&rest _args)
-;;   (let ((temp-file (make-temp-file "winclip")))
-;;     (write-region (current-kill 0 t) nil temp-file)
-;;     (shell-command (concat "clip.exe < " temp-file))
-;;     (delete-file temp-file)))
-
-;; ;; Enable both directions
-;; (add-hook 'focus-in-hook 'wsl-auto-sync-clipboard)
-;; (advice-add 'kill-new :after #'wsl-copy-clip)
-
-(defun my-org-paste-image ()
-  "Paste an image into a time stamped unique-named file in the
-same directory as the org-buffer and insert a link to this file."
-  (interactive)
-  (let* ((target-file
-          (concat
-           (make-temp-name
-            (concat (buffer-file-name)
-                    "_"
-                    (format-time-string "%Y%m%d_%H%M%S_"))) ".png"))
-         (wsl-path
-          (concat (as-windows-path(file-name-directory target-file))
-                  "\\"
-                  (file-name-nondirectory target-file)))
-         (ps-script
-          (concat "(Get-Clipboard -Format image).Save('" wsl-path "')")))
-
-    (powershell ps-script)
-
-    (if (file-exists-p target-file)
-        (progn (insert (concat "[[" target-file "]]"))
-               (org-display-inline-images))
-      (user-error
-       "Error pasting the image, make sure you have an image in the clipboard!"))
-    ))
-
-(defun as-windows-path (unix-path)
-;;   "Takes a unix path and returns a matching WSL path
-;; (e.g. \\\\wsel$\\Ubuntu-20.04\\tmp)"
-;;   ;; substring removes the trailing \n
-  (substring
-   (shell-command-to-string
-    (concat "wslpath -w " unix-path)) 0 -1))
-
-(defun powershell (script)
-  "executes the given script within a powershell and returns its return value"
-  (call-process "powershell.exe" nil nil nil
-                "-Command" (concat "& {" script "}")))
 
 (use-package sudo-edit
   :config 
@@ -663,15 +553,6 @@ same directory as the org-buffer and insert a link to this file."
   :hook
   (dired-mode . nerd-icons-dired-mode))
 
-(use-package emojify
-  :config
-  (when (member "Segoe UI Emoji" (font-family-list))
-    (set-fontset-font
-     t 'symbol (font-spec :family "Segoe UI Emoji") nil 'prepend))
-  (setq emojify-display-style 'unicode)
-  (setq emojify-emoji-styles '(unicode))
-  (bind-key* (kbd "C-c .") #'emojify-insert-emoji))
-
 (use-package vertico
   :ensure t
   :init
@@ -693,11 +574,6 @@ same directory as the org-buffer and insert a link to this file."
   :custom
   (zoxide-add-to-history t))
 
-(use-package affe
-  :config
-  ;; Manual preview key for `affe-grep'
-  (consult-customize affe-grep :preview-key "M-."))
-
 (use-package marginalia
   ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
   ;; available in the *Completions* buffer, add it to the
@@ -717,57 +593,6 @@ same directory as the org-buffer and insert a link to this file."
   (setq completion-category-overrides 
         '((file (styles partial-completion orderless)))))
 
-(use-package corfu
-  :ensure t
-  :hook (after-init . global-corfu-mode)
-  :bind (:map corfu-map ("C-<tab>" . corfu-complete))
-  :config
-  ;; (setq tab-always-indent 'complete)
-  (setq tab-always-indent nil)
-  (setq corfu-preview-current nil)
-  (setq corfu-min-width 20)
-  (setq corfu-auto t)
-  (setq corfu-auto-delay 0.2)
-  (setq corfu-auto-prefix 1)
-  (setq corfu-popupinfo-delay '(0.5 . 0.5))
-  (corfu-popupinfo-mode 1)) ; shows documentation after `corfu-popupinfo-delay'
-
-;; (with-eval-after-load 'corfu
-;;   (define-key corfu-map (kbd "TAB") nil)
-;;   (define-key corfu-map (kbd "<tab>") nil))
-
-
-;; (add-hook 'org-src-mode-hook #'my-org-src-corfu-setup)
-
-;; (defun my-org-src-corfu-setup ()
-;;   "Setup Corfu keybindings for org-src blocks."
-;;   (when (bound-and-true-p corfu-mode)
-;;     (local-set-key (kbd "C-<tab>") #'corfu-complete)))
-
-;; (defun my/org-babel-edit-prep-jupyter-python (_)
-;;   (lsp-deferred)
-;;   (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
-
-;; (defun my/org-babel-edit-prep-python (_)
-;;   ;; Enable lsp and corfu in the edit buffer
-;;   (lsp-deferred)
-;;   (run-with-idle-timer 0.1 nil (lambda () (corfu-mode 1))))
-
-;; (defun my/org-tab-dwim ()
-;;   "Context-aware TAB in org-mode."
-;;   (interactive)
-;;   (if (org-in-src-block-p)
-;;       ;; (indent-according-to-mode)
-;;       (indent-for-tab-command)  ; Just indent in src blocks
-;;     (org-cycle)))              ; Normal org behavior elsewhere
-
-;; ;; Bind this to TAB in org-mode
-;; (define-key org-mode-map (kbd "TAB") #'my/org-tab-dwim)
-;; (define-key org-mode-map (kbd "<tab>") #'my/org-tab-dwim)
-
-;; (add-hook 'org-babel-edit-prep:jupyter-python #'my/org-babel-edit-prep-jupyter-python)
-;; (add-hook 'org-babel-edit-prep:python #'my/org-babel-edit-prep-python)
-
 (use-package prescient
   :config
   (prescient-persist-mode))
@@ -776,10 +601,6 @@ same directory as the org-buffer and insert a link to this file."
   :after vertico
   :config
   (vertico-prescient-mode))
-
-(use-package corg
-  :ensure (:host github :repo "isamert/corg.el"))
-(add-hook 'org-mode-hook #'corg-setup)
 
 (use-package consult
 
@@ -837,31 +658,13 @@ same directory as the org-buffer and insert a link to this file."
   (let ((default-directory "~/"))
     (consult-fd)))
 
-(use-package eshell-syntax-highlighting
-  :after esh-mode
-  :config
-  (eshell-syntax-highlighting-global-mode +1))
-
-;;eshell-syntax-highlighting -- adds zsh-like syntax highlighting
-;;eshell-rc-script -- your profile for eshell similar to .zshrc
-;;eshell-aliases-file -- sets aliases file for the eshell
-
-(setq eshell-rc-script (concat user-emacs-directory "eshell/profile")
-      eshell-aliases-file (concat user-emacs-directory "eshell/aliases")
-      eshell-history-size 5000
-      eshell-buffer-maximum-lines 5000
-      eshell-hist-ignoredups t
-      eshell-scroll-to-bottom-on-input t
-      eshell-destroy-buffer-when-process-dies t
-      eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh"))
-
 (use-package vterm
 :ensure t
 :config
 (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
 (setq vterm-max-scrollback 5000)
+(setq vterm-shell-args '("-l"))
 :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
-
 
 (use-package vterm-toggle
   :ensure t
@@ -1159,8 +962,7 @@ same directory as the org-buffer and insert a link to this file."
 
 (use-package dirvish
   :after evil
-  :init (dirvish-override-dired-mode)
-)
+  :init (dirvish-override-dired-mode))
 
 (use-package neotree
  :config
@@ -1193,7 +995,11 @@ same directory as the org-buffer and insert a link to this file."
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 
 (use-package lsp-bridge
-  :ensure t
+  :ensure nil 
+  :hook
+  (org-mode . lsp-bridge-mode)
+  ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+  (org-src-mode . (lambda () (lsp-bridge-mode 1)))
   :init
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
@@ -1206,15 +1012,14 @@ same directory as the org-buffer and insert a link to this file."
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
+	lsp-bridge-tex-lsp-server "texlab"
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
-  (setq lsp-bridge-enable-log t))
-
+  )
 
 ;; Python support 
 (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
 (add-hook 'python-ts-mode-hook #'lsp-bridge-mode)
-
-
+(add-hook 'LaTeX-mode-hook #'lsp-bridge-mode)
 ;; Nix integration
 (use-package nix-mode
   :ensure t
@@ -1223,12 +1028,6 @@ same directory as the org-buffer and insert a link to this file."
 
 ;; C# integration (tree-sitter mode only)
 (add-hook 'csharp-ts-mode-hook #'lsp-bridge-mode)
-
-;; ;; C# integration
-;; (use-package csharp-mode
-;;   :ensure t
-;;   :mode "\\.cs\\'"
-;;   :hook (csharp-mode . lsp-bridge-mode))
 
 ;;org-babel support
 (with-eval-after-load 'org
@@ -1266,6 +1065,7 @@ same directory as the org-buffer and insert a link to this file."
   :after org
   :config
   ;; Enable Jupyter support in Org Babel
+  (require 'ob-jupyter)
   (with-eval-after-load 'org
     ;; (add-to-list 'org-babel-load-languages '(jupyter . t))
     (org-babel-do-load-languages
@@ -1285,16 +1085,7 @@ same directory as the org-buffer and insert a link to this file."
 
     ;; Show images after executing a block (e.g., matplotlib inline)
     (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
-
-  :hook
-  ;; Completion in org buffers (headings, inline code, etc.)
-  (org-mode . lsp-bridge-mode)
-  ;; Ensure src-edit buffers (C-c ') get lsp-bridge
-  (org-src-mode . (lambda () (lsp-bridge-mode 1)))
-  :config
-  (setq org-src-tab-acts-natively t
-        org-src-preserve-indentation t
-        org-edit-src-content-indentation 0))
+)
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -1307,22 +1098,51 @@ same directory as the org-buffer and insert a link to this file."
   (setq TeX-parse-self t)
   (setq TeX-master nil)
   
+  ;; PDF viewer configuration
+  (setq TeX-view-program-selection '((output-pdf "PDF Tools")))
+  (setq TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
+  (setq TeX-source-correlate-start-server t)
+  ;; Auto-refresh PDF buffer after compilation
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
   ;; Academic writing specific settings
   (setq LaTeX-babel-hyphen nil) ; Prevent issues with academic citations
   (setq LaTeX-electric-left-right-brace t)
-  (setq TeX-electric-escape t)
+  (setq TeX-electric-escape nil)
   
   ;; Preview settings for academic documents
   (setq preview-scale-function 1.2)
   (setq preview-default-option-list '("displaymath" "floats" "graphics" "textmath" "sections" "footnotes"))
-  
+  (setq-default TeX-output-dir "build")
   ;; Enable folding for large academic documents
   (add-hook 'LaTeX-mode-hook 'TeX-fold-mode)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
   (add-hook 'LaTeX-mode-hook 'flyspell-mode))
 
-
+(use-package pdf-tools
+  :ensure t
+  :config
+  (pdf-tools-install)
+  (setq-default pdf-view-display-size 'fit-page)
+  (setq pdf-annot-activate-created-annotations t)
+  (setq pdf-cache-image-limit 15)
+  (setq pdf-view-resize-factor 1.1)
+  
+  ;; Sync settings
+  (setq pdf-sync-forward-display-action
+        '(display-buffer-reuse-window (reusable-frames . t)))
+  (setq pdf-sync-backward-display-action
+        '(display-buffer-reuse-window (reusable-frames . t)))
+  
+  :bind (:map pdf-view-mode-map
+         ("C-s" . isearch-forward)
+         ("h" . pdf-annot-add-highlight-markup-annotation)
+         ("t" . pdf-annot-add-text-annotation)
+         ("D" . pdf-annot-delete))
+  
+  :hook (pdf-view-mode . (lambda ()
+                           (cua-mode 0)
+                           (display-line-numbers-mode 0))))
 
 (use-package citar
   :bind (("C-c b" . citar-insert-citation)
@@ -1354,33 +1174,50 @@ same directory as the org-buffer and insert a link to this file."
   :config
   (setq wc-modeline-format "WC[%tw/%tcw]"))
 
-;; Academic spell checking
-;; (use-package flyspell
-;;   :hook ((LaTeX-mode . flyspell-mode)
-;;          (org-mode . flyspell-mode))
-;;   :config
-;;   ;; Use aspell for better academic vocabulary
-;;   (setq ispell-program-name "aspell")
-;;   (setq ispell-dictionary "en_US")
-  
-;;   ;; Academic-specific word list
-;;   (setq ispell-personal-dictionary "~/.config/emacs/academic-dict.txt"))
-
-;; Grammar checking with langtool
 (use-package langtool
   :bind ("C-c g" . langtool-check)
   :config
-  (setq langtool-language-tool-jar "~/LanguageTool/languagetool-commandline.jar")
+  (setq langtool-language-tool-jar nil)  ; Don't use JAR file
+  (setq langtool-java-classpath nil)     ; Use command-line tool instead
+  (setq langtool-bin "languagetool-commandline")  ; Use the executable
   (setq langtool-default-language "en-US"))
 
-;; (use-package holo-layer
-;;   :ensure (:host github 
-;;                  :repo "manateelazycat/holo-layer"
-;;                  :files ("*.el" "*.py" "icon_cache/*"))
-;;   :config
-;;   (setq holo-layer-enable-cursor-animation t)
-;;   (setq holo-layer-enable-type-animation t)
-;;   (setq holo-layer-cursor-animation-interval 1)  ; Animation refresh interval
-;;   (setq holo-layer-cursor-color "#ff6b6b")        ; Cursor color
-;;   (setq holo-layer-cursor-alpha 200)
-;;   (setq holo-layer-enable-debug t))
+(use-package git-timemachine
+  :ensure (:host codeberg :repo "pidu/git-timemachine"))
+
+(use-package deadgrep
+  :ensure t
+  :bind (("C-c H" . deadgrep)))
+
+(use-package spacious-padding
+  :ensure t
+  :config
+  (spacious-padding-mode 1))
+
+;; Requires Emacs package.el configured to use GNU ELPA
+(use-package nano-agenda
+  :ensure t
+  :commands (nano-agenda)
+  :init
+  ;; Point to Org agenda files (adjust to match the actual files)
+  (setq org-agenda-files
+        '("~/Notes/Agenda/agenda.org"))
+
+  ;; Optional: choose a calendar palette (added in 0.3)
+  ;; Available palettes are defined by nano-agenda; common choices include 'nano and 'material
+  (setq nano-agenda-calendar-palette 'nano)
+
+  ;; Optional: show non-timestamped entries (supported since 0.2.2)
+  (setq nano-agenda-include-no-timestamp t)
+
+  ;; Optional: number of agenda days shown on the right pane
+  (setq nano-agenda-days 7)
+
+  ;; Optional: start week on Monday
+  (setq calendar-week-start-day 1)
+
+  :bind
+  (("C-c a n" . nano-agenda)))
+
+(use-package transient
+  :ensure t)

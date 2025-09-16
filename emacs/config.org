@@ -28,7 +28,7 @@
   - [[#modern-org][MODERN ORG]]
   - [[#olivetti-centering][OLIVETTI (Centering)]]
   - [[#org-agenda][ORG-AGENDA]]
-  - [[#org-roam][ORG-ROAM]]
+  - [[#org-supertag][ORG-SUPERTAG]]
   - [[#ansi-support][ANSI SUPPORT]]
 - [[#which-key][WHICH-KEY]]
 - [[#sudo-edit][SUDO EDIT]]
@@ -64,6 +64,10 @@
 - [[#git][GIT]]
 - [[#deadgrep][DEADGREP]]
 - [[#spacious-padding][SPACIOUS PADDING]]
+- [[#todo][TODO]]
+  - [[#nano-agenda][NANO AGENDA]]
+  - [[#code-complexity][CODE COMPLEXITY]]
+- [[#transient][TRANSIENT]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -179,12 +183,14 @@
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 #+end_src
 ** General Keybindings
-
 #+BEGIN_SRC emacs-lisp
-
 (use-package general
   :config
   (general-evil-setup)
+
+  ;; Define the submenu keymap BEFORE using it
+  ;; (defvar my/dired-map (make-sparse-keymap)
+    ;; "Prefix keymap for SPC d … in Dired/Dirvish.")  ;; ensure bound early [2][7]
 
   ;; set up 'SPC' as the global leader key
   (general-create-definer leader-key
@@ -192,6 +198,7 @@
     :keymaps 'override
     :prefix "SPC" ;; set leader
     :global-prefix "M-SPC") ;; access leader in insert mode
+
   (setq evil-want-keybinding nil)
   
   (general-define-key
@@ -227,7 +234,6 @@
     "e e" '(eval-expression :wk "Evaluate elisp expression")
     "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
     "e r" '(eval-region :wk "Evaluate elisp in region")
-    ;;"e h" '(counsel-esh-history :which-key "Eshell History")
     "e s" '(eshell :which-key "Eshell"))
   
   (leader-key
@@ -297,84 +303,7 @@
     "w H" '(buf-move-left :wk "Buffer Move Left")
     "w J" '(buf-move-down :wk "Buffer Move Down")
     "w K" '(buf-move-up :wk "Buffer Move Up")
-    "w L" '(buf-move-right :wk "Buffer Move Right"))
-
-
-  ;; ---------------------------------------------------------------------------
-  ;; 1.  Keep the motion keys in Dired/Dirvish (no leader, immediate execution)
-  ;; ---------------------------------------------------------------------------
-  (general-define-key
-   :states '(normal emacs)
-   :keymaps '(dired-mode-map dirvish-mode-map)
-
-   ;; Navigation ---------------------------------------------------------------
-   "h"  'dired-up-directory
-   "l"  'dired-find-file
-   "j"  'dired-next-line
-   "k"  'dired-previous-line
-   "gg" 'beginning-of-buffer
-   "G"  'end-of-buffer
-
-   ;; File operations ----------------------------------------------------------
-   "RET" 'dired-find-file
-   "TAB" 'dired-find-file-other-window
-   "q"   'quit-window
-   "gr"  'revert-buffer
-
-   ;; Marking ------------------------------------------------------------------
-   "m" 'dired-mark
-   "u" 'dired-unmark
-   "U" 'dired-unmark-all-marks
-   "t" 'dired-toggle-marks
-
-   ;; File management ----------------------------------------------------------
-   "d" 'dired-flag-file-deletion
-   "x" 'dired-do-flagged-delete
-   "D" 'dired-do-delete
-   "C" 'dired-do-copy
-   "R" 'dired-do-rename
-   "+" 'dired-create-directory
-
-   ;; Shell commands -----------------------------------------------------------
-   "!" 'dired-do-shell-command
-   "&" 'dired-do-async-shell-command)
-
-  ;; ---------------------------------------------------------------------------
-  ;; 2.  Add a leader submenu that which-key can display (prefix:  SPC d …)
-  ;; ---------------------------------------------------------------------------
-
-  ;; (defvar my/dired-map (make-sparse-keymap))
-  ;; (leader-key
-  ;;   :keymaps '(dired-mode-map dirvish-mode-map)
-  ;;   "d" `(:keymap ,my/dired-map :wk "dired/dirvish"))  ;; install the map
-  ;;   ;; common operations -------------------------------------------------------
-  ;;   "d h" '(dired-up-directory          :wk "parent dir")
-  ;;   "d l" '(dired-find-file             :wk "open / enter")
-  ;;   "d m" '(dired-mark                  :wk "mark")
-  ;;   "d u" '(dired-unmark                :wk "unmark")
-  ;;   "d d" '(dired-flag-file-deletion    :wk "flag delete")
-  ;;   "d x" '(dired-do-flagged-delete     :wk "execute deletions")
-  ;;   "d r" '(dired-do-rename             :wk "rename / move")
-  ;;   "d c" '(dired-do-copy               :wk "copy")
-  ;;   "d +" '(dired-create-directory      :wk "mkdir")
-  ;;   "d !" '(dired-do-shell-command      :wk "shell cmd")
-  ;;   "d g" '(revert-buffer               :wk "refresh")
-
-  ;;   ;; Dirvish extras ----------------------------------------------------------
-  ;;   "d ?" '(dirvish-dispatch            :wk "dirvish menu")
-  ;;   "d a" '(dirvish-quick-access        :wk "quick access")
-  ;;   "d s" '(dirvish-quicksort           :wk "sort")
-  ;;   "d y" '(dirvish-yank-menu           :wk "yank menu")
-  ;;   "d v" '(dirvish-vc-menu             :wk "VC menu")
-  ;;   "d t" '(dirvish-layout-toggle       :wk "toggle layout")
-  ;;   "d T" '(dirvish-subtree-toggle      :wk "toggle subtree")
-  ;;   "d f" '(dirvish-file-info-menu      :wk "file info")
-  ;;   "d F" '(dirvish-history-go-forward  :wk "history →")
-  ;;   "d B" '(dirvish-history-go-backward :wk "history ←")
-  ;; 
-  )
-
-
+    "w L" '(buf-move-right :wk "Buffer Move Right")))
 #+END_SRC
 
 ** YANK FEEDBACK
@@ -727,33 +656,47 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 #+end_src
 
-** ORG-ROAM
+
+** ORG-SUPERTAG
 
 #+begin_src emacs-lisp
-;; (use-package org-roam
-;;   :ensure t
-;;   :init
-;;   (setq org-roam-v2-ack t)  ;; Acknowledge v2 upgrade prompt
-;;   :custom
-;;   (org-roam-directory (file-truename "~/org-roam"))  ;; Set your notes directory
-;;   :bind (("C-c n f" . org-roam-node-find)
-;;          ("C-c n i" . org-roam-node-insert)
-;;          ("C-c n c" . org-roam-capture))
-;;   :config
-;;   (org-roam-db-autosync-enable))
+
+;; (use-package org-supertag
+;;   :ensure (org-supertag :host github :repo "yibie/org-supertag")
+;;   :after org)
+;; ;; org-supertag 5.0+ (pure Elisp)
+(use-package org-supertag
+  :ensure (org-supertag :host github :repo "yibie/org-supertag")
+  :after org
+  :init
+  ;; Index these directories; adjust to preferred note roots.
+  (setq org-supertag-sync-directories '("~/Notes/"))
+  :commands
+  (org-supertag-view-node
+   org-supertag-query
+   org-supertag-view-kanban
+   org-supertag-view-discover
+   org-supertag-view-chat-open)
+  :hook
+  (org-mode . (lambda ()
+                (require 'org-supertag)
+                (local-set-key (kbd "C-c s n") #'org-supertag-view-node)
+                (local-set-key (kbd "C-c s q") #'org-supertag-query)
+                (local-set-key (kbd "C-c s k") #'org-supertag-view-kanban)
+                (local-set-key (kbd "C-c s d") #'org-supertag-view-discover)
+                (local-set-key (kbd "C-c s c") #'org-supertag-view-chat-open)))
+  :config
+  ;; Example: custom field type
+;;   (add-to-list 'org-supertag-field-types
+;;                '(rating . (:validator org-supertag-validate-rating
+;;                            :formatter org-supertag-format-rating
+;;                            :description "Rating (1-5)")))
+)
+
 #+end_src
 
-*** ORG-ROAM-UI
-#+begin_src emacs-lisp
-(use-package org-roam-ui
-    :after org-roam
-    :hook (after-init . org-roam-ui-mode)
-    :custom
-    (org-roam-ui-sync-theme t)
-    (org-roam-ui-follow t)
-    (org-roam-ui-update-on-save t)
-    (org-roam-ui-open-on-start nil))
-#+end_src
+#+RESULTS:
+: [nil 26823 55181 769684 nil elpaca-process-queues nil nil 335000 nil]
 
 ** ANSI SUPPORT
 #+begin_src emacs-lisp
@@ -1618,10 +1561,58 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 * SPACIOUS PADDING
 
-
 #+begin_src emacs-lisp
 (use-package spacious-padding
   :ensure t
   :config
   (spacious-padding-mode 1))
 #+end_src
+
+
+* TODO
+
+** NANO AGENDA
+https://github.com/rougier/nano-agenda
+
+#+begin_src emacs-lisp
+;; Requires Emacs package.el configured to use GNU ELPA
+(use-package nano-agenda
+  :ensure t
+  :commands (nano-agenda)
+  :init
+  ;; Point to Org agenda files (adjust to match the actual files)
+  (setq org-agenda-files
+        '("~/Notes/Agenda/agenda.org"))
+
+  ;; Optional: choose a calendar palette (added in 0.3)
+  ;; Available palettes are defined by nano-agenda; common choices include 'nano and 'material
+  (setq nano-agenda-calendar-palette 'nano)
+
+  ;; Optional: show non-timestamped entries (supported since 0.2.2)
+  (setq nano-agenda-include-no-timestamp t)
+
+  ;; Optional: number of agenda days shown on the right pane
+  (setq nano-agenda-days 7)
+
+  ;; Optional: start week on Monday
+  (setq calendar-week-start-day 1)
+
+  :bind
+  (("C-c a n" . nano-agenda)))
+
+
+#+end_src
+
+** CODE COMPLEXITY
+https://github.com/emacs-vs/codemetrics
+https://github.com/emacs-vs/line-reminder
+https://github.com/emacs-vs/rainbow-csv
+https://github.com/rougier/nano-mu4e
+https://github.com/rougier/notebook-mode
+* TRANSIENT
+
+#+begin_src emacs-lisp
+(use-package transient
+  :ensure t)
+#+end_src
+
