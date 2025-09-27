@@ -581,7 +581,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (require 'org-tempo)
 
 (tempo-define-template "jupyter-python"
-                       '("#+begin_src jupyter-python :tangle temp.py :session py "
+                       '("#+begin_src jupyter-python :tangle temp.py :session py :async yes"
                          n p n
                          "#+end_src")
                        "<jpy"

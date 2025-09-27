@@ -394,7 +394,7 @@ one, an error is signaled."
 (require 'org-tempo)
 
 (tempo-define-template "jupyter-python"
-                       '("#+begin_src jupyter-python :tangle temp.py :session py "
+                       '("#+begin_src jupyter-python :tangle temp.py :session py :async yes"
                          n p n
                          "#+end_src")
                        "<jpy"
@@ -434,11 +434,11 @@ one, an error is signaled."
   (setq org-modern-todo nil)
   (setq org-modern-tag nil)
   (setq org-modern-fold-stars 
-        '(("▼" . "▶")     ; Down arrow when folded, right arrow when expanded
-          ("▽" . "▷") 
-          ("▾" . "▸")
-          ("▿" . "▹")
-          ("▽" . "▷")))
+        '(("" . "")     ; Down arrow when folded, right arrow when expanded
+          ("" . "") 
+          ("" . "")
+          ("" . "")
+          ("" . "")))
   (setq ;;org-modern-star '("◉" "○" "✸" "✿")
         org-modern-table t 
 	org-ellipsis " "
