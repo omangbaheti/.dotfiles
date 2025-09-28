@@ -51,6 +51,12 @@
 ;; Block until current queue processed.
 (elpaca-wait)
 
+;; (use-package benchmark-init
+;;   :ensure t
+;;   :config
+;;   ;; To disable collection of benchmark data after init is done.
+;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
 (setq evil-want-keybinding nil)
 (use-package evil
   :init
@@ -729,7 +735,8 @@ specified by TYPES that defaults to '(heading drawer item block)."
    (org-mode . olivetti-mode)))
 
 (with-eval-after-load 'org
-  (setq org-agenda-files '("~/Notes/Agenda/agenda.org"))
+  ;; (setq org-agenda-files '("~/Notes/Agenda/agenda.org"))
+  (setq org-agenda-files (directory-files-recursively "~/Notes/Agenda" "\\.org$"))
   (setq org-agenda-skip-timestamp-if-done t
         org-agenda-skip-deadline-if-done t
         org-agenda-skip-scheduled-if-done t
@@ -740,33 +747,33 @@ specified by TYPES that defaults to '(heading drawer item block)."
 (setq org-agenda-current-time-string "")
 (setq org-agenda-time-grid '((daily) () "" "")))
 
-(use-package org-supertag
-  :ensure (org-supertag :host github :repo "yibie/org-supertag")
-  :after org
-  :init
-  ;; Index these directories; adjust to preferred note roots.
-  (setq org-supertag-sync-directories '("~/Notes/"))
-  :commands
-  (org-supertag-view-node
-   org-supertag-query
-   org-supertag-view-kanban
-   org-supertag-view-discover
-   org-supertag-view-chat-open)
-  :hook
-  (org-mode . (lambda ()
-                (require 'org-supertag)
-                (local-set-key (kbd "C-c s n") #'org-supertag-view-node)
-                (local-set-key (kbd "C-c s q") #'org-supertag-query)
-                (local-set-key (kbd "C-c s k") #'org-supertag-view-kanban)
-                (local-set-key (kbd "C-c s d") #'org-supertag-view-discover)
-                (local-set-key (kbd "C-c s c") #'org-supertag-view-chat-open)))
-  :config
-  ;; Example: custom field type
-;;   (add-to-list 'org-supertag-field-types
-;;                '(rating . (:validator org-supertag-validate-rating
-;;                            :formatter org-supertag-format-rating
-;;                            :description "Rating (1-5)")))
-)
+;; (use-package org-supertag
+;;   :ensure (org-supertag :host github :repo "yibie/org-supertag")
+;;   :defer t
+;;   :init
+;;   ;; Index these directories; adjust to preferred note roots.
+;;   (setq org-supertag-sync-directories '("~/Notes/"))
+;;   :commands
+;;   (org-supertag-view-node
+;;    org-supertag-query
+;;    org-supertag-view-kanban
+;;    org-supertag-view-discover
+;;    org-supertag-view-chat-open)
+;;   :hook
+;;   (org-mode . (lambda ()
+;;                 (require 'org-supertag)
+;;                 (local-set-key (kbd "C-c s n") #'org-supertag-view-node)
+;;                 (local-set-key (kbd "C-c s q") #'org-supertag-query)
+;;                 (local-set-key (kbd "C-c s k") #'org-supertag-view-kanban)
+;;                 (local-set-key (kbd "C-c s d") #'org-supertag-view-discover)
+;;                 (local-set-key (kbd "C-c s c") #'org-supertag-view-chat-open)))
+;;   :config
+;;   ;; Example: custom field type
+;; ;;   (add-to-list 'org-supertag-field-types
+;; ;;                '(rating . (:validator org-supertag-validate-rating
+;; ;;                            :formatter org-supertag-format-rating
+;; ;;                            :description "Rating (1-5)")))
+;; )
 
 (use-package org-roam
   :ensure t
@@ -784,7 +791,72 @@ specified by TYPES that defaults to '(heading drawer item block)."
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode)
   ;; If using org-roam-protocol
-  (require 'org-roam-protocol))
+  (require 'org-roam-protocol)
+  (setq org-roam-capture-templates
+        '(
+;; Plain Template
+          ("d" "default" plain "%?"
+           :target 
+(
+file+head "${slug}.org"
+"#+title: ${title}"
+)
+           :unnarrowed t)
+
+;; Template for Person
+          ("p" "person" plain "%?"
+           :target 
+           (
+file+head "People/${slug}.org"                              
+"
+:PROPERTIES:
+:ROAM_ALIASES: \"${fullname}\"
+:DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
+:END:
+#+TITLE: ${title}
+#+OPTIONS: toc:2
+* TABLE OF CONTENTS :toc:
+"
+)
+           :unnarrowed t
+           )
+	  
+;; Template for Agenda Board
+          ("a" "Agenda Board" plain "%?"
+           :target 
+           (
+file+head "Agenda/${slug}.org"                              
+"
+:PROPERTIES:
+:ROAM_ALIASES: \"${Project Board}\"
+:DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
+:END:
+#+TITLE: ${title}
+#+OPTIONS: toc:2
+* TABLE OF CONTENTS :toc:
+"
+)
+           :unnarrowed t
+           )
+
+;; Agenda Task Template
+("t" "Agenda Task" entry
+"* TODO ${Task Name}%?
+DEADLINE: %^t
+:VISIBILITY:folded
+:PROPERTIES:
+:DATE: %<%d-%m-%Y-(%H-%M-%S)>
+:ROAM_ALIASES: ${Task Name}
+:END:
+"
+:target (file "Agenda/${slug}.org")
+:unnarrowed t)
+
+          )
+        )
+  )
+
+
 
 (use-package org-roam-ui
   :ensure
@@ -1363,9 +1435,29 @@ specified by TYPES that defaults to '(heading drawer item block)."
   )
 
 ;; Python support 
-(add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
-(add-hook 'python-ts-mode-hook #'lsp-bridge-mode)
-(add-hook 'LaTeX-mode-hook #'lsp-bridge-mode)
+;; (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+;; (add-hook 'python-ts-mode-hook #'lsp-bridge-mode)
+;; (add-hook 'LaTeX-mode-hook #'lsp-bridge-mode)
+
+;; Python support (lazy load)
+(use-package python
+  :ensure nil
+  :mode ("\\.py\\'" . python-mode)
+  :hook ((python-mode . (lambda ()
+                          (require 'lsp-bridge)
+                          (lsp-bridge-mode 1)))
+         (python-ts-mode . (lambda ()
+                             (require 'lsp-bridge)
+                             (lsp-bridge-mode 1))))) 
+
+;; LaTeX support (lazy load)
+(add-hook 'LaTeX-mode-hook
+          (lambda ()
+            (require 'lsp-bridge)
+            (lsp-bridge-mode 1)))
+
+
+
 ;; Nix integration
 (use-package nix-mode
   :ensure t
@@ -1406,32 +1498,57 @@ specified by TYPES that defaults to '(heading drawer item block)."
   :config
   (dashboard-setup-startup-hook))
 
+;; (use-package jupyter
+;;   :ensure t
+;;   :after org
+;;   :config
+;;   ;; Enable Jupyter support in Org Babel
+;;   (require 'ob-jupyter)
+;;   (with-eval-after-load 'org
+;;     ;; (add-to-list 'org-babel-load-languages '(jupyter . t))
+;;     (org-babel-do-load-languages
+;;      'org-babel-load-languages
+;;      '((emacs-lisp . t)
+;;        (python . t)  ;; Optional: fallback to ob-python
+;;        (shell . t)
+;;        (jupyter . t)
+;;        (R . t)))
+;;     ;; Don't ask for confirmation before evaluating
+;;     (setq org-confirm-babel-evaluate nil)
+
+;;     ;; Code block editing quality-of-life
+;;     (setq org-src-fontify-natively t
+;;           org-src-tab-acts-natively t
+;;           org-src-preserve-indentation t)
+
+;;     ;; Show images after executing a block (e.g., matplotlib inline)
+;;     (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
+;; )
 (use-package jupyter
   :ensure t
-  :after org
-  :config
-  ;; Enable Jupyter support in Org Babel
-  (require 'ob-jupyter)
+  :defer t
+  :commands org-babel-execute:jupyter
+  :init
+  ;; Ensure ob-jupyter is available but don't load it yet
   (with-eval-after-load 'org
-    ;; (add-to-list 'org-babel-load-languages '(jupyter . t))
+    ;; Enable other languages immediately if desired
     (org-babel-do-load-languages
      'org-babel-load-languages
      '((emacs-lisp . t)
-       (python . t)  ;; Optional: fallback to ob-python
+       (python . t)
        (shell . t)
-       (jupyter . t)
-       (R . t)))
-    ;; Don't ask for confirmation before evaluating
-    (setq org-confirm-babel-evaluate nil)
-
-    ;; Code block editing quality-of-life
-    (setq org-src-fontify-natively t
-          org-src-tab-acts-natively t
-          org-src-preserve-indentation t)
-
-    ;; Show images after executing a block (e.g., matplotlib inline)
-    (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
-)
+       (R . t))))
+  :config
+  ;; Load ob-jupyter only when a jupyter block is executed
+  (require 'ob-jupyter)
+  ;; Don't ask for confirmation before evaluating
+  (setq org-confirm-babel-evaluate nil)
+  ;; Code block editing quality-of-life
+  (setq org-src-fontify-natively t
+        org-src-tab-acts-natively t
+        org-src-preserve-indentation t)
+  ;; Show images after executing a block
+  (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -1467,6 +1584,7 @@ specified by TYPES that defaults to '(heading drawer item block)."
 
 (use-package pdf-tools
   :ensure t
+  :defer t
   :config
   (pdf-tools-install)
   (setq-default pdf-view-display-size 'fit-page)
@@ -1494,6 +1612,7 @@ specified by TYPES that defaults to '(heading drawer item block)."
   :bind (("C-c b" . citar-insert-citation)
          :map minibuffer-local-map
          ("M-b" . citar-insert-preset))
+  :defer t
   :custom
   ;; Point to your bibliography files
   (citar-bibliography '("/mnt/c/Users/obaheti/Documents/Papers/Library.bib"))
@@ -1529,7 +1648,9 @@ specified by TYPES that defaults to '(heading drawer item block)."
   (setq langtool-default-language "en-US"))
 
 (use-package git-timemachine
-  :ensure (:host codeberg :repo "pidu/git-timemachine"))
+  :ensure (:host codeberg :repo "pidu/git-timemachine")
+  :defer t
+)
 
 (use-package transient
   :ensure t)
@@ -1542,37 +1663,3 @@ specified by TYPES that defaults to '(heading drawer item block)."
   :ensure t
   :config
   (spacious-padding-mode 1))
-
-;; Requires Emacs package.el configured to use GNU ELPA
-(use-package nano-agenda
-  :ensure (:type git :host github :repo "rougier/nano-agenda" :branch "rewrite")
-  :commands (nano-agenda)
-  :init
-  ;; Point to Org agenda files (adjust to match the actual files)
-  (setq org-agenda-files
-        '("~/Notes/Agenda/agenda.org"))
-
-  ;; Optional: choose a calendar palette (added in 0.3)
-  ;; Available palettes are defined by nano-agenda; common choices include 'nano and 'material
-  (setq nano-agenda-calendar-palette 'nano)
-
-  ;; Optional: number of agenda days shown on the right pane
-  (setq nano-agenda-days 7)
-
-  ;; Optional: start week on Monday
-  (setq calendar-week-start-day 1)
-  :config
-  (defun nano-agenda-popup ()
-    "Open nano-agenda in a small temporary side window."
-    (interactive)
-    (let ((buf (get-buffer-create "*nano-agenda*")))
-    ;; Generate agenda if not already running
-    (unless (nano-agenda-open-p)
-       (nano-agenda))
-      (display-buffer-in-side-window buf
-                                     '((side . bottom)
-                                       (window-height . 0.3)))))
-
-      (defun nano-agenda-open-p ()
-	"Return t if a buffer named *nano-agenda* is open."
-	(get-buffer "*nano-agenda*")))
