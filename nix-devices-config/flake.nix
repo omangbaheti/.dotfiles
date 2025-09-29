@@ -4,25 +4,19 @@
     inputs = 
     {
         #Defining nixpkgs sources
-        nixpkgs.url = "nixpkgs/nixos-24.05";
+        nixpkgs.url = "nixpkgs/nixos-25.05";
         nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
 
         #Defining Home Manager
-        home-manager.url = "github:nix-community/home-manager/release-24.05";
+        home-manager.url = "github:nix-community/home-manager/release-25.05";
+        home-manager.inputs.nixpkgs.follows = "nixpkgs";
     };
 
     outputs = inputs@{self, nixpkgs, nixpkgs-unstable, ...} :
     let 
-        lib  = nixpkgs.lib;
-        pkgs = import nixpkgs
-        {
-          system = systemSettings.system;
-          config = 
-          {
-            allowUnfree = true;
-          };
-        };
-
+        lib = nixpkgs.lib;
+        
+        # Remove the manual pkgs instantiation - let NixOS handle this
         pkgs-unstable = import nixpkgs-unstable
         {
           system = systemSettings.system;
@@ -66,12 +60,14 @@
       {
         user = home-manager.lib.homeManagerConfiguration
         {
-          inherit pkgs;
+          pkgs = import nixpkgs {
+            system = systemSettings.system;
+            config.allowUnfree = systemSettings.allowUnfree;
+          };
           modules = 
           [(./. + "/profiles" + ("/" + systemSettings.profile) + "/home.nix")];
           extraSpecialArgs = 
           {
-            inherit pkgs;
             inherit pkgs-unstable;
             inherit systemSettings;
             inherit userSettings;
@@ -85,11 +81,23 @@
         nixos = lib.nixosSystem
         {
             system = systemSettings.system;
-            modules = #[./configuration.nix];
-              [(./. + "/profiles" + ("/" + systemSettings.profile) + "/configuration.nix")];
+            modules = 
+            [
+              # Your main configuration
+              (./. + "/profiles" + ("/" + systemSettings.profile) + "/configuration.nix")
+              
+              # Nixpkgs configuration module
+              {
+                nixpkgs = {
+                  config = {
+                    allowUnfree = systemSettings.allowUnfree;
+                  };
+                };
+              }
+            ];
             specialArgs = 
             {
-              inherit pkgs;
+              # Removed 'inherit pkgs;' - this was causing the warning
               inherit pkgs-unstable;
               inherit systemSettings;
               inherit userSettings;
