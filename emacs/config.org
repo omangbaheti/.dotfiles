@@ -68,6 +68,7 @@
 - [[#transient][TRANSIENT]]
 - [[#deadgrep][DEADGREP]]
 - [[#spacious-padding][SPACIOUS PADDING]]
+- [[#prettifying][Prettifying]]
 - [[#][]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
@@ -226,7 +227,7 @@
                 (interactive)
                 (evil-ex-nohighlight)))
   (leader-key
-    "SPC" '(consult-mode-command :wk "Consult M-X")
+    "SPC" '(consult-find :wk "Consult Find")
     "." '(find-file :wk "Find file")
     "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
     "f r" '(consult-recent-file :wk "Find Recent Files")
@@ -1316,11 +1317,19 @@ Enabling Frequency + Recency Sorting of options in vertico
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
 )
 
-(defun consult-fd-home ()
+
+(defun consult-fd-windows ()
   "Run consult-fd searching from home directory."
   (interactive)
   (let ((default-directory "/mnt/c/Users"))
     (consult-fd)))
+
+
+(defun consult-fd-home ()
+  "Run consult-fd searching from home directory."
+  (interactive)
+  (let ((default-directory "~/"))
+    (consult-ripgrep)))
 #+end_src
 
 * EMBARK 
@@ -2033,11 +2042,23 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (LaTeX-mode . citar-capf-setup)
   (org-mode . citar-capf-setup))
 
-;; Enhanced bibliography completion
+ #+end_src 
+
+*** CITAR ORG ROAM
+
+#+begin_src emacs-lisp
+(use-package citar-org-roam
+  :after (citar org-roam)
+  :config (citar-org-roam-mode))
+#+end_src
+
+*** CITAR EMBARK
+
+#+begin_src emacs-lisp
 (use-package citar-embark
   :after citar embark
   :config (citar-embark-mode))
- #+end_src 
+#+end_src
 
 ** Misc writing tools
 
@@ -2091,6 +2112,32 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
   :ensure t
   :config
   (spacious-padding-mode 1))
+#+end_src
+
+
+* Prettifying 
+Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bosio]]
+
+#+begin_src emacs-lisp
+(defun my/prettify-symbols-setup ()
+
+  ;; Drawers
+  (push '(":PROPERTIES:" . " ") prettify-symbols-alist)
+
+  ;; Tags
+  (push '(":projects:" . " ") prettify-symbols-alist)
+  (push '(":work:"     . " ") prettify-symbols-alist)
+  (push '(":inbox:"    . " ") prettify-symbols-alist)
+  (push '(":task:"     . " ") prettify-symbols-alist)
+  (push '(":thesis:"   . " ") prettify-symbols-alist)
+  (push '(":learn:"    . " ") prettify-symbols-alist)
+  (push '(":code:"     . " ") prettify-symbols-alist)
+
+  (prettify-symbols-mode))
+
+(add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
+(add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
+
 #+end_src
 
 
