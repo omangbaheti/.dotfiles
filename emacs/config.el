@@ -99,7 +99,7 @@
    '(evil-goggles-delete-face ((t (:background "#ff6c6b" :foreground "white"))))
    '(evil-goggles-paste-face ((t (:background "#98be65" :foreground "black"))))
    '(evil-goggles-yank-face ((t (:background "#ECBE7B" :foreground "black"))))
-   '(evil-goggles-indent-face ((t (:background "#27474E" :foreground "black"))))
+   '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 
 (use-package hydra
@@ -127,7 +127,7 @@
                 (interactive)
                 (evil-ex-nohighlight)))
   (leader-key
-    "SPC" '(consult-mode-command :wk "Consult M-X")
+    "SPC" '(consult-find-home :wk "Consult Find")
     "." '(find-file :wk "Find file")
     "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
     "f r" '(consult-recent-file :wk "Find Recent Files")
@@ -384,10 +384,16 @@ one, an error is signaled."
   :config
   (beacon-mode 1))                     ;; Enable beacon globally beacon-mode 1)
 
-(setq org-src-fontify-natively t)
 (setq font-lock-multiline t)
 (setq jit-lock-defer-time 0) ; Immediate fontification
-(setq org-log-done 'note)
+(use-package org
+  :config
+  ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
+  (setq org-startup-folded t)              ;; fold on open [web:1]
+  (setq org-cycle-hide-drawers 'all)
+  (setq org-src-fontify-natively t)
+  (setq org-log-done 'note)
+  )
 
 (use-package toc-org
   :commands toc-org-enable
@@ -437,8 +443,8 @@ one, an error is signaled."
     (face-spec-reset-face face)
     (set-face-foreground face (face-attribute 'default :background)))
   (set-face-background 'fringe (face-attribute 'default :background))
-  (setq org-modern-todo nil)
-  (setq org-modern-tag nil)
+  (setq org-modern-todo t)
+  (setq org-modern-tag t)
   (setq org-modern-fold-stars 
         '(("" . "")     ; Down arrow when folded, right arrow when expanded
           ("" . "") 
@@ -465,257 +471,6 @@ one, an error is signaled."
   :ensure t
   :config
 )
-
-(use-package svg-tag-mode
-  :hook (org-mode . svg-tag-mode)
-  :config
-  (setq svg-tag-tags
-        `(
-          ;; TODO keyword
-          ("^\\*+ \\(TODO\\)\\b"
-           . ((lambda (tag)
-                (svg-tag-make tag
-                              :face '(:foreground "black" :background "#D1EFB5")
-                              :radius 3 :padding 1))
-              nil "Toggle with C-c C-t"))
-
-          ;; DONE keyword
-          ("^\\*+ \\(DONE\\)\\b"
-           . ((lambda (tag)
-                (svg-tag-make tag
-                              :face '(:foreground "white" :background "#242331")
-                              :radius 3 :padding 1))
-              nil "Toggle with C-c C-t"))
-          ("\\(:[A-Za-z0-9_@#%]+:\\)"
-           . ((lambda (tag)
-                (svg-tag-make tag :beg 1 :end -1
-                              :face '(:foreground "#ffffff" :background "#373e4c")
-                              :radius 5 :padding 1))))
-          )))
-
-(defun nano-org--edit (_win position direction)
-  "This function toggle font-lock at position, depending on
-direction."
-
-  (let ((beg (if (eq direction 'entered)
-                 (previous-property-change (+ (point) 1))
-               (previous-property-change (+ position 1))))
-        (end (if (eq direction 'entered)
-                 (next-property-change (point))
-               (next-property-change position))))
-    (if (eq direction 'left)
-        (font-lock-flush beg (1+ end) )
-      (if (and (not view-read-only) (not buffer-read-only))
-          (font-lock-unfontify-region beg (1+ end))))))
-
-
-(defun nano-org-archived-p ()
-  "Returns non-nil if point is on an archived header."
-
-  (member org-archive-tag (org-get-tags nil t)))
-
-
-(defun nano-org-folded-p (&optional types)
-  "Returns non-nil if point is on a folded element whose type is
-specified by TYPES that defaults to '(heading drawer item block)."
-
-  (let ((types (or types '(heading drawer item block))))
-    (and (or (when (memq 'heading types) (org-at-heading-p))
-             (when (memq 'drawer types) (org-at-drawer-p))
-             (when (memq 'item types) (org-at-item-p))
-             (when (memq 'block types) (org-at-block-p)))
-         (invisible-p (point-at-eol)))))
-
-
-(defun nano-org--timestamp ()
-  "Prettify timestamps."
-
-  (let* ((beg (match-beginning 1))
-         (end (match-end 1))
-         (keyword (match-string 2))
-         (keyword (when (stringp keyword)
-               (string-trim (substring-no-properties keyword))))
-         (is-archived (nano-org-archived-p))
-         (is-todo (string= keyword "TODO"))
-         (is-done (string= keyword "DONE"))
-         (is-deadline (string= keyword "DEADLINE:"))
-         (tbeg (match-beginning 4))
-         (tend (match-end 4))
-         (active t)
-         (keymap (define-keymap
-                   "S-<up>"   (lambda ()
-                                (interactive)
-                                (let ((org-time-stamp-rounding-minutes '(0 15 30 45)))
-                                  (org-timestamp-change +15 'minute)))
-                   "S-<down>" (lambda ()
-                                (interactive)
-                                (let ((org-time-stamp-rounding-minutes '(0 15 30 45)))
-                                  (org-timestamp-change -15 'minute)))))
-         (date-face (cond (is-archived  '(:inherit (nano-faded nano-subtle) :overline "white"))
-                          (active       '(:inherit (nano-default bold nano-subtle) :overline "white"))
-                          (t            '(:inherit (nano-faded bold nano-subtle) :overline "white"))))
-         (time-face (cond (is-archived  '(:inherit (nano-faded nano-subtle) :overline "white"))
-                          (is-todo      '(:inherit (nano-salient-i bold) :overline "white"))
-                          (is-done      '(:inherit (nano-faded-i) :overline "white"))
-                          (is-deadline  '(:inherit (nano-critical-i) :overline "white"))
-                          (t            '(:inherit (nano-default-i bold) :overline "white")))))
-    (remove-list-of-text-properties beg end '(display))
-    (add-text-properties beg end `(keymap ,keymap))
-    (if t
-        (let* ((time (save-match-data
-                       (encode-time
-                        (org-fix-decoded-time
-                         (org-parse-time-string
-                          (buffer-substring beg end))))))
-               (date-str (format-time-string " %^b %d " time))
-               (time-str (cond (is-todo " TODO ")
-                               ;; (is-deadline " TODO ")
-                               (is-done " DONE ")
-                               (t (format-time-string " %H:%M " time)))))
-          ;; year-month-day
-          (add-text-properties beg (if (eq tbeg tend) end tbeg)
-                               `(face ,date-face display ,date-str))
-          ;; hour:minute
-          (unless (eq tbeg tend)
-            (add-text-properties tbeg end
-                                 `(face ,time-face display ,time-str))))
-        (put-text-property beg (1+ beg) 'display " ")
-        (put-text-property (1- end) end 'display " ")
-        ;; year-month-day
-        (put-text-property beg (if (eq tbeg tend) end tbeg) 'face date-face)
-        ;; hour:minute
-        (unless (eq tbeg tend)
-          (put-text-property (1- tbeg) tbeg 'display
-                             (string (char-before tbeg) ?\s))
-          (put-text-property tbeg end 'face time-face)))))
-
-(defun nano-org--properties ()
-  "Properties drawer prefix depending on folding state"
-
-  (if (nano-org-folded-p) " " "┌ "))
-
-(defun nano-org--logbook ()
-  "Logbook drawer prefix depending on folding state"
-
-  (if (nano-org-folded-p) " " "┌ "))
-
-(defun nano-org--ul-list ()
-  "Unordered list prefix depending on folding state"
-
-  (if (nano-org-folded-p) "  " nil))
-
-(defun nano-org--ol-list ()
-  "Orered list prefix depending on folding state"
-
-  (if (nano-org-folded-p) " " nil))
-
-(defun nano-org--stars ()
-  "Header prefix depending on folding state"
-
-  (let* ((prefix (substring-no-properties (match-string 0)))
-         (n (max 0 (- (length prefix) 3))))
-     (concat (make-string n ? )
-             (cond ((nano-org-archived-p) (propertize " " 'face 'org-archived))
-                   ((nano-org-folded-p)   " ")
-                   (t                     " ")))))
-
-(defun nano-org--user ()
-  "Pretty format for user"
-
-  (let* ((user (substring-no-properties (match-string 1)))
-         (user (string-replace "@" " " user)))
-    (propertize user 'face (if (nano-org-archived-p)
-                              'nano-faded
-                             'nano-salient)
-                     'pointer 'hand
-                     'mouse-face (when (not (nano-org-archived-p))
-                                   '(:inherit (nano-subtle bold))))))
-
-(defvar nano-org--timestamp-re
-  (concat "^\\*+[\\\t ]+"                             ;; Context: Header stars (mandatory, anonymous)
-          "\\("                                       ;; Group 1: whole timestamp
-          "\\("                                       ;; Group 2: TODO / DEADLINE (optional)
-            "\\(?:TODO\\|DONE\\|DEADLINE:\\)[\\\t ]+"             ;;
-          "\\)?"                                      ;;
-          "\\(?:<\\|\\[\\)"                           ;; Anonymous group for < or [
-          "\\("                                       ;; Group 3 start: date (mandatory)
-            "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}"  ;;  YYYY-MM-DD (mandatory)
-            "\\(?: [[:word:]]+\\.?\\)?"                   ;;  day name (optional)
-            "\\(?: [.+-]+[0-9ymwdh/]+\\)*"            ;;  repeater (optional)
-          "\\)"                                       ;; Group 3 end
-          "\\("                                       ;; Group 4 start (optional): time
-            "\\(?: [0-9:-]+\\)?"                      ;;   HH:MM (optional)
-            "\\(?: [.+-]+[0-9ymwdh/]+\\)*"            ;;   repeater (optional)
-          "\\)"                                       ;; Group 4 end
-          "\\(?:>\\|\\]\\)"                           ;; Anonynous group for > or ]
-          "\\)"))                                     ;; Group 1 end
-
-(defvar nano-org--drawer-properties-re
-  "^\\(:\\)PROPERTIES:")                              ;; Group 1 for :[PROPERTIES:]
-
-(defvar nano-org--drawer-logbook-re
-  "^\\(:\\)LOGBOOK:")                                 ;; Group 1 for :[LOGBOOK:]
-
-(defvar nano-org--drawer-closed-re
-  "^\\(CLOSED:\\)")                                   ;; Group 1 for CLOSED:
-
-(defvar nano-org--drawer-content-re
-  "^\\(:\\)[a-zA-Z]+:")                               ;; Group 1 for :[XXX:]
-
-(defvar nano-org--drawer-clock-re
-  "^\\(CLOCK:\\)")                                    ;; Group 1 for CLOCK:
-
-(defvar nano-org--drawer-end-re
-  "^\\(:\\)END:")                                     ;; Group 1 for :[END:]
-
-(defvar nano-org--stars-re
-  "^\\(\\*\\{2,\\}\\) ")                              ;; Group 1 for **...
-
-(defvar nano-org--ul-list-re
-  "^\\(- \\)")                                        ;; Group 1 for -
-
-(defvar nano-org--ol-list-re
-  "^\\([0-9].\\)")                                    ;; Group 1 for #.
-
-(defvar nano-org--user-re
-  "\\(@[a-zA-Z]+\\)")                                 ;; Group 1 for @XXX
-
-(defun org-nano--cycle-hook (&rest args)
-   (font-lock-update))
-
-
-(defun nano-org-wip ()
-  "NANO org mode (WIP)"
-
-  (interactive)
-  (org-mode)
-  (org-indent-mode)
-  (font-lock-add-keywords nil
-     `((,nano-org--timestamp-re         1 (nano-org--timestamp) nil t)
-       (,nano-org--drawer-content-re    1 `(face nil display "│ "))
-       (,nano-org--drawer-end-re        1 `(face nil display "└ "))
-       (,nano-org--drawer-clock-re      1 `(face nil display "│  "))
-       (,nano-org--drawer-properties-re 1 `(face nil display ,(nano-org--properties)))
-       (,nano-org--drawer-logbook-re    1 `(face nil display ,(nano-org--logbook)))
-       (,nano-org--drawer-closed-re     1 `(face nil display " "))
-       (,nano-org--user-re              1 `(face nil display ,(nano-org--user)))
-       (,nano-org--ul-list-re           1 `(face nil display ,(nano-org--ul-list)))
-       (,nano-org--ol-list-re           1 `(face nil display ,(nano-org--ol-list)))
-       (,nano-org--stars-re             1 `(face nil display ,(nano-org--stars))))
-    'append)
-
-  (add-hook 'org-cycle-hook #'org-nano--cycle-hook)
-  (advice-add 'org-fold-hide-drawer-toggle :after
-              #'org-nano--cycle-hook)
-  (setq org-time-stamp-formats '("%Y-%m-%d" . "%Y-%m-%d %H:%M"))
-  (setq org-indent-mode-turns-on-hiding-stars nil)
-  (face-remap-add-relative 'org-level-1 'bold)
-  (face-remap-add-relative 'org-level-2 'bold)
-  (face-remap-add-relative 'org-level-3 'default)
-  (face-remap-add-relative 'org-tag '(nano-popout bold))
-  (face-remap-add-relative 'org-date 'nano-faded)
-  (cursor-sensor-mode -1)
-  (font-lock-update))
 
 (use-package olivetti
   :ensure t
@@ -795,18 +550,20 @@ specified by TYPES that defaults to '(heading drawer item block)."
   (setq org-roam-capture-templates
         '(
 ;; Plain Template
-          ("d" "default" plain "%?"
-           :target 
+("d" "default" plain "%?"
+:target 
 (
 file+head "${slug}.org"
-"#+title: ${title}"
+"#+TITLE: ${title}
+#+STARTUP: showall
+"
 )
-           :unnarrowed t)
+:unnarrowed t)
 
 ;; Template for Person
-          ("p" "person" plain "%?"
-           :target 
-           (
+("p" "person" plain "%?"
+:target 
+(
 file+head "People/${slug}.org"                              
 "
 :PROPERTIES:
@@ -815,6 +572,7 @@ file+head "People/${slug}.org"
 :END:
 #+TITLE: ${title}
 #+OPTIONS: toc:2
+#+STARTUP: showall
 * TABLE OF CONTENTS :toc:
 "
 )
@@ -822,9 +580,9 @@ file+head "People/${slug}.org"
            )
 	  
 ;; Template for Agenda Board
-          ("a" "Agenda Board" plain "%?"
-           :target 
-           (
+("a" "Agenda Board" plain "%?"
+:target 
+(
 file+head "Agenda/${slug}.org"                              
 "
 :PROPERTIES:
@@ -832,18 +590,18 @@ file+head "Agenda/${slug}.org"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
 :END:
 #+TITLE: ${title}
+#+STARTUP: showall
 #+OPTIONS: toc:2
 * TABLE OF CONTENTS :toc:
 "
 )
-           :unnarrowed t
-           )
+:unnarrowed t
+)
 
 ;; Agenda Task Template
 ("t" "Agenda Task" entry
 "* TODO ${Task Name}%?
 DEADLINE: %^t
-:VISIBILITY:folded
 :PROPERTIES:
 :DATE: %<%d-%m-%Y-(%H-%M-%S)>
 :ROAM_ALIASES: ${Task Name}
@@ -852,11 +610,15 @@ DEADLINE: %^t
 :target (file "Agenda/${slug}.org")
 :unnarrowed t)
 
-          )
-        )
-  )
-
-
+("n" "literature note" plain
+"%?"
+:target
+(file+head "%(expand-file-name (or citar-org-roam-subdir \"\\ResearchNotes\") org-roam-directory)/${citar-citekey}.org"
+"#+TITLE: ${citar-citekey} (${citar-date}). ${note-title}.
+#+created: %U
+#+last_modified: %U\n\n")
+:unnarrowed t)
+)))
 
 (use-package org-roam-ui
   :ensure
@@ -935,7 +697,7 @@ DEADLINE: %^t
   :init
   (vertico-mode)
 
-  ;; Different scroll margin
+ ;; Different scroll margin
   ;; (setq vertico-scroll-margin 0)
 
   ;; Show more candidates
@@ -1029,11 +791,19 @@ DEADLINE: %^t
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
 )
 
-(defun consult-fd-home ()
+
+(defun consult-fd-windows ()
   "Run consult-fd searching from home directory."
   (interactive)
   (let ((default-directory "/mnt/c/Users"))
     (consult-fd)))
+
+
+(defun consult-find-home ()
+  "Run consult-fd searching from home directory."
+  (interactive)
+  (let ((default-directory "~/"))
+    (consult-find)))
 
 (use-package embark
   :ensure t
@@ -1480,17 +1250,18 @@ DEADLINE: %^t
   :init
   (setq initial-buffer-choice 'dashboard-open)
   (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-footer nil)
+  (setq dashboard-set-navigator t)
   (setq dashboard-set-file-icons t)
   (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
   (setq dashboard-image-banner-max-height 200)
   (setq dashboard-image-banner-max-width 200)
-  (setq dashboard-center-content nil) ;; set to 't' for centered content
+  (setq dashboard-projects-backend 'projectile)
+  (setq dashboard-center-content t) ;; set to 't' for centered content
   (setq dashboard-items '((recents . 5)
                           (agenda . 5 )
-                          (bookmarks . 3)
-			  ;;Why is this throwing an error??
-                          ;; (projects . 3)
-                          (registers . 3)))
+                          (projects . 3)
+                          ))
   
   :custom
   (dashboard-modify-heading-icons '((recents . "file-text")
@@ -1615,11 +1386,11 @@ DEADLINE: %^t
   :defer t
   :custom
   ;; Point to your bibliography files
-  (citar-bibliography '("/mnt/c/Users/obaheti/Documents/Papers/Library.bib"))
+  (citar-bibliography '("~/ResearchPapers/Library.bib"))
  
   ;; PDF and note directories for academic papers
-  (citar-library-paths '("/mnt/c/Users/obaheti/Documents/Papers/"))
-  ;; (citar-notes-paths '("~/Documents/notes/"))
+  (citar-library-paths '("~/ResearchPapers/Files"))
+  (citar-notes-paths '("~/Notes/ResearchNotes"))
   
   ;; Academic citation formats
   (citar-at-point-function 'embark-act)
@@ -1628,7 +1399,12 @@ DEADLINE: %^t
   (LaTeX-mode . citar-capf-setup)
   (org-mode . citar-capf-setup))
 
-;; Enhanced bibliography completion
+(use-package citar-org-roam
+  :after (citar org-roam)
+  :config (citar-org-roam-mode)
+  (setq citar-org-roam-capture-template-key "n")
+)
+
 (use-package citar-embark
   :after citar embark
   :config (citar-embark-mode))
@@ -1663,3 +1439,27 @@ DEADLINE: %^t
   :ensure t
   :config
   (spacious-padding-mode 1))
+
+(defun my/prettify-symbols-setup ()
+
+  ;; Drawers
+  (push '(":PROPERTIES:" . "") prettify-symbols-alist)
+  (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
+  (push '(":ID:" . "") prettify-symbols-alist)
+  (push '(":DATE:" . "") prettify-symbols-alist)
+  (push '(":END:" . "") prettify-symbols-alist)
+  ;; Tags
+  (push '(":projects:" . " ") prettify-symbols-alist)
+  (push '(":work:"     . " ") prettify-symbols-alist)
+  (push '(":inbox:"    . " ") prettify-symbols-alist)
+  (push '(":task:"     . " ") prettify-symbols-alist)
+  (push '(":thesis:"   . " ") prettify-symbols-alist)
+  (push '(":learn:"    . " ") prettify-symbols-alist)
+  (push '(":code:"     . " ") prettify-symbols-alist)
+
+  (set-face-attribute 'org-drawer nil :height 1.3)
+  (set-face-attribute 'org-special-keyword nil :height 1.3)
+  (prettify-symbols-mode))
+
+(add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
+(add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
