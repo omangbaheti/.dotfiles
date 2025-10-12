@@ -549,6 +549,8 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 #+begin_src emacs-lisp
 (setq font-lock-multiline t)
 (setq jit-lock-defer-time 0) ; Immediate fontification
+(setq fast-but-imprecise-scrolling nil)
+
 (use-package org
   :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
@@ -556,10 +558,19 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (setq org-cycle-hide-drawers 'all)
   (setq org-src-fontify-natively t)
   (setq org-log-done 'note)
+  :custom  
+  (jit-lock-defer-time nil)
+  ;; Stealth fontification kicks in quickly
+  (jit-lock-stealth-time 0.2)
+  (jit-lock-stealth-nice 0.1)
+  (jit-lock-stealth-load 200)
+  ;; Ensure maximum chunks get refontified eagerly
+  (jit-lock-chunk-size 5000)
   )      
 #+end_src
 
 #+RESULTS:
+: [nil 26860 5685 908295 nil elpaca-process-queues nil nil 982000 nil]
 
 ** Enabling Table of Content
 
@@ -825,22 +836,25 @@ DEADLINE: %^t
 :target (file "Agenda/${slug}.org")
 :unnarrowed t)
 
-("n" "literature note" plain
-"%?"
+("n" "literature note" plain "%?"
 :target
 (file+head "%(expand-file-name (or citar-org-roam-subdir \"\\ResearchNotes\") org-roam-directory)/${citar-citekey}.org"
 "
 :PROPERTIES:
 :AUTHOR: ${citar-author}
 :DATE_PUBLISHED: ${citar-date}
-:END:
-,#+TITLE: ${note-title}
-, PDF: [[file:${citar-file}]]
-\n\n")
+:END:\n
+,#+TITLE: ${citar-title}\n
+\n\n"
+)
 :unnarrowed t)
+
 )))
 
 #+end_src
+
+#+RESULTS:
+: [nil 26859 37609 680812 nil elpaca-process-queues nil nil 165000 nil]
 
 *** ORG ROAM UI
 
@@ -1777,21 +1791,22 @@ Modern on-the-fly syntax checking extension for GNU Emacs
          ("M-b" . citar-insert-preset))
   :defer t
   :custom
+
   ;; Point to your bibliography files
-  (citar-bibliography '("~/ResearchPapers/Library.bib"))
- 
+  (citar-bibliography '("~/Notes/Files/Library.bib"))
+  
   ;; PDF and note directories for academic papers
-  (citar-library-paths '("~/ResearchPapers/Files"))
+  (citar-library-paths '("~/Notes/Files/"))
   (citar-notes-paths '("~/Notes/ResearchNotes"))
   
   ;; Academic citation formats
   (citar-at-point-function 'embark-act)
-  
   :hook
   (LaTeX-mode . citar-capf-setup)
   (org-mode . citar-capf-setup))
 
  #+end_src 
+
 
 *** CITAR ORG ROAM
 
@@ -1800,7 +1815,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :after (citar org-roam)
   :config (citar-org-roam-mode)
   (setq citar-org-roam-capture-template-key "n")
-)
+  (setq citar-org-roam-note-title-template "${title}"))
 #+end_src
 
 *** CITAR EMBARK
@@ -1877,6 +1892,9 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
   (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
   (push '(":ID:" . "") prettify-symbols-alist)
   (push '(":DATE:" . "") prettify-symbols-alist)
+  (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
+  (push '(":AUTHOR:" . "") prettify-symbols-alist)
+  (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
   (push '(":END:" . "") prettify-symbols-alist)
   ;; Tags
   (push '(":projects:" . " ") prettify-symbols-alist)
@@ -1894,6 +1912,7 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
 (add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
 (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
 #+end_src
+
 
 
 * TODO 

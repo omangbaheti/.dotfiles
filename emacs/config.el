@@ -386,6 +386,8 @@ one, an error is signaled."
 
 (setq font-lock-multiline t)
 (setq jit-lock-defer-time 0) ; Immediate fontification
+(setq fast-but-imprecise-scrolling nil)
+
 (use-package org
   :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
@@ -393,6 +395,14 @@ one, an error is signaled."
   (setq org-cycle-hide-drawers 'all)
   (setq org-src-fontify-natively t)
   (setq org-log-done 'note)
+  :custom  
+  (jit-lock-defer-time nil)
+  ;; Stealth fontification kicks in quickly
+  (jit-lock-stealth-time 0.2)
+  (jit-lock-stealth-nice 0.1)
+  (jit-lock-stealth-load 200)
+  ;; Ensure maximum chunks get refontified eagerly
+  (jit-lock-chunk-size 5000)
   )
 
 (use-package toc-org
@@ -610,14 +620,19 @@ DEADLINE: %^t
 :target (file "Agenda/${slug}.org")
 :unnarrowed t)
 
-("n" "literature note" plain
-"%?"
+("n" "literature note" plain "%?"
 :target
 (file+head "%(expand-file-name (or citar-org-roam-subdir \"\\ResearchNotes\") org-roam-directory)/${citar-citekey}.org"
-"#+TITLE: ${citar-citekey} (${citar-date}). ${note-title}.
-#+created: %U
-#+last_modified: %U\n\n")
+"
+:PROPERTIES:
+:AUTHOR: ${citar-author}
+:DATE_PUBLISHED: ${citar-date}
+:END:\n
+#+TITLE: ${citar-title}\n
+\n\n"
+)
 :unnarrowed t)
+
 )))
 
 (use-package org-roam-ui
@@ -1385,16 +1400,16 @@ DEADLINE: %^t
          ("M-b" . citar-insert-preset))
   :defer t
   :custom
+
   ;; Point to your bibliography files
-  (citar-bibliography '("~/ResearchPapers/Library.bib"))
- 
+  (citar-bibliography '("~/Notes/Files/Library.bib"))
+  
   ;; PDF and note directories for academic papers
-  (citar-library-paths '("~/ResearchPapers/Files"))
+  (citar-library-paths '("~/Notes/Files/"))
   (citar-notes-paths '("~/Notes/ResearchNotes"))
   
   ;; Academic citation formats
   (citar-at-point-function 'embark-act)
-  
   :hook
   (LaTeX-mode . citar-capf-setup)
   (org-mode . citar-capf-setup))
@@ -1403,7 +1418,7 @@ DEADLINE: %^t
   :after (citar org-roam)
   :config (citar-org-roam-mode)
   (setq citar-org-roam-capture-template-key "n")
-)
+  (setq citar-org-roam-note-title-template "${title}"))
 
 (use-package citar-embark
   :after citar embark
@@ -1447,6 +1462,9 @@ DEADLINE: %^t
   (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
   (push '(":ID:" . "") prettify-symbols-alist)
   (push '(":DATE:" . "") prettify-symbols-alist)
+  (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
+  (push '(":AUTHOR:" . "") prettify-symbols-alist)
+  (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
   (push '(":END:" . "") prettify-symbols-alist)
   ;; Tags
   (push '(":projects:" . " ") prettify-symbols-alist)
