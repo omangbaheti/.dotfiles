@@ -114,6 +114,7 @@
           treesit-grammars.with-all-grammars
           lsp-bridge
           pdf-tools
+          (eaf.withApplications [ eaf-browser eaf-pdf-viewer ])
         ]
     );
   };

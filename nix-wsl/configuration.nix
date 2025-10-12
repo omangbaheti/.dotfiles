@@ -40,14 +40,12 @@
       zoxide
       fzf
       gtk4
-      emacs30
       firefox
       zsh
       oh-my-posh
       tealdeer
       (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
       proselint
-      ripgrep
       coreutils
       nnn  
       nodejs_24
@@ -97,6 +95,8 @@
       omnisharp-roslyn
       unstable.pyrefly
       harper
+      hugo
+      ripgrep
       ltex-ls-plus
     ];
 
