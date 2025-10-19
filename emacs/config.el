@@ -1,4 +1,4 @@
-;; (setq debug-on-error t)
+;;(setq debug-on-error t)
 (setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -354,6 +354,7 @@ one, an error is signaled."
 (menu-bar-mode -1)                 ; disable menubar
 (blink-cursor-mode 0)              ; disable blinking cursor
 (pixel-scroll-precision-mode 1)
+(setq mouse-wheel-scroll-amount-horizontal 20)
 
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
@@ -395,13 +396,15 @@ one, an error is signaled."
   (setq org-cycle-hide-drawers 'all)
   (setq org-src-fontify-natively t)
   (setq org-log-done 'note)
+  (setq org-confirm-babel-evaluate nil)
+  (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
   :custom  
-  (jit-lock-defer-time nil)
-  ;; Stealth fontification kicks in quickly
-  (jit-lock-stealth-time 0.2)
-  (jit-lock-stealth-nice 0.1)
-  (jit-lock-stealth-load 200)
-  ;; Ensure maximum chunks get refontified eagerly
+  ;; (jit-lock-defer-time nil)
+  ;; ;; Stealth fontification kicks in quickly
+  ;; (jit-lock-stealth-time 0.2)
+  ;; (jit-lock-stealth-nice 0.1)
+  ;; (jit-lock-stealth-load 200)
+  ;; ;; Ensure maximum chunks get refontified eagerly
   (jit-lock-chunk-size 5000)
   )
 
@@ -475,7 +478,7 @@ one, an error is signaled."
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
   :config ; add late to hook
   (org-modern-indent-mode 1)
-  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+  (add-hook 'org-mode-hook #'org-modern-indent-mode t))
 
 (use-package svg-lib
   :ensure t
@@ -635,6 +638,19 @@ DEADLINE: %^t
 
 )))
 
+;; (use-package org-noter
+;;   :config
+;;   (setq org-noter-notes-search-path '("~/Notes/")))
+
+;; (use-package org-pdftools
+;;   :hook (org-mode . org-pdftools-setup-link))
+
+;; (use-package org-noter-pdftools
+;;   :after org-noter
+;;   :config
+;;   (with-eval-after-load 'pdf-annot
+;;     (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
+
 (use-package org-roam-ui
   :ensure
     (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
@@ -649,20 +665,20 @@ DEADLINE: %^t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
 
-(require 'ansi-color)
+;; (require 'ansi-color)
 
-(defun my-ansi-colorize-buffer ()
-  (ansi-color-apply-on-region (point-min) (point-max)))
+;; (defun my-ansi-colorize-buffer ()
+;;   (ansi-color-apply-on-region (point-min) (point-max)))
 
-(add-hook 'org-babel-after-execute-hook
-          (lambda ()
-            (when (eq major-mode 'org-mode)
-              (save-excursion
-                (goto-char (org-babel-where-is-src-block-result nil nil))
-                (when (looking-at org-babel-result-regexp)
-                  (let ((beg (match-end 0))
-                        (end (org-babel-result-end)))
-                    (ansi-color-apply-on-region beg end)))))))
+;; (add-hook 'org-babel-after-execute-hook
+;;           (lambda ()
+;;             (when (eq major-mode 'org-mode)
+;;               (save-excursion
+;;                 (goto-char (org-babel-where-is-src-block-result nil nil))
+;;                 (when (looking-at org-babel-result-regexp)
+;;                   (let ((beg (match-end 0))
+;;                         (end (org-babel-result-end)))
+;;                     (ansi-color-apply-on-region beg end)))))))
 
 (use-package which-key
   :init
@@ -1254,7 +1270,11 @@ DEADLINE: %^t
 
 ;;org-babel support
 (with-eval-after-load 'org
-  (add-to-list 'org-src-lang-modes '("jupyter-python" . python)))
+  (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
+  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
+
+(use-package ess
+  :ensure t)
 
 (use-package projectile
   :config
@@ -1313,28 +1333,23 @@ DEADLINE: %^t
 (use-package jupyter
   :ensure t
   :defer t
-  :commands org-babel-execute:jupyter
   :init
-  ;; Ensure ob-jupyter is available but don't load it yet
   (with-eval-after-load 'org
-    ;; Enable other languages immediately if desired
     (org-babel-do-load-languages
      'org-babel-load-languages
      '((emacs-lisp . t)
        (python . t)
        (shell . t)
+       (jupyter . t)
        (R . t))))
   :config
-  ;; Load ob-jupyter only when a jupyter block is executed
   (require 'ob-jupyter)
-  ;; Don't ask for confirmation before evaluating
-  (setq org-confirm-babel-evaluate nil)
-  ;; Code block editing quality-of-life
-  (setq org-src-fontify-natively t
+  (org-babel-jupyter-aliases-from-kernelspecs)
+  (setq org-confirm-babel-evaluate nil
+        org-src-fontify-natively t
         org-src-tab-acts-natively t
         org-src-preserve-indentation t)
-  ;; Show images after executing a block
-  (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
+  )
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -1455,29 +1470,31 @@ DEADLINE: %^t
   :config
   (spacious-padding-mode 1))
 
-(defun my/prettify-symbols-setup ()
+;; (defun my/prettify-symbols-setup ()
 
-  ;; Drawers
-  (push '(":PROPERTIES:" . "") prettify-symbols-alist)
-  (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
-  (push '(":ID:" . "") prettify-symbols-alist)
-  (push '(":DATE:" . "") prettify-symbols-alist)
-  (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
-  (push '(":AUTHOR:" . "") prettify-symbols-alist)
-  (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
-  (push '(":END:" . "") prettify-symbols-alist)
-  ;; Tags
-  (push '(":projects:" . " ") prettify-symbols-alist)
-  (push '(":work:"     . " ") prettify-symbols-alist)
-  (push '(":inbox:"    . " ") prettify-symbols-alist)
-  (push '(":task:"     . " ") prettify-symbols-alist)
-  (push '(":thesis:"   . " ") prettify-symbols-alist)
-  (push '(":learn:"    . " ") prettify-symbols-alist)
-  (push '(":code:"     . " ") prettify-symbols-alist)
+;;   ;; Drawers
+;;   (push '(":PROPERTIES:" . "") prettify-symbols-alist)
+;;   (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
+;;   (push '(":ID:" . "") prettify-symbols-alist)
+;;   (push '(":DATE:" . "") prettify-symbols-alist)
+;;   (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
+;;   (push '(":AUTHOR:" . "") prettify-symbols-alist)
+;;   (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
+;;   (push '(":END:" . "") prettify-symbols-alist)
+;;   ;; Tags
+;;   (push '(":projects:" . " ") prettify-symbols-alist)
+;;   (push '(":work:"     . " ") prettify-symbols-alist)
+;;   (push '(":inbox:"    . " ") prettify-symbols-alist)
+;;   (push '(":task:"     . " ") prettify-symbols-alist)
+;;   (push '(":thesis:"   . " ") prettify-symbols-alist)
+;;   (push '(":learn:"    . " ") prettify-symbols-alist)
+;;   (push '(":code:"     . " ") prettify-symbols-alist)
 
-  (set-face-attribute 'org-drawer nil :height 1.3)
-  (set-face-attribute 'org-special-keyword nil :height 1.3)
-  (prettify-symbols-mode))
+;;   (set-face-attribute 'org-drawer nil :height 1.3)
+;;   (set-face-attribute 'org-special-keyword nil :height 1.3)
+;;   (prettify-symbols-mode))
 
-(add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
-(add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
+;; (add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
+;; (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
+
+(setenv "JUPYTER_PATH" "/home/nixos/.local/share/jupyter/kernels")
