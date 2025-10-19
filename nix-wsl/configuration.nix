@@ -6,9 +6,26 @@
 # https://github.com/nix-community/NixOS-WSL
 
 { config, lib, pkgs, unstable, ... }:
+let
+  R-with-my-packages = unstable.rWrapper.override {
+    packages = with unstable.rPackages; [
+      IRkernel
+      ez
+      dplyr
+      car
+      nlme
+      reshape2
+      rstatix
+      prettyR
+      afex
+      estimability
+      emmeans
+      ARTool
+      multcomp
+    ];
+  };
+in
 {
-
-  
   nix.settings.experimental-features = ["nix-command" "flakes"];
   
   wsl.enable = true;
@@ -70,8 +87,7 @@
         qrcode
         python-lsp-server
       ]))
-      R
-      rPackages.languageserver
+      R-with-my-packages
       zulu8
       fd
       glib
