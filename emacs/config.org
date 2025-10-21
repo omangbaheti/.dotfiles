@@ -1,4 +1,4 @@
-#+TITLE: Emacs Config
++TITLE: Emacs Config
 #+DESCRIPTION: Personal Config
 #+STARTUP: showeverything
 #+OPTIONS: toc:2
@@ -763,6 +763,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 #+begin_src emacs-lisp
 (use-package org-roam
   :ensure t
+  :demand t
   :custom
   (org-roam-directory (file-truename "~/Notes"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -862,9 +863,11 @@ DEADLINE: %^t
 ** ORG NOTER
 
 #+begin_src emacs-lisp
-;; (use-package org-noter
-;;   :config
-;;   (setq org-noter-notes-search-path '("~/Notes/")))
+(use-package org-noter
+  :config
+  (setq org-noter-notes-search-path '("~/Notes/ResearchNotes"))
+  (setq org-noter-highlight-selected-text t)
+)
 
 ;; (use-package org-pdftools
 ;;   :hook (org-mode . org-pdftools-setup-link))
@@ -877,7 +880,7 @@ DEADLINE: %^t
 #+end_src
 
 #+RESULTS:
-: [nil 26865 10145 493103 nil elpaca-process-queues nil nil 571000 nil]
+: [nil 26869 21010 912972 nil elpaca-process-queues nil nil 870000 nil]
 
 *** ORG ROAM UI
 
@@ -1772,7 +1775,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 (use-package pdf-tools
   :ensure t
-  :defer t
+  :magic ("%PDF". pdf-view-mode)
   :config
   (pdf-tools-install)
   (setq-default pdf-view-display-size 'fit-page)
@@ -1823,14 +1826,16 @@ Modern on-the-fly syntax checking extension for GNU Emacs
  #+end_src 
 
 
+
 *** CITAR ORG ROAM
 
 #+begin_src emacs-lisp
 (use-package citar-org-roam
   :after (citar org-roam)
-  :config (citar-org-roam-mode)
+  :config 
   (setq citar-org-roam-capture-template-key "n")
-  (setq citar-org-roam-note-title-template "${title}"))
+  (setq citar-org-roam-note-title-template "${title}")
+  (citar-org-roam-mode))
 #+end_src
 
 *** CITAR EMBARK

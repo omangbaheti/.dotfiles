@@ -545,6 +545,7 @@ one, an error is signaled."
 
 (use-package org-roam
   :ensure t
+  :demand t
   :custom
   (org-roam-directory (file-truename "~/Notes"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -638,9 +639,11 @@ DEADLINE: %^t
 
 )))
 
-;; (use-package org-noter
-;;   :config
-;;   (setq org-noter-notes-search-path '("~/Notes/")))
+(use-package org-noter
+  :config
+  (setq org-noter-notes-search-path '("~/Notes/ResearchNotes"))
+  (setq org-noter-highlight-selected-text t)
+)
 
 ;; (use-package org-pdftools
 ;;   :hook (org-mode . org-pdftools-setup-link))
@@ -1385,7 +1388,7 @@ DEADLINE: %^t
 
 (use-package pdf-tools
   :ensure t
-  :defer t
+  :magic ("%PDF". pdf-view-mode)
   :config
   (pdf-tools-install)
   (setq-default pdf-view-display-size 'fit-page)
@@ -1431,9 +1434,10 @@ DEADLINE: %^t
 
 (use-package citar-org-roam
   :after (citar org-roam)
-  :config (citar-org-roam-mode)
+  :config 
   (setq citar-org-roam-capture-template-key "n")
-  (setq citar-org-roam-note-title-template "${title}"))
+  (setq citar-org-roam-note-title-template "${title}")
+  (citar-org-roam-mode))
 
 (use-package citar-embark
   :after citar embark
