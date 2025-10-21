@@ -269,6 +269,13 @@
     "m B" '(org-babel-tangle :wk "Org babel tangle")
     "m T" '(org-todo-list :wk "Org todo list"))
 
+
+  (leader-key
+    "n" '(:ignore t :wk "Notes")
+    "n o" '(citar-open :wk "Citar Open Note")
+    "n s" '(citar-org-noter-open :wk "Org-Noter Session")
+    "n n" '(citar-create-note :wk "Citar New Note"))
+
   (leader-key
     :states '(normal)
     "m n" '(org-babel-next-src-block :wk "Next src block")
@@ -313,6 +320,8 @@
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t t" '(visual-line-mode :wk "Toggle truncated lines"))
 
+
+
   (leader-key
     "w" '(:ignore t :wk "Windows")
     ;; Window splits
@@ -332,6 +341,9 @@
     "w K" '(buf-move-up :wk "Buffer Move Up")
     "w L" '(buf-move-right :wk "Buffer Move Right")))
 #+END_SRC
+
+#+RESULTS:
+: [nil 26871 51274 417387 nil elpaca-process-queues nil nil 914000 nil]
 
 * CLOSING MINIBUFFERS
 
@@ -1823,7 +1835,28 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (LaTeX-mode . citar-capf-setup)
   (org-mode . citar-capf-setup))
 
+(defun citar-org-noter-open ()
+  "Select a reference from Citar, open its PDF, and start an Org-noter session."
+  (interactive)
+  (require 'citar)
+  (require 'org-noter)
+  (let* ((key (citar-select-ref))
+         (files-hash (citar-get-files key))
+         (files (when (hash-table-p files-hash)
+                  (flatten-list (hash-table-values files-hash))))
+         (file (car files)))
+    (if (and file (file-exists-p file))
+        (progn
+          ;; Open the PDF
+          (find-file file)
+          ;; Start Org-noter
+          (org-noter))
+      (message "No PDF found for entry: %s" key))))
+
  #+end_src 
+
+ #+RESULTS:
+ : citar-org-noter-open
 
 
 
