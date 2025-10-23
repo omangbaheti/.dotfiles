@@ -108,6 +108,10 @@
 (use-package use-package-hydra
   :ensure t)
 
+(use-package casual
+  :ensure t
+  :config)
+
 (use-package general
   :config
   (general-evil-setup)
@@ -138,7 +142,7 @@
     "a" '(:ignore t :wk "Agenda")
     "a o" '(nano-agenda :wk "Open Agenda")
     "a p" '(nano-agenda-popup :wk "Open Agenda popup")
-)
+    )
 
   (leader-key
     "b" '(:ignore t :wk "buffer")
@@ -191,7 +195,22 @@
   
   (leader-key
     "m c" '(:ignore t :wk "Org Capture")
-    "m c s" '(org-capture :wk "Org Capture"))
+    "m c s" '(org-roam-capture :wk "Org Capture"))
+  
+  (leader-key
+    :states '(normal visual)
+    "o" '(:ignore t :wk "More Org")
+    "o t" '(:ignore t :wk "Transclusion")
+    "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
+    "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
+    "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
+    "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
+    "o r" '(:ignore t :wk "Research Note")
+    "o r n" '(citar-create-note :wk "New Research Note")
+    "o r o" '(citar-open-note :wk "Open Note")
+    "o r f" '(citar-open-files :wk "Open Paper")
+    )  
+
   (leader-key
     "'" '(vterm-toggle :wk "Toggle Vterm"))
   (leader-key
@@ -355,6 +374,8 @@ one, an error is signaled."
 (blink-cursor-mode 0)              ; disable blinking cursor
 (pixel-scroll-precision-mode 1)
 (setq mouse-wheel-scroll-amount-horizontal 20)
+(setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
+(setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
 
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
@@ -385,6 +406,8 @@ one, an error is signaled."
   :config
   (beacon-mode 1))                     ;; Enable beacon globally beacon-mode 1)
 
+(use-package undo-fu)
+
 (setq font-lock-multiline t)
 (setq jit-lock-defer-time 0) ; Immediate fontification
 (setq fast-but-imprecise-scrolling nil)
@@ -407,6 +430,14 @@ one, an error is signaled."
   ;; ;; Ensure maximum chunks get refontified eagerly
   (jit-lock-chunk-size 5000)
   )
+
+(use-package evil-org
+  :diminish evil-org-mode
+  :after org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'evil-org-mode-hook
+            (lambda () (evil-org-set-key-theme))))
 
 (use-package toc-org
   :commands toc-org-enable
@@ -569,6 +600,7 @@ one, an error is signaled."
 (
 file+head "${slug}.org"
 "#+TITLE: ${title}
+#+filetags: %^{Tags}
 #+STARTUP: showall
 "
 )
@@ -585,6 +617,7 @@ file+head "People/${slug}.org"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
 :END:
 #+TITLE: ${title}
+#+filetags: %^{Tags}
 #+OPTIONS: toc:2
 #+STARTUP: showall
 * TABLE OF CONTENTS :toc:
@@ -604,6 +637,7 @@ file+head "Agenda/${slug}.org"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
 :END:
 #+TITLE: ${title}
+#+filetags: %^{Tags}
 #+STARTUP: showall
 #+OPTIONS: toc:2
 * TABLE OF CONTENTS :toc:
@@ -632,7 +666,8 @@ DEADLINE: %^t
 :AUTHOR: ${citar-author}
 :DATE_PUBLISHED: ${citar-date}
 :END:\n
-#+TITLE: ${citar-title}\n
+#+TITLE: ${citar-title}
+#+filetags: Research %^{Tags}
 \n\n"
 )
 :unnarrowed t)
@@ -667,6 +702,22 @@ DEADLINE: %^t
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
+
+(use-package org-transclusion
+  :after org
+  :hook (org-mode . org-transclusion-mode))
+
+;; (general-define-key
+;;  :states '(normal visual)
+;;  :prefix "SPC"
+;;  :keymaps 'org-mode-map
+;;  "o" '(:ignore t :wk "More Org")
+;;  "o t" '(:ignore t :wk "Transclusion")
+;;  "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
+;;  "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
+;;  "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
+;;  "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
+;; )
 
 ;; (require 'ansi-color)
 
@@ -1307,32 +1358,6 @@ DEADLINE: %^t
   :config
   (dashboard-setup-startup-hook))
 
-;; (use-package jupyter
-;;   :ensure t
-;;   :after org
-;;   :config
-;;   ;; Enable Jupyter support in Org Babel
-;;   (require 'ob-jupyter)
-;;   (with-eval-after-load 'org
-;;     ;; (add-to-list 'org-babel-load-languages '(jupyter . t))
-;;     (org-babel-do-load-languages
-;;      'org-babel-load-languages
-;;      '((emacs-lisp . t)
-;;        (python . t)  ;; Optional: fallback to ob-python
-;;        (shell . t)
-;;        (jupyter . t)
-;;        (R . t)))
-;;     ;; Don't ask for confirmation before evaluating
-;;     (setq org-confirm-babel-evaluate nil)
-
-;;     ;; Code block editing quality-of-life
-;;     (setq org-src-fontify-natively t
-;;           org-src-tab-acts-natively t
-;;           org-src-preserve-indentation t)
-
-;;     ;; Show images after executing a block (e.g., matplotlib inline)
-;;     (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
-;; )
 (use-package jupyter
   :ensure t
   :defer t

@@ -9,6 +9,7 @@
   - [[#benchmarking][Benchmarking]]
   - [[#load-evil-mode][Load Evil Mode]]
   - [[#hydra][HYDRA]]
+  - [[#casual][CASUAL]]
   - [[#general-keybindings][General Keybindings]]
 - [[#closing-minibuffers][CLOSING MINIBUFFERS]]
 - [[#buffer-move][BUFFER-MOVE]]
@@ -22,7 +23,9 @@
   - [[#minibuffer-escape][Minibuffer escape]]
   - [[#electric][Electric]]
   - [[#beacon-mode][Beacon Mode]]
+  - [[#undo-fu][UNDO-FU]]
 - [[#org-mode][ORG MODE]]
+  - [[#evil-org][EVIL ORG]]
   - [[#enabling-table-of-content][Enabling Table of Content]]
   - [[#enabling-org-bullets][Enabling Org Bullets]]
   - [[#source-code-block-expansion][Source Code Block Expansion]]
@@ -33,6 +36,7 @@
   - [[#org-supertag][ORG-SUPERTAG]]
   - [[#org-roam][ORG ROAM]]
   - [[#org-noter][ORG NOTER]]
+  - [[#org-transclusion][ORG TRANSCLUSION]]
   - [[#ansi-support][ANSI SUPPORT]]
 - [[#which-key][WHICH-KEY]]
 - [[#sudo-edit][SUDO EDIT]]
@@ -72,8 +76,6 @@
 - [[#][]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
-
-
 ** Package Manager
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -206,6 +208,17 @@
   :ensure t)
 #+end_src
 
+** CASUAL
+
+#+begin_src emacs-lisp
+(use-package casual
+  :ensure t
+  :config)
+#+end_src
+
+#+RESULTS:
+: [nil 26872 37114 480331 nil elpaca-process-queues nil nil 889000 nil]
+
 ** General Keybindings
 #+BEGIN_SRC emacs-lisp
 (use-package general
@@ -238,7 +251,7 @@
     "a" '(:ignore t :wk "Agenda")
     "a o" '(nano-agenda :wk "Open Agenda")
     "a p" '(nano-agenda-popup :wk "Open Agenda popup")
-)
+    )
 
   (leader-key
     "b" '(:ignore t :wk "buffer")
@@ -298,7 +311,22 @@
   
   (leader-key
     "m c" '(:ignore t :wk "Org Capture")
-    "m c s" '(org-capture :wk "Org Capture"))
+    "m c s" '(org-roam-capture :wk "Org Capture"))
+  
+  (leader-key
+    :states '(normal visual)
+    "o" '(:ignore t :wk "More Org")
+    "o t" '(:ignore t :wk "Transclusion")
+    "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
+    "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
+    "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
+    "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
+    "o r" '(:ignore t :wk "Research Note")
+    "o r n" '(citar-create-note :wk "New Research Note")
+    "o r o" '(citar-open-note :wk "Open Note")
+    "o r f" '(citar-open-files :wk "Open Paper")
+    )  
+
   (leader-key
     "'" '(vterm-toggle :wk "Toggle Vterm"))
   (leader-key
@@ -509,6 +537,8 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (blink-cursor-mode 0)              ; disable blinking cursor
 (pixel-scroll-precision-mode 1)
 (setq mouse-wheel-scroll-amount-horizontal 20)
+(setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
+(setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
 #+end_src
 
 
@@ -559,6 +589,12 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (beacon-mode 1))                     ;; Enable beacon globally beacon-mode 1)
 #+end_src
 
+** UNDO-FU
+
+#+begin_src emacs-lisp
+(use-package undo-fu)
+#+end_src
+
 * ORG MODE
 
 #+begin_src emacs-lisp
@@ -584,6 +620,20 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   ;; ;; Ensure maximum chunks get refontified eagerly
   (jit-lock-chunk-size 5000)
   )      
+#+end_src
+
+
+** EVIL ORG
+
+#+begin_src emacs-lisp
+(use-package evil-org
+  :diminish evil-org-mode
+  :after org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'evil-org-mode-hook
+            (lambda () (evil-org-set-key-theme))))
+
 #+end_src
 
 #+RESULTS:
@@ -799,6 +849,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (
 file+head "${slug}.org"
 "#+TITLE: ${title}
+,#+filetags: %^{Tags}
 ,#+STARTUP: showall
 "
 )
@@ -815,6 +866,7 @@ file+head "People/${slug}.org"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
 :END:
 ,#+TITLE: ${title}
+,#+filetags: %^{Tags}
 ,#+OPTIONS: toc:2
 ,#+STARTUP: showall
 ,* TABLE OF CONTENTS :toc:
@@ -834,6 +886,7 @@ file+head "Agenda/${slug}.org"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
 :END:
 ,#+TITLE: ${title}
+,#+filetags: %^{Tags}
 ,#+STARTUP: showall
 ,#+OPTIONS: toc:2
 ,* TABLE OF CONTENTS :toc:
@@ -862,7 +915,8 @@ DEADLINE: %^t
 :AUTHOR: ${citar-author}
 :DATE_PUBLISHED: ${citar-date}
 :END:\n
-,#+TITLE: ${citar-title}\n
+,#+TITLE: ${citar-title}
+,#+filetags: Research %^{Tags}
 \n\n"
 )
 :unnarrowed t)
@@ -870,6 +924,9 @@ DEADLINE: %^t
 )))
 
 #+end_src
+
+#+RESULTS:
+: [nil 26872 39801 312236 nil elpaca-process-queues nil nil 269000 nil]
 
 
 ** ORG NOTER
@@ -911,6 +968,30 @@ DEADLINE: %^t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
 #+end_src
+
+
+** ORG TRANSCLUSION
+
+#+begin_src emacs-lisp
+(use-package org-transclusion
+  :after org
+  :hook (org-mode . org-transclusion-mode))
+
+;; (general-define-key
+;;  :states '(normal visual)
+;;  :prefix "SPC"
+;;  :keymaps 'org-mode-map
+;;  "o" '(:ignore t :wk "More Org")
+;;  "o t" '(:ignore t :wk "Transclusion")
+;;  "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
+;;  "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
+;;  "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
+;;  "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
+;; )
+#+end_src
+
+#+RESULTS:
+
 
 ** ANSI SUPPORT
 #+begin_src emacs-lisp
@@ -1687,32 +1768,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 * JUPYTER
 
 #+begin_src emacs-lisp
-;; (use-package jupyter
-;;   :ensure t
-;;   :after org
-;;   :config
-;;   ;; Enable Jupyter support in Org Babel
-;;   (require 'ob-jupyter)
-;;   (with-eval-after-load 'org
-;;     ;; (add-to-list 'org-babel-load-languages '(jupyter . t))
-;;     (org-babel-do-load-languages
-;;      'org-babel-load-languages
-;;      '((emacs-lisp . t)
-;;        (python . t)  ;; Optional: fallback to ob-python
-;;        (shell . t)
-;;        (jupyter . t)
-;;        (R . t)))
-;;     ;; Don't ask for confirmation before evaluating
-;;     (setq org-confirm-babel-evaluate nil)
-
-;;     ;; Code block editing quality-of-life
-;;     (setq org-src-fontify-natively t
-;;           org-src-tab-acts-natively t
-;;           org-src-preserve-indentation t)
-
-;;     ;; Show images after executing a block (e.g., matplotlib inline)
-;;     (add-hook 'org-babel-after-execute-hook #'org-display-inline-images))
-;; )
 (use-package jupyter
   :ensure t
   :defer t
