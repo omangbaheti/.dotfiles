@@ -1664,7 +1664,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log nil
-        lsp-bridge-org-babel-lang-list nil       
+        lsp-bridge-org-babel-lang-list '("python" "nix" "tex" "csharp")
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
@@ -1909,10 +1909,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
       (message "No PDF found for entry: %s" key))))
 
  #+end_src 
-
- #+RESULTS:
- : citar-org-noter-open
-
 
 
 *** CITAR ORG ROAM
