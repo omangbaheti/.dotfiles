@@ -1,4 +1,4 @@
-+TITLE: Emacs Config
+#+TITLE: Emacs Config
 #+DESCRIPTION: Personal Config
 #+STARTUP: showeverything
 #+OPTIONS: toc:2
@@ -22,7 +22,6 @@
   - [[#backups][Backups]]
   - [[#minibuffer-escape][Minibuffer escape]]
   - [[#electric][Electric]]
-  - [[#beacon-mode][Beacon Mode]]
   - [[#undo-fu][UNDO-FU]]
 - [[#org-mode][ORG MODE]]
   - [[#evil-org][EVIL ORG]]
@@ -74,6 +73,7 @@
 - [[#spacious-padding][SPACIOUS PADDING]]
 - [[#prettifying][Prettifying]]
 - [[#][]]
+- [[#tags][TAGS]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -137,11 +137,11 @@
 ** Benchmarking
 
 #+begin_src emacs-lisp
-;; (use-package benchmark-init
-;;   :ensure t
-;;   :config
-;;   ;; To disable collection of benchmark data after init is done.
-;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 #+end_src
 
 ** Load Evil Mode
@@ -576,19 +576,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 #+end_src
 
-** Beacon Mode
-#+begin_src emacs-lisp
-(use-package beacon
-  :ensure t 
-  :init
-  (setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
-        beacon-color "#ff9da4"
-        beacon-blink-when-window-scrolls nil 
-	beacon-blink-when-point-moves-vertically t)        
-  :config
-  (beacon-mode 1))                     ;; Enable beacon globally beacon-mode 1)
-#+end_src
-
 ** UNDO-FU
 
 #+begin_src emacs-lisp
@@ -603,6 +590,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (setq fast-but-imprecise-scrolling nil)
 
 (use-package org
+  :ensure nil
   :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
   (setq org-startup-folded t)              ;; fold on open [web:1]
@@ -746,7 +734,40 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   :ensure t
   :config
 )
+;; (use-package svg-tag-mode
+;;   :hook (org-mode . svg-tag-mode)
+;;   :config
+;;   (setq svg-tag-tags
+;;         '(("\\[\\[id:[^]]+\\]\\[:?\\([^]:]+\\):?\\]\\]" . 
+;;            ((lambda (tag)
+;;               (svg-tag-make tag
+;;                             :beg 1
+;;                             :end -1
+;;                             :face 'org-tag
+;;                             :margin 0
+;;                             :radius 3
+;;                             :padding 1)))))))
+  
+(use-package svg-tag-mode
+  :hook (org-mode . svg-tag-mode)
+  :config
+  (setq svg-tag-tags
+        '(("\\[\\[id:[^]]+\\]\\[\\(:[^]:]+:\\)\\]\\]" . 
+        ;; '(("\\[\\[id:[^]]+\\]\\[:\\([^]:]+\\):\\]\\]" . 
+           ((lambda (tag)
+              (svg-tag-make tag
+			    :beg 1
+                            :end -1
+                            :face 'org-tag
+                            :margin 0
+                            :radius 0
+                            :padding 1)))))))
+
 #+end_src
+
+#+RESULTS:
+: [nil 26877 40807 491537 nil elpaca-process-queues nil nil 610000 nil]
+
 
 ** OLIVETTI (Centering)
 
@@ -787,6 +808,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 #+end_src
 
 
+
 ** ORG-SUPERTAG
 
 #+begin_src emacs-lisp
@@ -812,10 +834,14 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 ;;                 (local-set-key (kbd "C-c s c") #'org-supertag-view-chat-open)))
 ;;   :config
 ;;   ;; Example: custom field type
-;; ;;   (add-to-list 'org-supertag-field-types
-;; ;;                '(rating . (:validator org-supertag-validate-rating
-;; ;;                            :formatter org-supertag-format-rating
-;; ;;                            :description "Rating (1-5)")))
+;;   (setq org-supertag-sync-directories '("~/Notes"))
+;;   (setq org-supertag-data  '("~/Notes"))
+;;   (setq org-supertag-data-directory "~/Notes/.supertag")
+;;   (setq supertag-data-directory "~/Notes/.supertag")
+;;   (add-to-list 'org-supertag-field-types
+;;                '(rating . (:validator org-supertag-validate-rating
+;;                            :formatter org-supertag-format-rating
+;;                            :description "Rating (1-5)")))
 ;; )
 
 #+end_src
@@ -850,6 +876,18 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 file+head "${slug}.org"
 "#+TITLE: ${title}
 ,#+filetags: %^{Tags}
+,#+STARTUP: showall
+"
+)
+:unnarrowed t)
+
+
+("r" "roam-tag" plain "%?"
+:target 
+(
+file+head "${slug}.org"
+"#+TITLE: ${title}
+,#+filetags: roam-tag %^{Tags}
 ,#+STARTUP: showall
 "
 )
@@ -926,8 +964,55 @@ DEADLINE: %^t
 #+end_src
 
 #+RESULTS:
-: [nil 26872 39801 312236 nil elpaca-process-queues nil nil 269000 nil]
+: [nil 26877 42019 744682 nil elpaca-process-queues nil nil 28000 nil]
 
+*** ORG-ROAM-TAGS
+I dont know how it does this yet but it works
+#+begin_src emacs-lisp
+(cl-defun org-roam-tag-node-insert(&optional filter-fn &key templates info)
+  "Insert org-roam link with description wrapped in colons."
+  (interactive)
+  (unwind-protect
+      (atomic-change-group
+        (let* (region-text
+               beg end
+               (_ (when (region-active-p)
+                    (setq beg (set-marker (make-marker) (region-beginning)))
+                    (setq end (set-marker (make-marker) (region-end)))
+                    (setq region-text (org-link-display-format 
+                                      (buffer-substring-no-properties beg end)))))
+               (node (org-roam-node-read region-text filter-fn))
+               (description (or region-text
+                              (org-roam-node-formatted node))))
+          (if (org-roam-node-id node)
+              (progn
+                (when region-text
+                  (delete-region beg end)
+                  (set-marker beg nil)
+                  (set-marker end nil))
+                (let ((id (org-roam-node-id node)))
+                  (insert (org-link-make-string
+                          (concat "id:" id)
+                          (concat ":" description ":")))  ; Add colons here
+                  (run-hook-with-args 'org-roam-post-node-insert-hook
+                                     id
+                                     description)))
+            (org-roam-capture-
+             :node node
+             :info info
+             :templates templates
+             :props (append
+                    (when (and beg end)
+                      (list :region (cons beg end)))
+                    (list :link-description description
+                          :finalize 'insert-link))))))
+    (deactivate-mark)))
+
+(advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
+
+#+end_src
+
+#+RESULTS:
 
 ** ORG NOTER
 
@@ -2030,4 +2115,24 @@ https://github.com/emacs-vs/line-reminder
 https://github.com/emacs-vs/rainbow-csv
 https://github.com/rougier/nano-mu4e
 https://github.com/rougier/notebook-mode
+
+* TAGS
+
+#+begin_src emacs-lisp
+(setq org-tag-alist 
+      '((:startgrouptag)
+        ("Research")
+        (:grouptags)
+        ("TextEntry")
+        ("Driving")
+        (:endgrouptag)
+        (:startgrouptag)
+        ("Driving")
+        (:grouptags)
+        ("L1")
+        ("L2")
+        ("L3")
+        (:endgrouptag)))
+
+#+end_src
 

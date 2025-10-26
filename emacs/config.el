@@ -51,11 +51,11 @@
 ;; Block until current queue processed.
 (elpaca-wait)
 
-;; (use-package benchmark-init
-;;   :ensure t
-;;   :config
-;;   ;; To disable collection of benchmark data after init is done.
-;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
 (setq evil-want-keybinding nil)
 (use-package evil
@@ -173,6 +173,13 @@
     "m B" '(org-babel-tangle :wk "Org babel tangle")
     "m T" '(org-todo-list :wk "Org todo list"))
 
+
+  (leader-key
+    "n" '(:ignore t :wk "Notes")
+    "n o" '(citar-open :wk "Citar Open Note")
+    "n s" '(citar-org-noter-open :wk "Org-Noter Session")
+    "n n" '(citar-create-note :wk "Citar New Note"))
+
   (leader-key
     :states '(normal)
     "m n" '(org-babel-next-src-block :wk "Next src block")
@@ -231,6 +238,8 @@
     "t" '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t t" '(visual-line-mode :wk "Toggle truncated lines"))
+
+
 
   (leader-key
     "w" '(:ignore t :wk "Windows")
@@ -396,16 +405,6 @@ one, an error is signaled."
 
 (add-hook 'org-mode-hook #'my-org-electric-pair-hook)
 
-(use-package beacon
-  :ensure t 
-  :init
-  (setq beacon-blink-duration 0.05      ;; Optional: Customize blink duration
-        beacon-color "#ff9da4"
-        beacon-blink-when-window-scrolls nil 
-	beacon-blink-when-point-moves-vertically t)        
-  :config
-  (beacon-mode 1))                     ;; Enable beacon globally beacon-mode 1)
-
 (use-package undo-fu)
 
 (setq font-lock-multiline t)
@@ -413,6 +412,7 @@ one, an error is signaled."
 (setq fast-but-imprecise-scrolling nil)
 
 (use-package org
+  :ensure nil
   :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
   (setq org-startup-folded t)              ;; fold on open [web:1]
@@ -515,6 +515,34 @@ one, an error is signaled."
   :ensure t
   :config
 )
+;; (use-package svg-tag-mode
+;;   :hook (org-mode . svg-tag-mode)
+;;   :config
+;;   (setq svg-tag-tags
+;;         '(("\\[\\[id:[^]]+\\]\\[:?\\([^]:]+\\):?\\]\\]" . 
+;;            ((lambda (tag)
+;;               (svg-tag-make tag
+;;                             :beg 1
+;;                             :end -1
+;;                             :face 'org-tag
+;;                             :margin 0
+;;                             :radius 3
+;;                             :padding 1)))))))
+  
+(use-package svg-tag-mode
+  :hook (org-mode . svg-tag-mode)
+  :config
+  (setq svg-tag-tags
+        '(("\\[\\[id:[^]]+\\]\\[\\(:[^]:]+:\\)\\]\\]" . 
+        ;; '(("\\[\\[id:[^]]+\\]\\[:\\([^]:]+\\):\\]\\]" . 
+           ((lambda (tag)
+              (svg-tag-make tag
+			    :beg 1
+                            :end -1
+                            :face 'org-tag
+                            :margin 0
+                            :radius 0
+                            :padding 1)))))))
 
 (use-package olivetti
   :ensure t
@@ -568,10 +596,14 @@ one, an error is signaled."
 ;;                 (local-set-key (kbd "C-c s c") #'org-supertag-view-chat-open)))
 ;;   :config
 ;;   ;; Example: custom field type
-;; ;;   (add-to-list 'org-supertag-field-types
-;; ;;                '(rating . (:validator org-supertag-validate-rating
-;; ;;                            :formatter org-supertag-format-rating
-;; ;;                            :description "Rating (1-5)")))
+;;   (setq org-supertag-sync-directories '("~/Notes"))
+;;   (setq org-supertag-data  '("~/Notes"))
+;;   (setq org-supertag-data-directory "~/Notes/.supertag")
+;;   (setq supertag-data-directory "~/Notes/.supertag")
+;;   (add-to-list 'org-supertag-field-types
+;;                '(rating . (:validator org-supertag-validate-rating
+;;                            :formatter org-supertag-format-rating
+;;                            :description "Rating (1-5)")))
 ;; )
 
 (use-package org-roam
@@ -601,6 +633,18 @@ one, an error is signaled."
 file+head "${slug}.org"
 "#+TITLE: ${title}
 #+filetags: %^{Tags}
+#+STARTUP: showall
+"
+)
+:unnarrowed t)
+
+
+("r" "roam-tag" plain "%?"
+:target 
+(
+file+head "${slug}.org"
+"#+TITLE: ${title}
+#+filetags: roam-tag %^{Tags}
 #+STARTUP: showall
 "
 )
@@ -673,6 +717,47 @@ DEADLINE: %^t
 :unnarrowed t)
 
 )))
+
+(cl-defun org-roam-tag-node-insert(&optional filter-fn &key templates info)
+  "Insert org-roam link with description wrapped in colons."
+  (interactive)
+  (unwind-protect
+      (atomic-change-group
+        (let* (region-text
+               beg end
+               (_ (when (region-active-p)
+                    (setq beg (set-marker (make-marker) (region-beginning)))
+                    (setq end (set-marker (make-marker) (region-end)))
+                    (setq region-text (org-link-display-format 
+                                      (buffer-substring-no-properties beg end)))))
+               (node (org-roam-node-read region-text filter-fn))
+               (description (or region-text
+                              (org-roam-node-formatted node))))
+          (if (org-roam-node-id node)
+              (progn
+                (when region-text
+                  (delete-region beg end)
+                  (set-marker beg nil)
+                  (set-marker end nil))
+                (let ((id (org-roam-node-id node)))
+                  (insert (org-link-make-string
+                          (concat "id:" id)
+                          (concat ":" description ":")))  ; Add colons here
+                  (run-hook-with-args 'org-roam-post-node-insert-hook
+                                     id
+                                     description)))
+            (org-roam-capture-
+             :node node
+             :info info
+             :templates templates
+             :props (append
+                    (when (and beg end)
+                      (list :region (cons beg end)))
+                    (list :link-description description
+                          :finalize 'insert-link))))))
+    (deactivate-mark)))
+
+(advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
 
 (use-package org-noter
   :config
@@ -1280,7 +1365,7 @@ DEADLINE: %^t
         lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log nil
-        lsp-bridge-org-babel-lang-list nil       
+        lsp-bridge-org-babel-lang-list '("python" "nix" "tex" "csharp")
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
@@ -1457,6 +1542,24 @@ DEADLINE: %^t
   (LaTeX-mode . citar-capf-setup)
   (org-mode . citar-capf-setup))
 
+(defun citar-org-noter-open ()
+  "Select a reference from Citar, open its PDF, and start an Org-noter session."
+  (interactive)
+  (require 'citar)
+  (require 'org-noter)
+  (let* ((key (citar-select-ref))
+         (files-hash (citar-get-files key))
+         (files (when (hash-table-p files-hash)
+                  (flatten-list (hash-table-values files-hash))))
+         (file (car files)))
+    (if (and file (file-exists-p file))
+        (progn
+          ;; Open the PDF
+          (find-file file)
+          ;; Start Org-noter
+          (org-noter))
+      (message "No PDF found for entry: %s" key))))
+
 (use-package citar-org-roam
   :after (citar org-roam)
   :config 
@@ -1527,3 +1630,18 @@ DEADLINE: %^t
 ;; (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
 
 (setenv "JUPYTER_PATH" "/home/nixos/.local/share/jupyter/kernels")
+
+(setq org-tag-alist 
+      '((:startgrouptag)
+        ("Research")
+        (:grouptags)
+        ("TextEntry")
+        ("Driving")
+        (:endgrouptag)
+        (:startgrouptag)
+        ("Driving")
+        (:grouptags)
+        ("L1")
+        ("L2")
+        ("L3")
+        (:endgrouptag)))
