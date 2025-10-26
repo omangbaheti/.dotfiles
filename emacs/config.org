@@ -260,10 +260,12 @@
     "b k" '(kill-buffer :wk "Kill buffer")
     "b n" '(next-buffer :wk "Next buffer")
     "b p" '(previous-buffer :wk "Previous buffer")
-    "b r" '(revert-buffer :wk "Reload buffer"))
+    "b r" '(revert-buffer :wk "Reload buffer")
+    )
 
   (leader-key
-    "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring"))
+    "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring")
+    )
 
   (leader-key
     "e" '(:ignore t :wk "Evaluate")
@@ -272,7 +274,8 @@
     "e e" '(eval-expression :wk "Evaluate elisp expression")
     "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
     "e r" '(eval-region :wk "Evaluate elisp in region")
-    "e s" '(eshell :which-key "Eshell"))
+    "e s" '(eshell :which-key "Eshell")
+    )
   
   (leader-key
     "m" '(:ignore t :wk "Org")
@@ -280,26 +283,29 @@
     "m i" '(org-toggle-item :wk "Org toggle item")
     "m t" '(org-todo :wk "Org todo")
     "m B" '(org-babel-tangle :wk "Org babel tangle")
-    "m T" '(org-todo-list :wk "Org todo list"))
+    "m T" '(org-todo-list :wk "Org todo list")
+    )
 
 
   (leader-key
     "n" '(:ignore t :wk "Notes")
     "n o" '(citar-open :wk "Citar Open Note")
     "n s" '(citar-org-noter-open :wk "Org-Noter Session")
-    "n n" '(citar-create-note :wk "Citar New Note"))
+    "n n" '(citar-create-note :wk "Citar New Note")
+    )
 
   (leader-key
     :states '(normal)
     "m n" '(org-babel-next-src-block :wk "Next src block")
-    "m p" '(org-babel-previous-src-block :wk "Previous src block"))
+    "m p" '(org-babel-previous-src-block :wk "Previous src block")
+    )
 
-  (leader-key
-    :states '(normal visual)
-    "m s" '(:ignore t :wk "Insert Source Block Templates")
-    "m s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
-    "m s p" '(tempo-template-python :wk "Insert Python block")
-    "m s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block"))
+  ;; (leader-key
+  ;;   :states '(normal visual)
+  ;;   "m s" '(:ignore t :wk "Insert Source Block Templates")
+  ;;   "m s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
+  ;;   "m s p" '(tempo-template-python :wk "Insert Python block")
+  ;;   "m s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block"))
 
   (leader-key
     "m b" '(:ignore t :wk "Tables")
@@ -316,19 +322,29 @@
   (leader-key
     :states '(normal visual)
     "o" '(:ignore t :wk "More Org")
+    
     "o t" '(:ignore t :wk "Transclusion")
     "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
     "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
     "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
     "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
+    
     "o r" '(:ignore t :wk "Research Note")
     "o r n" '(citar-create-note :wk "New Research Note")
     "o r o" '(citar-open-note :wk "Open Note")
     "o r f" '(citar-open-files :wk "Open Paper")
-    )  
+    
+    "o s" '(:ignore t :wk "Insert Source Block Templates")
+    "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
+    "o s p" '(tempo-template-python :wk "Insert Python block")
+    "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
+
+    "o c" '(:ignore t :wk "Org Capture")
+    "o c s" '(org-roam-capture :wk "Org Capture"))  
 
   (leader-key
     "'" '(vterm-toggle :wk "Toggle Vterm"))
+  
   (leader-key
     "p" '(projectile-command-map :wk "Projectile"))
   
@@ -347,7 +363,6 @@
     "t" '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t t" '(visual-line-mode :wk "Toggle truncated lines"))
-
 
 
   (leader-key
@@ -371,7 +386,7 @@
 #+END_SRC
 
 #+RESULTS:
-: [nil 26871 51274 417387 nil elpaca-process-queues nil nil 914000 nil]
+: [nil 26877 44506 409884 nil elpaca-process-queues nil nil 133000 nil]
 
 * CLOSING MINIBUFFERS
 
@@ -885,7 +900,7 @@ file+head "${slug}.org"
 ("r" "roam-tag" plain "%?"
 :target 
 (
-file+head "${slug}.org"
+file+head "TopLevelTopics/${slug}.org"
 "#+TITLE: ${title}
 ,#+filetags: roam-tag %^{Tags}
 ,#+STARTUP: showall
@@ -964,7 +979,7 @@ DEADLINE: %^t
 #+end_src
 
 #+RESULTS:
-: [nil 26877 42019 744682 nil elpaca-process-queues nil nil 28000 nil]
+: [nil 26877 42576 350763 nil elpaca-process-queues nil nil 728000 nil]
 
 *** ORG-ROAM-TAGS
 I dont know how it does this yet but it works
@@ -1008,11 +1023,12 @@ I dont know how it does this yet but it works
                           :finalize 'insert-link))))))
     (deactivate-mark)))
 
-(advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
+;; (advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
 
 #+end_src
 
 #+RESULTS:
+: org-roam-tag-node-insert
 
 ** ORG NOTER
 

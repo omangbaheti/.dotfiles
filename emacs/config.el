@@ -642,7 +642,7 @@ file+head "${slug}.org"
 ("r" "roam-tag" plain "%?"
 :target 
 (
-file+head "${slug}.org"
+file+head "TopLevelTopics/${slug}.org"
 "#+TITLE: ${title}
 #+filetags: roam-tag %^{Tags}
 #+STARTUP: showall
@@ -757,7 +757,7 @@ DEADLINE: %^t
                           :finalize 'insert-link))))))
     (deactivate-mark)))
 
-(advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
+;; (advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
 
 (use-package org-noter
   :config
