@@ -793,10 +793,10 @@ tags from the candidate string presented to the completion framework."
                     (setq beg (set-marker (make-marker) (region-beginning)))
                     (setq end (set-marker (make-marker) (region-end)))
                     (setq region-text (org-link-display-format 
-                                      (buffer-substring-no-properties beg end)))))
+                                       (buffer-substring-no-properties beg end)))))
                (node (org-roam-node-read region-text filter-fn))
                (description (or region-text
-                              (org-roam-node-formatted node))))
+				(org-roam-node-formatted node))))
           (if (org-roam-node-id node)
               (progn
                 (when region-text
@@ -804,21 +804,22 @@ tags from the candidate string presented to the completion framework."
                   (set-marker beg nil)
                   (set-marker end nil))
                 (let ((id (org-roam-node-id node)))
-                  (insert (org-link-make-string
-                          (concat "id:" id)
-                          (concat ":" description ":")))  ; Add colons here
+                  (insert (concat " " (org-link-make-string
+                                       (concat "id:" id)
+                                       (concat "  :" description ":  "))
+                                  " "))  ; Add colons here
                   (run-hook-with-args 'org-roam-post-node-insert-hook
-                                     id
-                                     description)))
+                                      id
+                                      description)))
             (org-roam-capture-
              :node node
              :info info
              :templates templates
              :props (append
-                    (when (and beg end)
-                      (list :region (cons beg end)))
-                    (list :link-description description
-                          :finalize 'insert-link))))))
+                     (when (and beg end) 
+                       (list :region (cons beg end)))
+                     (list :link-description description
+                           :finalize 'insert-link))))))
     (deactivate-mark)))
 
 ;; (advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)

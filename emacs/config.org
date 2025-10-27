@@ -1,7 +1,7 @@
 #+TITLE: Emacs Config
 #+DESCRIPTION: Personal Config
 #+STARTUP: showeverything
-#+OPTIONS: toc:2
+#+OPTIONS: toc:3
 
 * TABLE OF CONTENTS :toc:
 - [[#important-programs-to-load-first][IMPORTANT PROGRAMS TO LOAD FIRST]]
@@ -974,9 +974,6 @@ DEADLINE: %^t
 
 #+end_src
 
-#+RESULTS:
-: [nil 26878 4743 925927 nil elpaca-process-queues nil nil 220000 nil]
-
 *** ORG-ROAM-TOGGLE-AND-FOCUS
 #+begin_src emacs-lisp
 (defun org-roam-buffer-toggle-and-focus ()
@@ -1040,7 +1037,7 @@ tags from the candidate string presented to the completion framework."
 
 
 *** ORG-ROAM-TAGS
-I dont know how it does this yet but it works
+I dont know how it does this tag conversion yet but it works
 #+begin_src emacs-lisp
 (cl-defun org-roam-tag-node-insert(&optional filter-fn &key templates info)
   "Insert org-roam link with description wrapped in colons."
@@ -1053,10 +1050,10 @@ I dont know how it does this yet but it works
                     (setq beg (set-marker (make-marker) (region-beginning)))
                     (setq end (set-marker (make-marker) (region-end)))
                     (setq region-text (org-link-display-format 
-                                      (buffer-substring-no-properties beg end)))))
+                                       (buffer-substring-no-properties beg end)))))
                (node (org-roam-node-read region-text filter-fn))
                (description (or region-text
-                              (org-roam-node-formatted node))))
+				(org-roam-node-formatted node))))
           (if (org-roam-node-id node)
               (progn
                 (when region-text
@@ -1064,25 +1061,29 @@ I dont know how it does this yet but it works
                   (set-marker beg nil)
                   (set-marker end nil))
                 (let ((id (org-roam-node-id node)))
-                  (insert (org-link-make-string
-                          (concat "id:" id)
-                          (concat ":" description ":")))  ; Add colons here
+                  (insert (concat "" (org-link-make-string
+                                       (concat "id:" id)
+                                       (concat "  :" description ":  "))
+                                  "  "))  ; Add colons here
                   (run-hook-with-args 'org-roam-post-node-insert-hook
-                                     id
-                                     description)))
+                                      id
+                                      description)))
             (org-roam-capture-
              :node node
              :info info
              :templates templates
              :props (append
-                    (when (and beg end)
-                      (list :region (cons beg end)))
-                    (list :link-description description
-                          :finalize 'insert-link))))))
+                     (when (and beg end) 
+                       (list :region (cons beg end)))
+                     (list :link-description description
+                           :finalize 'insert-link))))))
     (deactivate-mark)))
 
 ;; (advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
 #+end_src
+
+#+RESULTS:
+: org-roam-tag-node-insert
 
 *** ORG-ROAM-NAVIGATE
 Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations/
