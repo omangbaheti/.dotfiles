@@ -151,10 +151,12 @@
     "b k" '(kill-buffer :wk "Kill buffer")
     "b n" '(next-buffer :wk "Next buffer")
     "b p" '(previous-buffer :wk "Previous buffer")
-    "b r" '(revert-buffer :wk "Reload buffer"))
+    "b r" '(revert-buffer :wk "Reload buffer")
+    )
 
   (leader-key
-    "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring"))
+    "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring")
+    )
 
   (leader-key
     "e" '(:ignore t :wk "Evaluate")
@@ -163,7 +165,8 @@
     "e e" '(eval-expression :wk "Evaluate elisp expression")
     "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
     "e r" '(eval-region :wk "Evaluate elisp in region")
-    "e s" '(eshell :which-key "Eshell"))
+    "e s" '(eshell :which-key "Eshell")
+    )
   
   (leader-key
     "m" '(:ignore t :wk "Org")
@@ -171,26 +174,29 @@
     "m i" '(org-toggle-item :wk "Org toggle item")
     "m t" '(org-todo :wk "Org todo")
     "m B" '(org-babel-tangle :wk "Org babel tangle")
-    "m T" '(org-todo-list :wk "Org todo list"))
+    "m T" '(org-todo-list :wk "Org todo list")
+    )
 
 
   (leader-key
     "n" '(:ignore t :wk "Notes")
     "n o" '(citar-open :wk "Citar Open Note")
     "n s" '(citar-org-noter-open :wk "Org-Noter Session")
-    "n n" '(citar-create-note :wk "Citar New Note"))
+    "n n" '(citar-create-note :wk "Citar New Note")
+    )
 
   (leader-key
     :states '(normal)
     "m n" '(org-babel-next-src-block :wk "Next src block")
-    "m p" '(org-babel-previous-src-block :wk "Previous src block"))
+    "m p" '(org-babel-previous-src-block :wk "Previous src block")
+    )
 
-  (leader-key
-    :states '(normal visual)
-    "m s" '(:ignore t :wk "Insert Source Block Templates")
-    "m s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
-    "m s p" '(tempo-template-python :wk "Insert Python block")
-    "m s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block"))
+  ;; (leader-key
+  ;;   :states '(normal visual)
+  ;;   "m s" '(:ignore t :wk "Insert Source Block Templates")
+  ;;   "m s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
+  ;;   "m s p" '(tempo-template-python :wk "Insert Python block")
+  ;;   "m s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block"))
 
   (leader-key
     "m b" '(:ignore t :wk "Tables")
@@ -207,19 +213,44 @@
   (leader-key
     :states '(normal visual)
     "o" '(:ignore t :wk "More Org")
+    
     "o t" '(:ignore t :wk "Transclusion")
     "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
     "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
     "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
     "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
-    "o r" '(:ignore t :wk "Research Note")
-    "o r n" '(citar-create-note :wk "New Research Note")
-    "o r o" '(citar-open-note :wk "Open Note")
-    "o r f" '(citar-open-files :wk "Open Paper")
-    )  
+   
+
+    "o r" '(:ignore t :wk "Org Roam")
+    "o r i" '(org-roam-node-insert :wk "Link Node")
+    "o r f" '(consult-org-roam-find-by-title :wk "Find Node")
+    "o r s" '(org-roam-buffer-toggle-and-focus :wk "Show Backlink")
+    "o r t" '(org-roam-tag-node-insert :wk "Roam Tag")
+    "o r b" '(consult-org-roam-backlinks :wk "Backlinks")
+    "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
+    "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
+ 
+    "o n" '(:ignore t :wk "Research Note")
+    "o n n" '(citar-create-note :wk "New Research Note")
+    "o n o" '(citar-open-note :wk "Open Note")
+    "o n f" '(citar-open-files :wk "Open Paper")
+    
+    "o s" '(:ignore t :wk "Insert Source Block Templates")
+    "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
+    "o s p" '(tempo-template-python :wk "Insert Python block")
+    "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
+
+    "o o" '(:ignore t :wk "Insert Source Block Templates")
+    "o o e" '(olivetti-expand :wk "Expand")
+    "o o s" '(olivetti-shrink :wk "Shrink")
+    "o o o" '(olivetti-mode :wk "Toggle Olivetti")
+
+    "o c" '(:ignore t :wk "Org Capture")
+    "o c s" '(org-roam-capture :wk "Org Capture"))  
 
   (leader-key
     "'" '(vterm-toggle :wk "Toggle Vterm"))
+  
   (leader-key
     "p" '(projectile-command-map :wk "Projectile"))
   
@@ -238,7 +269,6 @@
     "t" '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t t" '(visual-line-mode :wk "Toggle truncated lines"))
-
 
 
   (leader-key
@@ -389,6 +419,7 @@ one, an error is signaled."
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
 (setq truncate-lines nil)
+(setq display-line-numbers-type 'relative)
 
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 
@@ -422,7 +453,7 @@ one, an error is signaled."
   (setq org-confirm-babel-evaluate nil)
   (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
   :custom  
-  ;; (jit-lock-defer-time nil)
+  (jit-lock-defer-time nil)
   ;; ;; Stealth fontification kicks in quickly
   ;; (jit-lock-stealth-time 0.2)
   ;; (jit-lock-stealth-nice 0.1)
@@ -515,19 +546,6 @@ one, an error is signaled."
   :ensure t
   :config
 )
-;; (use-package svg-tag-mode
-;;   :hook (org-mode . svg-tag-mode)
-;;   :config
-;;   (setq svg-tag-tags
-;;         '(("\\[\\[id:[^]]+\\]\\[:?\\([^]:]+\\):?\\]\\]" . 
-;;            ((lambda (tag)
-;;               (svg-tag-make tag
-;;                             :beg 1
-;;                             :end -1
-;;                             :face 'org-tag
-;;                             :margin 0
-;;                             :radius 3
-;;                             :padding 1)))))))
   
 (use-package svg-tag-mode
   :hook (org-mode . svg-tag-mode)
@@ -542,7 +560,7 @@ one, an error is signaled."
                             :face 'org-tag
                             :margin 0
                             :radius 0
-                            :padding 1)))))))
+                            :padding 0)))))))
 
 (use-package olivetti
   :ensure t
@@ -562,7 +580,6 @@ one, an error is signaled."
    (org-mode . olivetti-mode)))
 
 (with-eval-after-load 'org
-  ;; (setq org-agenda-files '("~/Notes/Agenda/agenda.org"))
   (setq org-agenda-files (directory-files-recursively "~/Notes/Agenda" "\\.org$"))
   (setq org-agenda-skip-timestamp-if-done t
         org-agenda-skip-deadline-if-done t
@@ -630,7 +647,7 @@ one, an error is signaled."
 ("d" "default" plain "%?"
 :target 
 (
-file+head "${slug}.org"
+file+head "Unfiled/${slug}.org"
 "#+TITLE: ${title}
 #+filetags: %^{Tags}
 #+STARTUP: showall
@@ -718,6 +735,53 @@ DEADLINE: %^t
 
 )))
 
+(defun org-roam-buffer-toggle-and-focus ()
+  "Toggle the org-roam buffer and switch focus to it."
+  (interactive)
+  (org-roam-buffer-toggle)
+  (let ((roam-buffer (get-buffer "*org-roam*")))
+    (when (and roam-buffer (not (eq (current-buffer) roam-buffer)))
+      (pop-to-buffer roam-buffer))))
+
+(use-package consult-org-roam
+   :ensure t
+   :after org-roam
+   :init
+   (require 'consult-org-roam)
+   ;; Activate the minor mode
+   (consult-org-roam-mode 1)
+   :custom
+   ;; Use `ripgrep' for searching with `consult-org-roam-search'
+   (consult-org-roam-grep-func #'consult-ripgrep)
+   ;; Configure a custom narrow key for `consult-buffer'
+   (consult-org-roam-buffer-narrow-key ?r)
+   ;; Display org-roam buffers right after non-org-roam buffers
+   ;; in consult-buffer (and not down at the bottom)
+   (consult-org-roam-buffer-after-buffers t)
+   :config
+   ;; Eventually suppress previewing for certain functions
+   (consult-customize
+    consult-org-roam-find-by-title
+    consult-org-roam-file-find      
+    consult-org-roam-backlinks       
+    consult-org-roam-forward-links
+    :preview-key "M-.")
+   :bind
+   ;; Define some convenient keybindings as an addition
+   ("C-c n e" . consult-org-roam-file-find)
+   ("C-c n b" . consult-org-roam-backlinks)
+   ("C-c n B" . consult-org-roam-backlinks-recursive)
+   ("C-c n l" . consult-org-roam-forward-links)
+   ("C-c n r" . consult-org-roam-search))
+
+(defun consult-org-roam-find-by-title ()
+  "Find an Org Roam node by searching titles only.
+This gives preference to exact title matches by temporarily excluding
+tags from the candidate string presented to the completion framework."
+  (interactive)
+  (let ((org-roam-node-display-template "${title}"))
+    (org-roam-node-visit (consult-org-roam-node-read))))
+
 (cl-defun org-roam-tag-node-insert(&optional filter-fn &key templates info)
   "Insert org-roam link with description wrapped in colons."
   (interactive)
@@ -759,6 +823,39 @@ DEADLINE: %^t
 
 ;; (advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
 
+;; (defun my/navigate-note (arg &optional node choices)
+;;   "Navigate notes by link. With universal ARG tries to use only to navigate the tags of the current note. Optionally takes a selected NOTE and filepaths CHOICES."
+;;   (interactive "P")
+;;   (let* ((depth (if (numberp arg) arg 1))
+;;          (choices
+;;           (or choices
+;;               (when arg
+;;                 (-map #'org-roam-backlink-target-node (org-roam-backlinks-get (org-roam-node-from-id (or (ignore-errors (org-roam-node-id node))
+;;                                                                                                          (org-id-get-create))))))))
+;;          (all-notes (org-roam-node--completions))
+;;          (completions
+;;           (or (--filter (-contains-p choices (cdr it)) all-notes) all-notes))
+;;          (next-node
+;;           ;; taken from org-roam-node-read
+;;           (let* ((nodes completions)
+;;                  (node (completing-read
+;;                         "Node: "
+;;                         (lambda (string pred action)
+;;                           (if (eq action 'metadata)
+;;                               '(metadata
+;;                                 (annotation-function . (lambda (title)
+;;                                                          (funcall org-roam-node-annotation-function
+;;                                                                   (get-text-property 0 'node title))))
+;;                                 (category . org-roam-node))
+;;                             (complete-with-action action nodes string pred))))))
+;;             (or (cdr (assoc node nodes))
+;;                 (org-roam-node-create :title node)))
+;;           )
+;;          )
+;;     (if (equal node next-node)
+;;         (org-roam-node-visit node)
+;;       (my/navigate-note nil next-node (cons next-node (-map #'org-roam-backlink-source-node (org-roam-backlinks-get next-node)))))))
+
 (use-package org-noter
   :config
   (setq org-noter-notes-search-path '("~/Notes/ResearchNotes"))
@@ -791,18 +888,6 @@ DEADLINE: %^t
 (use-package org-transclusion
   :after org
   :hook (org-mode . org-transclusion-mode))
-
-;; (general-define-key
-;;  :states '(normal visual)
-;;  :prefix "SPC"
-;;  :keymaps 'org-mode-map
-;;  "o" '(:ignore t :wk "More Org")
-;;  "o t" '(:ignore t :wk "Transclusion")
-;;  "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
-;;  "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
-;;  "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
-;;  "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
-;; )
 
 ;; (require 'ansi-color)
 
@@ -949,9 +1034,10 @@ DEADLINE: %^t
    consult-bookmark consult-recent-file consult-xref
    consult--source-bookmark consult--source-file-register
    consult--source-recent-file consult--source-project-recent-file
-   ;; :preview-key "M-."
-   :preview-key '(:debounce 0.4 any))
-
+   :preview-key "M-."
+   ;;:preview-key '(:debounce 0.4 any)
+)
+  ;; (setq consult-preview-key (kbd "M-."))
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
   (setq consult-narrow-key "<") ;; "C-+"
@@ -977,7 +1063,6 @@ DEADLINE: %^t
 
 (use-package embark
   :ensure t
-
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("C-;" . embark-dwim)        ;; good alternative: M-.
@@ -1602,46 +1687,31 @@ DEADLINE: %^t
   :config
   (spacious-padding-mode 1))
 
-;; (defun my/prettify-symbols-setup ()
+(defun my/prettify-symbols-setup ()
 
-;;   ;; Drawers
-;;   (push '(":PROPERTIES:" . "") prettify-symbols-alist)
-;;   (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
-;;   (push '(":ID:" . "") prettify-symbols-alist)
-;;   (push '(":DATE:" . "") prettify-symbols-alist)
-;;   (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
-;;   (push '(":AUTHOR:" . "") prettify-symbols-alist)
-;;   (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
-;;   (push '(":END:" . "") prettify-symbols-alist)
-;;   ;; Tags
-;;   (push '(":projects:" . " ") prettify-symbols-alist)
-;;   (push '(":work:"     . " ") prettify-symbols-alist)
-;;   (push '(":inbox:"    . " ") prettify-symbols-alist)
-;;   (push '(":task:"     . " ") prettify-symbols-alist)
-;;   (push '(":thesis:"   . " ") prettify-symbols-alist)
-;;   (push '(":learn:"    . " ") prettify-symbols-alist)
-;;   (push '(":code:"     . " ") prettify-symbols-alist)
+  ;; Drawers
+  (push '(":PROPERTIES:" . "") prettify-symbols-alist)
+  (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
+  (push '(":ID:" . "") prettify-symbols-alist)
+  (push '(":DATE:" . "") prettify-symbols-alist)
+  (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
+  (push '(":AUTHOR:" . "") prettify-symbols-alist)
+  (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
+  (push '(":END:" . "") prettify-symbols-alist)
+  ;; Tags
+  (push '(":projects:" . " ") prettify-symbols-alist)
+  (push '(":work:"     . " ") prettify-symbols-alist)
+  (push '(":inbox:"    . " ") prettify-symbols-alist)
+  (push '(":task:"     . " ") prettify-symbols-alist)
+  (push '(":thesis:"   . " ") prettify-symbols-alist)
+  (push '(":learn:"    . " ") prettify-symbols-alist)
+  (push '(":code:"     . " ") prettify-symbols-alist)
 
-;;   (set-face-attribute 'org-drawer nil :height 1.3)
-;;   (set-face-attribute 'org-special-keyword nil :height 1.3)
-;;   (prettify-symbols-mode))
+  (set-face-attribute 'org-drawer nil :height 1.3)
+  (set-face-attribute 'org-special-keyword nil :height 1.3)
+  (prettify-symbols-mode))
 
-;; (add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
-;; (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
+(add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
+(add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
 
 (setenv "JUPYTER_PATH" "/home/nixos/.local/share/jupyter/kernels")
-
-(setq org-tag-alist 
-      '((:startgrouptag)
-        ("Research")
-        (:grouptags)
-        ("TextEntry")
-        ("Driving")
-        (:endgrouptag)
-        (:startgrouptag)
-        ("Driving")
-        (:grouptags)
-        ("L1")
-        ("L2")
-        ("L3")
-        (:endgrouptag)))
