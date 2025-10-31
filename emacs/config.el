@@ -485,7 +485,7 @@ one, an error is signaled."
   ;; ;; Stealth fontification kicks in quickly
   ;; (jit-lock-stealth-time 0.2)
   ;; (jit-lock-stealth-nice 0.1)
-  ;; (jit-lock-stealth-load 200)
+  (jit-lock-stealth-load 200)
   ;; ;; Ensure maximum chunks get refontified eagerly
   (jit-lock-chunk-size 5000)
   )
@@ -546,6 +546,7 @@ one, an error is signaled."
     (face-spec-reset-face face)
     (set-face-foreground face (face-attribute 'default :background)))
   (set-face-background 'fringe (face-attribute 'default :background))
+  (setq org-modern-todo-faces org-todo-keyword-faces)
   (setq org-modern-todo t)
   (setq org-modern-tag t)
   (setq org-modern-fold-stars 
@@ -618,6 +619,17 @@ one, an error is signaled."
         org-agenda-start-day "+0d")
 (setq org-agenda-current-time-string "")
 (setq org-agenda-time-grid '((daily) () "" "")))
+
+(setq org-todo-keywords
+      '((sequence "TODO(t)" "DOING(s)" "|" "DONE(d)" )))
+
+(setq org-todo-keyword-faces
+      '(("TODO"      . (:foreground "white" :background "#FF5964"     :weight bold))
+        ("DOING"   . (:foreground "black" :background "#FFF4AD"           :weight bold))
+        ;; ("WAITING"   . (:foreground "white" :background "DarkOrange3"    :weight bold))
+        ("DONE"      . (:foreground "white" :background "#ABD1B5"    :weight bold))
+        ;; ("CANCELLED" . (:foreground "white" :background "DimGray"        :weight bold)) 
+))
 
 ;; (use-package org-supertag
 ;;   :ensure (org-supertag :host github :repo "yibie/org-supertag")
@@ -729,7 +741,6 @@ file+head "Agenda/${slug}.org"
 #+filetags: %^{Tags}
 #+STARTUP: showall
 #+OPTIONS: toc:2
-* TABLE OF CONTENTS :toc:
 "
 )
 :unnarrowed t
@@ -1731,20 +1742,21 @@ tags from the candidate string presented to the completion framework."
   ;; Drawers
   (push '(":PROPERTIES:" . "") prettify-symbols-alist)
   (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
-  (push '(":ID:" . "") prettify-symbols-alist)
+  (push '(":ID:" . " ") prettify-symbols-alist)
   (push '(":DATE:" . "") prettify-symbols-alist)
   (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
   (push '(":AUTHOR:" . "") prettify-symbols-alist)
-  (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
+  (push '(":ROAM_REFS:" . " ") prettify-symbols-alist)
+  (push '(":PRIORITY:" . "") prettify-symbols-alist)
   (push '(":END:" . "") prettify-symbols-alist)
   ;; Tags
-  (push '(":projects:" . " ") prettify-symbols-alist)
-  (push '(":work:"     . " ") prettify-symbols-alist)
-  (push '(":inbox:"    . " ") prettify-symbols-alist)
-  (push '(":task:"     . " ") prettify-symbols-alist)
-  (push '(":thesis:"   . " ") prettify-symbols-alist)
-  (push '(":learn:"    . " ") prettify-symbols-alist)
-  (push '(":code:"     . " ") prettify-symbols-alist)
+  (push '(":projects:" . "  Projects") prettify-symbols-alist)
+  (push '(":work:"     . "  Work") prettify-symbols-alist)
+  (push '(":inbox:"    . "  Inbox") prettify-symbols-alist)
+  (push '(":task:"     . "  Task") prettify-symbols-alist)
+  (push '(":thesis:"   . "  Thesis") prettify-symbols-alist)
+  (push '(":learn:"    . "  Learn") prettify-symbols-alist)
+  (push '(":code:"     . "  Code") prettify-symbols-alist)
 
   (set-face-attribute 'org-drawer nil :height 1.3)
   (set-face-attribute 'org-special-keyword nil :height 1.3)
@@ -1763,5 +1775,5 @@ tags from the candidate string presented to the completion framework."
              org-kanban/shift)
   :config
   ;; Optional: Set mirrored to nil if you want the board the other way around
-  ;; (setq org-kanban/mirrored nil)
+  (setq org-kanban/mirrored nil)
   )
