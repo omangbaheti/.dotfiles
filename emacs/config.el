@@ -178,12 +178,6 @@
     )
 
 
-  (leader-key
-    "n" '(:ignore t :wk "Notes")
-    "n o" '(citar-open :wk "Citar Open Note")
-    "n s" '(citar-org-noter-open :wk "Org-Noter Session")
-    "n n" '(citar-create-note :wk "Citar New Note")
-    )
 
   (leader-key
     :states '(normal)
@@ -210,6 +204,13 @@
     "m c" '(:ignore t :wk "Org Capture")
     "m c s" '(org-roam-capture :wk "Org Capture"))
   
+  ;; (leader-key
+  ;;   "n" '(:ignore t :wk "Notes")
+  ;;   "n o" '(citar-open :wk "Citar Open Note")
+  ;;   "n s" '(citar-org-noter-open :wk "Org-Noter Session")
+  ;;   "n n" '(citar-create-note :wk "Citar New Note")
+  ;;   )
+  
   (leader-key
     :states '(normal visual)
     "o" '(:ignore t :wk "More Org")
@@ -233,7 +234,9 @@
     "o n" '(:ignore t :wk "Research Note")
     "o n n" '(citar-create-note :wk "New Research Note")
     "o n o" '(citar-open-note :wk "Open Note")
-    "o n f" '(citar-open-files :wk "Open Paper")
+    "o n s" '(citar-org-noter-open :wk "Noter Session")
+    "o n i" '(org-noter :wk "Noter Session Immediate")
+    "o n f" '(citar-org-roam-open-current-refs :wk "Open Paper")
     
     "o s" '(:ignore t :wk "Insert Source Block Templates")
     "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
@@ -289,6 +292,26 @@
     "w J" '(buf-move-down :wk "Buffer Move Down")
     "w K" '(buf-move-up :wk "Buffer Move Up")
     "w L" '(buf-move-right :wk "Buffer Move Right")))
+
+(use-package pulsar
+  :ensure t
+  :hook
+  (after-init . pulsar-global-mode)
+  :config
+  (setq pulsar-pulse t)
+  (setq pulsar-delay 0.025)
+  (setq pulsar-iterations 20)
+  (setq pulsar-face 'evil-ex-lazy-highlight)
+  (add-to-list 'pulsar-pulse-functions 'evil-scroll-down)
+  (add-to-list 'pulsar-pulse-functions 'flymake-goto-next-error)
+  (add-to-list 'pulsar-pulse-functions 'flymake-goto-prev-error)
+  (add-to-list 'pulsar-pulse-functions 'evil-yank)
+  (add-to-list 'pulsar-pulse-functions 'evil-yank-line)
+  (add-to-list 'pulsar-pulse-functions 'evil-delete)
+  (add-to-list 'pulsar-pulse-functions 'evil-delete-line)
+  (add-to-list 'pulsar-pulse-functions 'evil-jump-item)
+  (add-to-list 'pulsar-pulse-functions 'diff-hl-next-hunk)
+  (add-to-list 'pulsar-pulse-functions 'diff-hl-previous-hunk))
 
 (defun keyboard-quit-dwim ()
   (interactive)
@@ -406,6 +429,11 @@ one, an error is signaled."
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 
 (scroll-bar-mode -1)               ; disable scrollbar
+(window-divider-mode 1)
+(custom-set-faces
+ '(vertical-border ((t (:foreground "gray")))))
+(setq window-divider-default-bottom-width 1)
+(setq window-divider-default-right-width 1)
 (tool-bar-mode -1)                 ; disable toolbar
 (tooltip-mode -1)                  ; disable tooltips
 (set-fringe-mode 10)               ; give some breathing room
@@ -713,7 +741,6 @@ file+head "Agenda/${slug}.org"
 DEADLINE: %^t
 :PROPERTIES:
 :DATE: %<%d-%m-%Y-(%H-%M-%S)>
-:ROAM_ALIASES: ${Task Name}
 :END:
 "
 :target (file "Agenda/${slug}.org")
@@ -804,10 +831,10 @@ tags from the candidate string presented to the completion framework."
                   (set-marker beg nil)
                   (set-marker end nil))
                 (let ((id (org-roam-node-id node)))
-                  (insert (concat " " (org-link-make-string
+                  (insert (concat "" (org-link-make-string
                                        (concat "id:" id)
                                        (concat "  :" description ":  "))
-                                  " "))  ; Add colons here
+                                  "  "))  ; Add colons here
                   (run-hook-with-args 'org-roam-post-node-insert-hook
                                       id
                                       description)))
@@ -858,6 +885,7 @@ tags from the candidate string presented to the completion framework."
 ;;       (my/navigate-note nil next-node (cons next-node (-map #'org-roam-backlink-source-node (org-roam-backlinks-get next-node)))))))
 
 (use-package org-noter
+  :ensure t
   :config
   (setq org-noter-notes-search-path '("~/Notes/ResearchNotes"))
   (setq org-noter-highlight-selected-text t)
@@ -1686,7 +1714,17 @@ tags from the candidate string presented to the completion framework."
 (use-package spacious-padding
   :ensure t
   :config
-  (spacious-padding-mode 1))
+  (spacious-padding-mode 1)
+  (setq spacious-padding-widths
+      '(;; Adjust other padding values as you see fit
+        :internal-border-width 15
+        :header-line-width 4
+        :mode-line-width 6
+        :tab-width 4
+        :scroll-bar-width 4
+        ;; Set the divider width to 1 to make it visible
+        :right-divider-width 10))
+)
 
 (defun my/prettify-symbols-setup ()
 
@@ -1716,3 +1754,14 @@ tags from the candidate string presented to the completion framework."
 (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
 
 (setenv "JUPYTER_PATH" "/home/nixos/.local/share/jupyter/kernels")
+
+(use-package org-kanban
+  :ensure t
+  :after org
+  :commands (org-kanban/initialize
+             org-kanban/initialize-at-end
+             org-kanban/shift)
+  :config
+  ;; Optional: Set mirrored to nil if you want the board the other way around
+  ;; (setq org-kanban/mirrored nil)
+  )

@@ -15,3 +15,5 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+(setq gc-cons-threshold #x40000000)
+(setq read-process-output-max (* 1024 1024 4))
