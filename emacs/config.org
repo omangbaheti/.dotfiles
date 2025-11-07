@@ -140,11 +140,11 @@
 ** Benchmarking
 
 #+begin_src emacs-lisp
-(use-package benchmark-init
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+;; (use-package benchmark-init
+;;   :ensure t
+;;   :config
+;;   ;; To disable collection of benchmark data after init is done.
+;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 #+end_src
 
 ** Load Evil Mode
@@ -1508,6 +1508,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
 (setq vterm-max-scrollback 5000)
 (setq vterm-shell-args '("-l"))
+(evil-set-initial-state 'vterm-mode 'emacs)
 :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
 
 (use-package vterm-toggle
@@ -2337,13 +2338,14 @@ https://github.com/rougier/notebook-mode
 
 #+begin_src emacs-lisp
 (use-package rainbow-csv
+  :ensure (:host github :repo "emacs-vs/rainbow-csv")
   :hook ((csv-mode . rainbow-csv-mode)
          (tsv-mode . rainbow-csv-mode)))
 
 #+end_src
 
 #+RESULTS:
-: [nil 26885 13542 276751 nil elpaca-process-queues nil nil 486000 nil]
+: [nil 26894 13084 654248 nil elpaca-process-queues nil nil 15000 nil]
 
 * NANO ELFEED
 

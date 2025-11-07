@@ -51,11 +51,11 @@
 ;; Block until current queue processed.
 (elpaca-wait)
 
-(use-package benchmark-init
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+;; (use-package benchmark-init
+;;   :ensure t
+;;   :config
+;;   ;; To disable collection of benchmark data after init is done.
+;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
 (setq evil-want-keybinding nil)
 (use-package evil
@@ -1146,6 +1146,7 @@ tags from the candidate string presented to the completion framework."
 (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
 (setq vterm-max-scrollback 5000)
 (setq vterm-shell-args '("-l"))
+(evil-set-initial-state 'vterm-mode 'emacs)
 :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
 
 (use-package vterm-toggle
@@ -1621,9 +1622,36 @@ tags from the candidate string presented to the completion framework."
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
   (add-hook 'LaTeX-mode-hook 'flyspell-mode))
 
+;; (use-package pdf-tools
+;;   :ensure t
+;;   :magic ("%PDF". pdf-view-mode)
+;;   :config
+;;   (pdf-tools-install)
+;;   (setq-default pdf-view-display-size 'fit-page)
+;;   (setq pdf-annot-activate-created-annotations t)
+;;   (setq pdf-cache-image-limit 15)
+;;   (setq pdf-view-resize-factor 1.1)
+  
+;;   ;; Sync settings
+;;   (setq pdf-sync-forward-display-action
+;;         '(display-buffer-reuse-window (reusable-frames . t)))
+;;   (setq pdf-sync-backward-display-action
+;;         '(display-buffer-reuse-window (reusable-frames . t)))
+  
+;;   :bind (:map pdf-view-mode-map
+;;          ("C-s" . isearch-forward)
+;;          ("h" . pdf-annot-add-highlight-markup-annotation)
+;;          ("t" . pdf-annot-add-text-annotation)
+;;          ("D" . pdf-annot-delete))
+  
+;;   :hook (pdf-view-mode . (lambda ()
+;;                            (cua-mode 0)
+;;                            (display-line-numbers-mode 0))))
+
+
 (use-package pdf-tools
   :ensure t
-  :magic ("%PDF". pdf-view-mode)
+  :magic ("%PDF" . pdf-view-mode)
   :config
   (pdf-tools-install)
   (setq-default pdf-view-display-size 'fit-page)
@@ -1637,14 +1665,41 @@ tags from the candidate string presented to the completion framework."
   (setq pdf-sync-backward-display-action
         '(display-buffer-reuse-window (reusable-frames . t)))
   
-  :bind (:map pdf-view-mode-map
-         ("C-s" . isearch-forward)
-         ("h" . pdf-annot-add-highlight-markup-annotation)
-         ("t" . pdf-annot-add-text-annotation)
-         ("D" . pdf-annot-delete))
+  ;; Enable Evil normal state in pdf-view-mode
+  (evil-set-initial-state 'pdf-view-mode 'normal)
+  
+  ;; Evil keybindings for pdf-view-mode
+  (evil-define-key 'normal pdf-view-mode-map
+    ;; Navigation
+    (kbd "j") 'pdf-view-next-line-or-next-page
+    (kbd "k") 'pdf-view-previous-line-or-previous-page
+    (kbd "h") 'image-backward-hscroll
+    (kbd "l") 'image-forward-hscroll
+    (kbd "J") 'pdf-view-next-page
+    (kbd "K") 'pdf-view-previous-page
+    (kbd "gg") 'pdf-view-first-page
+    (kbd "G") 'pdf-view-last-page
+    (kbd "gt") 'pdf-view-goto-page
+    
+    ;; Zoom
+    (kbd "+") 'pdf-view-enlarge
+    (kbd "=") 'pdf-view-enlarge
+    (kbd "-") 'pdf-view-shrink
+    
+    (kbd "/") 'pdf-occur
+    (kbd "n") 'pdf-occur-next-item
+    (kbd "N") 'pdf-occur-previous-item   
+    ;; Annotations
+    (kbd "a h") 'pdf-annot-add-highlight-markup-annotation
+    (kbd "a t") 'pdf-annot-add-text-annotation
+    (kbd "a d") 'pdf-annot-delete
+    
+    ;; Other
+    (kbd "q") 'quit-window
+    (kbd "o") 'pdf-occur
+    (kbd "r") 'pdf-view-revert-buffer)
   
   :hook (pdf-view-mode . (lambda ()
-                           (cua-mode 0)
                            (display-line-numbers-mode 0))))
 
 (use-package citar
@@ -1768,6 +1823,7 @@ tags from the candidate string presented to the completion framework."
 (setenv "JUPYTER_PATH" "/home/nixos/.local/share/jupyter/kernels")
 
 (use-package rainbow-csv
+  :ensure (:host github :repo "emacs-vs/rainbow-csv")
   :hook ((csv-mode . rainbow-csv-mode)
          (tsv-mode . rainbow-csv-mode)))
 
