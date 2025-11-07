@@ -1767,6 +1767,10 @@ tags from the candidate string presented to the completion framework."
 
 (setenv "JUPYTER_PATH" "/home/nixos/.local/share/jupyter/kernels")
 
+(use-package rainbow-csv
+  :hook ((csv-mode . rainbow-csv-mode)
+         (tsv-mode . rainbow-csv-mode)))
+
 (use-package org-kanban
   :ensure t
   :after org

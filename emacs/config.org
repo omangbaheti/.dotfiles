@@ -74,6 +74,7 @@
 - [[#spacious-padding][SPACIOUS PADDING]]
 - [[#prettifying][Prettifying]]
 - [[#][]]
+- [[#csv-mode][CSV MODE]]
 - [[#nano-elfeed][NANO ELFEED]]
 - [[#org-kanban][ORG KANBAN]]
 
@@ -2072,9 +2073,36 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ** Pdf-Tools
 
 #+begin_src emacs-lisp
+;; (use-package pdf-tools
+;;   :ensure t
+;;   :magic ("%PDF". pdf-view-mode)
+;;   :config
+;;   (pdf-tools-install)
+;;   (setq-default pdf-view-display-size 'fit-page)
+;;   (setq pdf-annot-activate-created-annotations t)
+;;   (setq pdf-cache-image-limit 15)
+;;   (setq pdf-view-resize-factor 1.1)
+  
+;;   ;; Sync settings
+;;   (setq pdf-sync-forward-display-action
+;;         '(display-buffer-reuse-window (reusable-frames . t)))
+;;   (setq pdf-sync-backward-display-action
+;;         '(display-buffer-reuse-window (reusable-frames . t)))
+  
+;;   :bind (:map pdf-view-mode-map
+;;          ("C-s" . isearch-forward)
+;;          ("h" . pdf-annot-add-highlight-markup-annotation)
+;;          ("t" . pdf-annot-add-text-annotation)
+;;          ("D" . pdf-annot-delete))
+  
+;;   :hook (pdf-view-mode . (lambda ()
+;;                            (cua-mode 0)
+;;                            (display-line-numbers-mode 0))))
+
+
 (use-package pdf-tools
   :ensure t
-  :magic ("%PDF". pdf-view-mode)
+  :magic ("%PDF" . pdf-view-mode)
   :config
   (pdf-tools-install)
   (setq-default pdf-view-display-size 'fit-page)
@@ -2088,17 +2116,48 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq pdf-sync-backward-display-action
         '(display-buffer-reuse-window (reusable-frames . t)))
   
-  :bind (:map pdf-view-mode-map
-         ("C-s" . isearch-forward)
-         ("h" . pdf-annot-add-highlight-markup-annotation)
-         ("t" . pdf-annot-add-text-annotation)
-         ("D" . pdf-annot-delete))
+  ;; Enable Evil normal state in pdf-view-mode
+  (evil-set-initial-state 'pdf-view-mode 'normal)
+  
+  ;; Evil keybindings for pdf-view-mode
+  (evil-define-key 'normal pdf-view-mode-map
+    ;; Navigation
+    (kbd "j") 'pdf-view-next-line-or-next-page
+    (kbd "k") 'pdf-view-previous-line-or-previous-page
+    (kbd "h") 'image-backward-hscroll
+    (kbd "l") 'image-forward-hscroll
+    (kbd "J") 'pdf-view-next-page
+    (kbd "K") 'pdf-view-previous-page
+    (kbd "gg") 'pdf-view-first-page
+    (kbd "G") 'pdf-view-last-page
+    (kbd "gt") 'pdf-view-goto-page
+    
+    ;; Zoom
+    (kbd "+") 'pdf-view-enlarge
+    (kbd "=") 'pdf-view-enlarge
+    (kbd "-") 'pdf-view-shrink
+    
+    (kbd "/") 'pdf-occur
+    (kbd "n") 'pdf-occur-next-item
+    (kbd "N") 'pdf-occur-previous-item   
+    ;; Annotations
+    (kbd "a h") 'pdf-annot-add-highlight-markup-annotation
+    (kbd "a t") 'pdf-annot-add-text-annotation
+    (kbd "a d") 'pdf-annot-delete
+    
+    ;; Other
+    (kbd "q") 'quit-window
+    (kbd "o") 'pdf-occur
+    (kbd "r") 'pdf-view-revert-buffer)
   
   :hook (pdf-view-mode . (lambda ()
-                           (cua-mode 0)
                            (display-line-numbers-mode 0))))
 
+
 #+end_src
+
+#+RESULTS:
+: [nil 26893 2188 807214 nil elpaca-process-queues nil nil 2000 nil]
 
 ** Citar
 #+begin_src emacs-lisp
@@ -2269,10 +2328,22 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
 
 * TODO 
 https://github.com/emacs-vs/codemetrics
-https://github.com/emacs-vs/line-reminder
 https://github.com/emacs-vs/rainbow-csv
 https://github.com/rougier/nano-mu4e
 https://github.com/rougier/notebook-mode
+
+
+* CSV MODE
+
+#+begin_src emacs-lisp
+(use-package rainbow-csv
+  :hook ((csv-mode . rainbow-csv-mode)
+         (tsv-mode . rainbow-csv-mode)))
+
+#+end_src
+
+#+RESULTS:
+: [nil 26885 13542 276751 nil elpaca-process-queues nil nil 486000 nil]
 
 * NANO ELFEED
 
