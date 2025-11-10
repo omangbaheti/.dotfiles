@@ -56,6 +56,7 @@ boot.kernelPackages = pkgs.linuxPackages;
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
+  services.power-profiles-daemon.enable = true;
   services.pipewire = 
   {
     enable = true;
@@ -119,6 +120,28 @@ boot.kernelPackages = pkgs.linuxPackages;
   yazi
   lazygit
   vscode
+  nodejs_24
+  (python3.withPackages (ps: with ps; [
+    numpy
+    pandas
+    dill
+    requests
+    matplotlib
+    scipy
+    jupyter
+    jupyterlab
+    seaborn
+    xlib
+    epc
+    sexpdata
+    six
+    inflect
+    pyqt6
+    pyqt6-sip
+    pyqt6-webengine
+    qrcode
+    python-lsp-server
+  ]))
   libgcc
   syncthing
   fastfetch
@@ -126,6 +149,11 @@ boot.kernelPackages = pkgs.linuxPackages;
   texliveFull
   texlivePackages.chktex
   nil
+  masterpdfeditor
+  ltex-ls-plus
+  texlab
+  jre
+  languagetool
   ];
 
   services.fprintd.enable = false;
