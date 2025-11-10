@@ -1,0 +1,8 @@
+{
+  "name": "latex_ltex",
+  "languageId": "latex",
+  "servers": [
+    "texlab",
+    "ltex-ls-plus"
+  ]
+}

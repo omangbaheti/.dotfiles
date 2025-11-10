@@ -1479,19 +1479,22 @@ tags from the candidate string presented to the completion framework."
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 
 (use-package lsp-bridge
-  :ensure nil 
+  :ensure t
   :hook
   (org-mode . lsp-bridge-mode)
   ;; Ensure src-edit buffers (C-c ') get lsp-bridge
   (org-src-mode . (lambda () (lsp-bridge-mode 1)))
+  :custom
+  (lsp-bridge-user-multiserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/multiserver/")
+  (lsp-bridge-user-langserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/langserver/")
   :init
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
         lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
-        lsp-bridge-enable-log nil
-        lsp-bridge-org-babel-lang-list '("python" "nix" "tex" "csharp")
+        lsp-bridge-enable-log t
+        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp")
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"

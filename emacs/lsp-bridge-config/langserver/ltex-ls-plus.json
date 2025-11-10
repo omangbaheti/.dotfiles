@@ -1,0 +1,19 @@
+{
+  "name": "ltex-ls-plus",
+  "command": ["ltex-ls-plus"],
+  "languageId": {
+    "latex-mode": "latex",
+    "LaTeX-mode": "latex",
+    "markdown-mode": "markdown",
+    "org-mode": "org",
+    "text-mode": "plaintext",
+    "bibtex-mode": "bibtex"
+  },
+  "settings": {
+    "ltex": {
+      "completionEnabled": true,
+      "language": "en-US",
+      "enabled": true
+    }
+  }
+}
