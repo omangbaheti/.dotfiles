@@ -67,9 +67,10 @@
   services.syncthing = {
     enable = true;
   };
+
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs;
+    package = pkgs-unstable.emacs;
     extraPackages = (
       epkgs: with pkgs-unstable.emacsPackages;   
         [ 
@@ -77,7 +78,16 @@
           zmq 
           treesit-auto
           treesit-grammars.with-all-grammars
-          lsp-bridge
+          # lsp-bridge
+          (lsp-bridge.overrideAttrs (old: {
+            doCheck = false;  # Disable tests that require network
+            src = pkgs.fetchFromGitHub {
+              owner = "manateelazycat";
+              repo = "lsp-bridge";
+              rev = "426794a45b57d923129dfa1e4ca07c34aa72e69c";
+              hash = "sha256-9nNg0yCtEBFNWP7TFGo1SsmtnnufoROyaeIJK0tjoEQ=";
+            };
+          }))
           pdf-tools
         ]
     );

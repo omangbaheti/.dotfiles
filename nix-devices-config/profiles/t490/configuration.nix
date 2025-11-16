@@ -154,6 +154,7 @@ boot.kernelPackages = pkgs.linuxPackages;
   texlab
   jre
   languagetool
+  protonvpn-gui
   ];
 
   services.fprintd.enable = false;
