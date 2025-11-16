@@ -77,12 +77,13 @@
 - [[#csv-mode][CSV MODE]]
 - [[#nano-elfeed][NANO ELFEED]]
 - [[#org-kanban][ORG KANBAN]]
+- [[#gptel][GPTEL]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-;;(setq debug-on-error t)
+;; (setq debug-on-error t)
 (setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -692,7 +693,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (add-hook 'org-mode-hook 'evil-org-mode)
   (add-hook 'evil-org-mode-hook
             (lambda () (evil-org-set-key-theme))))
-
 #+end_src
 
 ** Enabling Table of Content
@@ -1866,7 +1866,18 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 (use-package flycheck
   :ensure t
   :config (add-hook 'after-init-hook #'global-flycheck-mode))
+
+(use-package flyover
+  :ensure t
+  :after flycheck
+  :hook (flycheck-mode . flyover-mode)
+  :config
+  ;; Show all error levels
+  (setq flyover-levels '(error warning info)))
 #+end_src
+
+#+RESULTS:
+: [nil 26898 307 793349 nil elpaca-process-queues nil nil 709000 nil]
 
 
 * TREE-SITTER
@@ -1886,13 +1897,13 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
 (use-package lsp-bridge
-  :ensure t
+  :ensure nil
   :hook
   (org-mode . lsp-bridge-mode)
   ;; Ensure src-edit buffers (C-c ') get lsp-bridge
   (org-src-mode . (lambda () (lsp-bridge-mode 1)))
   :custom
-  (lsp-bridge-user-multiserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/multiserver/")
+ (lsp-bridge-user-multiserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/multiserver/")
   (lsp-bridge-user-langserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/langserver/")
   :init
   (setq lsp-bridge-enable-diagnostics t
@@ -1910,10 +1921,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
   )
 
-;; Python support 
-;; (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
-;; (add-hook 'python-ts-mode-hook #'lsp-bridge-mode)
-;; (add-hook 'LaTeX-mode-hook #'lsp-bridge-mode)
 
 ;; Python support (lazy load)
 (use-package python
@@ -1947,8 +1954,10 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 (with-eval-after-load 'org
   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
-
 #+end_src
+
+#+RESULTS:
+: ((beamer . LaTeX) (latex . LaTeX) (jupyter-R . ess-r) (jupyter-python . python) (C . c) (C++ . c++) (asymptote . asy) (beamer . latex) (calc . fundamental) (cpp . c++) (ditaa . artist) (desktop . conf-desktop) (dot . fundamental) (elisp . emacs-lisp) (ocaml . tuareg) (screen . shell-script) (sqlite . sql) (toml . conf-toml) (shell . sh) (ash . sh) (sh . sh) (bash . sh) (jsh . sh) (bash2 . sh) (dash . sh) (dtksh . sh) (ksh . sh) (es . sh) (rc . sh) (itcsh . sh) (tcsh . sh) (jcsh . sh) (csh . sh) (ksh88 . sh) (oash . sh) (pdksh . sh) (mksh . sh) (posix . sh) (wksh . sh) (wsh . sh) (zsh . sh) (rpm . sh))
 
 
 #+begin_src emacs-lisp
@@ -2077,33 +2086,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ** Pdf-Tools
 
 #+begin_src emacs-lisp
-;; (use-package pdf-tools
-;;   :ensure t
-;;   :magic ("%PDF". pdf-view-mode)
-;;   :config
-;;   (pdf-tools-install)
-;;   (setq-default pdf-view-display-size 'fit-page)
-;;   (setq pdf-annot-activate-created-annotations t)
-;;   (setq pdf-cache-image-limit 15)
-;;   (setq pdf-view-resize-factor 1.1)
-  
-;;   ;; Sync settings
-;;   (setq pdf-sync-forward-display-action
-;;         '(display-buffer-reuse-window (reusable-frames . t)))
-;;   (setq pdf-sync-backward-display-action
-;;         '(display-buffer-reuse-window (reusable-frames . t)))
-  
-;;   :bind (:map pdf-view-mode-map
-;;          ("C-s" . isearch-forward)
-;;          ("h" . pdf-annot-add-highlight-markup-annotation)
-;;          ("t" . pdf-annot-add-text-annotation)
-;;          ("D" . pdf-annot-delete))
-  
-;;   :hook (pdf-view-mode . (lambda ()
-;;                            (cua-mode 0)
-;;                            (display-line-numbers-mode 0))))
-
-
 (use-package pdf-tools
   :ensure t
   :magic ("%PDF" . pdf-view-mode)
@@ -2243,7 +2225,19 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq langtool-default-language "en-US"))
 #+end_src
 
-
+*** Writegood mode
+#+begin_src emacs-lisp
+(use-package writegood-mode
+  :ensure t
+  :bind ("C-c g" . writegood-mode)
+  :hook ((LaTeX-mode . writegood-mode)
+         (latex-mode . writegood-mode)
+         (org-mode . writegood-mode)
+         (LaTeX-mode . flycheck-mode))
+  :config
+  (setq help-at-pt-display-when-idle t)
+  )
+#+end_src
 * GIT
 
 #+begin_src emacs-lisp
@@ -2366,3 +2360,23 @@ https://github.com/rougier/notebook-mode
   (setq org-kanban/mirrored nil)
   )
 #+end_src
+
+
+* GPTEL
+#+begin_src emacs-lisp
+(use-package gptel
+  :ensure t
+)
+#+end_src
+
+
+
+
+
+
+
+
+
+
+
+

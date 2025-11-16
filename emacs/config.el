@@ -1,4 +1,4 @@
-;;(setq debug-on-error t)
+(setq debug-on-error t)
 (setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -1469,6 +1469,14 @@ tags from the candidate string presented to the completion framework."
   :ensure t
   :config (add-hook 'after-init-hook #'global-flycheck-mode))
 
+(use-package flyover
+  :ensure t
+  :after flycheck
+  :hook (flycheck-mode . flyover-mode)
+  :config
+  ;; Show all error levels
+  (setq flyover-levels '(error warning info)))
+
 (use-package treesit-auto
   :custom
   (treesit-auto-install 'prompt)
@@ -1479,13 +1487,13 @@ tags from the candidate string presented to the completion framework."
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 
 (use-package lsp-bridge
-  :ensure t
+  :ensure nil
   :hook
   (org-mode . lsp-bridge-mode)
   ;; Ensure src-edit buffers (C-c ') get lsp-bridge
   (org-src-mode . (lambda () (lsp-bridge-mode 1)))
   :custom
-  (lsp-bridge-user-multiserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/multiserver/")
+ (lsp-bridge-user-multiserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/multiserver/")
   (lsp-bridge-user-langserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/langserver/")
   :init
   (setq lsp-bridge-enable-diagnostics t
@@ -1503,10 +1511,6 @@ tags from the candidate string presented to the completion framework."
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
   )
 
-;; Python support 
-;; (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
-;; (add-hook 'python-ts-mode-hook #'lsp-bridge-mode)
-;; (add-hook 'LaTeX-mode-hook #'lsp-bridge-mode)
 
 ;; Python support (lazy load)
 (use-package python
@@ -1625,33 +1629,6 @@ tags from the candidate string presented to the completion framework."
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
   (add-hook 'LaTeX-mode-hook 'flyspell-mode))
 
-;; (use-package pdf-tools
-;;   :ensure t
-;;   :magic ("%PDF". pdf-view-mode)
-;;   :config
-;;   (pdf-tools-install)
-;;   (setq-default pdf-view-display-size 'fit-page)
-;;   (setq pdf-annot-activate-created-annotations t)
-;;   (setq pdf-cache-image-limit 15)
-;;   (setq pdf-view-resize-factor 1.1)
-  
-;;   ;; Sync settings
-;;   (setq pdf-sync-forward-display-action
-;;         '(display-buffer-reuse-window (reusable-frames . t)))
-;;   (setq pdf-sync-backward-display-action
-;;         '(display-buffer-reuse-window (reusable-frames . t)))
-  
-;;   :bind (:map pdf-view-mode-map
-;;          ("C-s" . isearch-forward)
-;;          ("h" . pdf-annot-add-highlight-markup-annotation)
-;;          ("t" . pdf-annot-add-text-annotation)
-;;          ("D" . pdf-annot-delete))
-  
-;;   :hook (pdf-view-mode . (lambda ()
-;;                            (cua-mode 0)
-;;                            (display-line-numbers-mode 0))))
-
-
 (use-package pdf-tools
   :ensure t
   :magic ("%PDF" . pdf-view-mode)
@@ -1768,6 +1745,17 @@ tags from the candidate string presented to the completion framework."
   (setq langtool-bin "languagetool-commandline")  ; Use the executable
   (setq langtool-default-language "en-US"))
 
+(use-package writegood-mode
+  :ensure t
+  :bind ("C-c g" . writegood-mode)
+  :hook ((LaTeX-mode . writegood-mode)
+         (latex-mode . writegood-mode)
+         (org-mode . writegood-mode)
+         (LaTeX-mode . flycheck-mode))
+  :config
+  (setq help-at-pt-display-when-idle t)
+  )
+
 (use-package git-timemachine
   :ensure (:host codeberg :repo "pidu/git-timemachine")
   :defer t
@@ -1840,3 +1828,7 @@ tags from the candidate string presented to the completion framework."
   ;; Optional: Set mirrored to nil if you want the board the other way around
   (setq org-kanban/mirrored nil)
   )
+
+(use-package gptel
+  :ensure t
+)
