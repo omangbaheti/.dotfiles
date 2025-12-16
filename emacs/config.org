@@ -30,7 +30,6 @@
   - [[#enabling-org-bullets][Enabling Org Bullets]]
   - [[#source-code-block-expansion][Source Code Block Expansion]]
   - [[#modern-org][MODERN ORG]]
-  - [[#nano-prettify][NANO Prettify]]
   - [[#olivetti-centering][OLIVETTI (Centering)]]
   - [[#org-agenda][ORG-AGENDA]]
   - [[#org-supertag][ORG-SUPERTAG]]
@@ -78,6 +77,7 @@
 - [[#nano-elfeed][NANO ELFEED]]
 - [[#org-kanban][ORG KANBAN]]
 - [[#gptel][GPTEL]]
+- [[#svg-tag-mode][SVG Tag Mode]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -172,9 +172,9 @@
   (define-key evil-motion-state-map (kbd "SPC") nil)
   (define-key evil-motion-state-map (kbd "RET") nil)
   (define-key evil-motion-state-map (kbd "TAB") nil))
-  
-  ;;setting RETURN key in org-mode to follow links
-  (setq org-return-follows-link t)
+
+;;setting RETURN key in org-mode to follow links
+(setq org-return-follows-link t)
 
 ;;Turns off elpaca-use-package-mode current declaration
 ;;Note this will cause evaluate the declaration immediately. It is not deferred.
@@ -182,11 +182,8 @@
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 #+END_SRC
 
-#+RESULTS:
-: t
 
-
-*** Evil-Snipe
+*** TODO Evil-Snipe
 
 
 *** Evil-goggles
@@ -334,7 +331,7 @@
     "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
     "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
     "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
-   
+    
 
     "o r" '(:ignore t :wk "Org Roam")
     "o r i" '(org-roam-node-insert :wk "Link Node")
@@ -344,7 +341,7 @@
     "o r b" '(consult-org-roam-backlinks :wk "Backlinks")
     "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
     "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
- 
+    
     "o n" '(:ignore t :wk "Research Note")
     "o n n" '(citar-create-note :wk "New Research Note")
     "o n o" '(citar-open-note :wk "Open Note")
@@ -405,8 +402,16 @@
     "w H" '(buf-move-left :wk "Buffer Move Left")
     "w J" '(buf-move-down :wk "Buffer Move Down")
     "w K" '(buf-move-up :wk "Buffer Move Up")
-    "w L" '(buf-move-right :wk "Buffer Move Right")))
+    "w L" '(buf-move-right :wk "Buffer Move Right")
+    ;; New Window
+    "w N" '(make-frame-command :wk "New Frame")
+    )
+  )
+
 #+END_SRC
+
+#+RESULTS:
+: [nil 26945 55888 164952 nil elpaca-process-queues nil nil 742000 nil]
 
 
 ** Pulsar
@@ -435,7 +440,7 @@
 
 * CLOSING MINIBUFFERS
 
- "Do-What-I-Mean behaviour for a general `keyboard-quit'.
+"Do-What-I-Mean behaviour for a general `keyboard-quit'.
 
 The generic `keyboard-quit' does not do the expected thing when
 the minibuffer is open.  Whereas we want it to close the
@@ -779,14 +784,14 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
           ("" . "")
           ("" . "")))
   (setq ;;org-modern-star '("◉" "○" "✸" "✿")
-        org-modern-table t 
-	org-ellipsis " "
-        org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
-        org-modern-block-fringe nil 
-        org-modern-priority
-        '((?A . "󱗗")  ;; High
-          (?B . "󰐃")  ;; Medium
-          (?C . "󰒲")))) ;; Low 
+   org-modern-table t 
+   org-ellipsis " "
+   org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
+   org-modern-block-fringe nil 
+   org-modern-priority
+   '((?A . "󱗗")  ;; High
+     (?B . "󰐃")  ;; Medium
+     (?C . "󰒲")))) ;; Low 
 
 (use-package org-modern-indent
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
@@ -796,33 +801,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 #+end_src
 
-
-** NANO Prettify
-#+begin_src emacs-lisp
-(use-package svg-lib
-  :ensure t
-  :config
-)
-  
-(use-package svg-tag-mode
-  :hook (org-mode . svg-tag-mode)
-  :config
-  (setq svg-tag-tags
-        '(("\\[\\[id:[^]]+\\]\\[\\(:[^]:]+:\\)\\]\\]" . 
-        ;; '(("\\[\\[id:[^]]+\\]\\[:\\([^]:]+\\):\\]\\]" . 
-           ((lambda (tag)
-              (svg-tag-make tag
-			    :beg 1
-                            :end -1
-                            :face 'org-tag
-                            :margin 0
-                            :radius 0
-                            :padding 0)))))))
-
-#+end_src
-
-#+RESULTS:
-: [nil 26877 53480 944868 nil elpaca-process-queues nil nil 205000 nil]
 
 ** OLIVETTI (Centering)
 
@@ -843,8 +821,18 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   ((text-mode . olivetti-mode)
    (markdown-mode . olivetti-mode)
    (org-mode . olivetti-mode)))
+(defun my/olivetti-only-when-single-window ()
+  "Enable Olivetti mode only when there is a single window."
+  (if (= (count-windows) 1)
+      (olivetti-mode 1)
+    (olivetti-mode -1)))
 
+(add-hook 'window-configuration-change-hook
+          #'my/olivetti-only-when-single-window)
 #+end_src
+
+#+RESULTS:
+| my/olivetti-only-when-single-window | doom-modeline-invalidate-huds | doom-modeline-refresh-bars | evil-refresh-cursor | window--adjust-process-windows |
 
 ** ORG-AGENDA
 #+begin_src emacs-lisp
@@ -857,8 +845,8 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
         org-agenda-skip-timestamp-if-deadline-is-shown t)
   (setq org-agenda-span 1
         org-agenda-start-day "+0d")
-(setq org-agenda-current-time-string "")
-(setq org-agenda-time-grid '((daily) () "" "")))
+  (setq org-agenda-current-time-string "")
+  (setq org-agenda-time-grid '((daily) () "" "")))
 
 (setq org-todo-keywords
       '((sequence "TODO(t)" "DOING(s)" "|" "DONE(d)" )))
@@ -869,7 +857,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
         ;; ("WAITING"   . (:foreground "white" :background "DarkOrange3"    :weight bold))
         ("DONE"      . (:foreground "white" :background "#ABD1B5"    :weight bold))
         ;; ("CANCELLED" . (:foreground "white" :background "DimGray"        :weight bold)) 
-))
+	))
 #+end_src
 
 #+RESULTS:
@@ -879,7 +867,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 
 
-** ORG-SUPERTAG
+** TODO ORG-SUPERTAG
 
 #+begin_src emacs-lisp
 ;; (use-package org-supertag
@@ -939,36 +927,36 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (require 'org-roam-protocol)
   (setq org-roam-capture-templates
         '(
-;; Plain Template
-("d" "default" plain "%?"
-:target 
-(
-file+head "Unfiled/${slug}.org"
-"#+TITLE: ${title}
+	  ;; Plain Template
+	  ("d" "default" plain "%?"
+	   :target 
+	   (
+	    file+head "Unfiled/${slug}.org"
+	    "#+TITLE: ${title}
 ,#+filetags: %^{Tags}
 ,#+STARTUP: showall
 "
-)
-:unnarrowed t)
+	    )
+	   :unnarrowed t)
 
 
-("r" "roam-tag" plain "%?"
-:target 
-(
-file+head "TopLevelTopics/${slug}.org"
-"#+TITLE: ${title}
+	  ("r" "roam-tag" plain "%?"
+	   :target 
+	   (
+	    file+head "TopLevelTopics/${slug}.org"
+	    "#+TITLE: ${title}
 ,#+filetags: roam-tag %^{Tags}
 ,#+STARTUP: showall
 "
-)
-:unnarrowed t)
+	    )
+	   :unnarrowed t)
 
-;; Template for Person
-("p" "person" plain "%?"
-:target 
-(
-file+head "People/${slug}.org"                              
-"
+	  ;; Template for Person
+	  ("p" "person" plain "%?"
+	   :target 
+	   (
+	    file+head "People/${slug}.org"                              
+	    "
 :PROPERTIES:
 :ROAM_ALIASES: \"${fullname}\"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
@@ -979,16 +967,16 @@ file+head "People/${slug}.org"
 ,#+STARTUP: showall
 ,* TABLE OF CONTENTS :toc:
 "
-)
+	    )
            :unnarrowed t
            )
 	  
-;; Template for Agenda Board
-("a" "Agenda Board" plain "%?"
-:target 
-(
-file+head "Agenda/${slug}.org"                              
-"
+	  ;; Template for Agenda Board
+	  ("a" "Agenda Board" plain "%?"
+	   :target 
+	   (
+	    file+head "Agenda/${slug}.org"                              
+	    "
 :PROPERTIES:
 :ROAM_ALIASES: \"${Project Board}\"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
@@ -998,25 +986,25 @@ file+head "Agenda/${slug}.org"
 ,#+STARTUP: showall
 ,#+OPTIONS: toc:2
 "
-)
-:unnarrowed t
-)
+	    )
+	   :unnarrowed t
+	   )
 
-;; Agenda Task Template
-("t" "Agenda Task" entry
-"* TODO ${Task Name}%?
+	  ;; Agenda Task Template
+	  ("t" "Agenda Task" entry
+	   "* TODO ${Task Name}%?
 DEADLINE: %^t
 :PROPERTIES:
 :DATE: %<%d-%m-%Y-(%H-%M-%S)>
 :END:
 "
-:target (file "Agenda/${slug}.org")
-:unnarrowed t)
+	   :target (file "Agenda/${slug}.org")
+	   :unnarrowed t)
 
-("n" "literature note" plain "%?"
-:target
-(file+head "%(expand-file-name (or citar-org-roam-subdir \"\\ResearchNotes\") org-roam-directory)/${citar-citekey}.org"
-"
+	  ("n" "literature note" plain "%?"
+	   :target
+	   (file+head "%(expand-file-name (or citar-org-roam-subdir \"\\ResearchNotes\") org-roam-directory)/${citar-citekey}.org"
+		      "
 :PROPERTIES:
 :AUTHOR: ${citar-author}
 :DATE_PUBLISHED: ${citar-date}
@@ -1024,10 +1012,10 @@ DEADLINE: %^t
 ,#+TITLE: ${citar-title}
 ,#+filetags: Research %^{Tags}
 \n\n"
-)
-:unnarrowed t)
+		      )
+	   :unnarrowed t)
 
-)))
+	  )))
 
 #+end_src
 
@@ -1049,35 +1037,35 @@ DEADLINE: %^t
 *** ORG-ROAM-CONSULT
 #+begin_src emacs-lisp
 (use-package consult-org-roam
-   :ensure t
-   :after org-roam
-   :init
-   (require 'consult-org-roam)
-   ;; Activate the minor mode
-   (consult-org-roam-mode 1)
-   :custom
-   ;; Use `ripgrep' for searching with `consult-org-roam-search'
-   (consult-org-roam-grep-func #'consult-ripgrep)
-   ;; Configure a custom narrow key for `consult-buffer'
-   (consult-org-roam-buffer-narrow-key ?r)
-   ;; Display org-roam buffers right after non-org-roam buffers
-   ;; in consult-buffer (and not down at the bottom)
-   (consult-org-roam-buffer-after-buffers t)
-   :config
-   ;; Eventually suppress previewing for certain functions
-   (consult-customize
-    consult-org-roam-find-by-title
-    consult-org-roam-file-find      
-    consult-org-roam-backlinks       
-    consult-org-roam-forward-links
-    :preview-key "M-.")
-   :bind
-   ;; Define some convenient keybindings as an addition
-   ("C-c n e" . consult-org-roam-file-find)
-   ("C-c n b" . consult-org-roam-backlinks)
-   ("C-c n B" . consult-org-roam-backlinks-recursive)
-   ("C-c n l" . consult-org-roam-forward-links)
-   ("C-c n r" . consult-org-roam-search))
+  :ensure t
+  :after org-roam
+  :init
+  (require 'consult-org-roam)
+  ;; Activate the minor mode
+  (consult-org-roam-mode 1)
+  :custom
+  ;; Use `ripgrep' for searching with `consult-org-roam-search'
+  (consult-org-roam-grep-func #'consult-ripgrep)
+  ;; Configure a custom narrow key for `consult-buffer'
+  (consult-org-roam-buffer-narrow-key ?r)
+  ;; Display org-roam buffers right after non-org-roam buffers
+  ;; in consult-buffer (and not down at the bottom)
+  (consult-org-roam-buffer-after-buffers t)
+  :config
+  ;; Eventually suppress previewing for certain functions
+  (consult-customize
+   consult-org-roam-find-by-title
+   consult-org-roam-file-find      
+   consult-org-roam-backlinks       
+   consult-org-roam-forward-links
+   :preview-key "M-.")
+  :bind
+  ;; Define some convenient keybindings as an addition
+  ("C-c n e" . consult-org-roam-file-find)
+  ("C-c n b" . consult-org-roam-backlinks)
+  ("C-c n B" . consult-org-roam-backlinks-recursive)
+  ("C-c n l" . consult-org-roam-forward-links)
+  ("C-c n r" . consult-org-roam-search))
 
 (defun consult-org-roam-find-by-title ()
   "Find an Org Roam node by searching titles only.
@@ -1119,8 +1107,8 @@ I dont know how it does this tag conversion yet but it works
                   (set-marker end nil))
                 (let ((id (org-roam-node-id node)))
                   (insert (concat "" (org-link-make-string
-                                       (concat "id:" id)
-                                       (concat "  :" description ":  "))
+                                      (concat "id:" id)
+                                      (concat "  :" description ":  "))
                                   "  "))  ; Add colons here
                   (run-hook-with-args 'org-roam-post-node-insert-hook
                                       id
@@ -1176,24 +1164,23 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 ;;       (my/navigate-note nil next-node (cons next-node (-map #'org-roam-backlink-source-node (org-roam-backlinks-get next-node)))))))
 #+end_src
 
+*** ORG-ROAM-QL
+#+begin_src emacs-lisp
+(use-package org-roam-ql
+  :ensure t
+  :after (org-roam))
+#+end_src
+
 ** ORG NOTER
 
 #+begin_src emacs-lisp
 (use-package org-noter
   :ensure t
+  :defer t
   :config
   (setq org-noter-notes-search-path '("~/Notes/ResearchNotes"))
   (setq org-noter-highlight-selected-text t)
 )
-
-;; (use-package org-pdftools
-;;   :hook (org-mode . org-pdftools-setup-link))
-
-;; (use-package org-noter-pdftools
-;;   :after org-noter
-;;   :config
-;;   (with-eval-after-load 'pdf-annot
-;;     (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
 #+end_src
 
 *** ORG ROAM UI
@@ -1201,17 +1188,17 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 #+begin_src emacs-lisp
 (use-package org-roam-ui
   :ensure
-    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
-    :after org-roam
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
+  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :after org-roam
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
 #+end_src
 
 
@@ -1312,7 +1299,7 @@ Nicer M-x menu
   :init
   (vertico-mode)
 
- ;; Different scroll margin
+  ;; Different scroll margin
   ;; (setq vertico-scroll-margin 0)
 
   ;; Show more candidates
@@ -1343,7 +1330,7 @@ Nicer M-x menu
   ;; `completion-list-mode-map'.
   :ensure t
   :bind (:map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
+              ("M-A" . marginalia-cycle))
   ;; The :init section is always executed.
   :init
   (marginalia-mode))
@@ -1421,7 +1408,7 @@ Enabling Frequency + Recency Sorting of options in vertico
    consult--source-recent-file consult--source-project-recent-file
    :preview-key "M-."
    ;;:preview-key '(:debounce 0.4 any)
-)
+   )
   ;; (setq consult-preview-key (kbd "M-."))
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
@@ -1430,7 +1417,7 @@ Enabling Frequency + Recency Sorting of options in vertico
   ;; Optionally make narrowing help available in the minibuffer.
   ;; You may want to use `embark-prefix-help-command' or which-key instead.
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
-)
+  )
 
 
 (defun consult-fd-windows ()
@@ -1503,13 +1490,13 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 #TODO: VTERM
 #+begin_src emacs-lisp
 (use-package vterm
-:ensure t
-:config
-(setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
-(setq vterm-max-scrollback 5000)
-(setq vterm-shell-args '("-l"))
-(evil-set-initial-state 'vterm-mode 'emacs)
-:hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
+  :ensure t
+  :config
+  (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
+  (setq vterm-max-scrollback 5000)
+  (setq vterm-shell-args '("-l"))
+  (evil-set-initial-state 'vterm-mode 'emacs)
+  :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
 
 (use-package vterm-toggle
   :ensure t
@@ -1839,22 +1826,22 @@ Neotree is a file tree viewer.  When you open neotree, it jumps to the current f
 
 #+BEGIN_SRC emacs-lisp
 (use-package neotree
- :config
- (setq neo-smart-open t
-       neo-show-hidden-files t
-       neo-window-width 35
-       neo-window-fixed-size nil
-       inhibit-compacting-font-caches t
-       projectile-switch-project-action 'neotree-projectile-action) 
- (setq neo-theme (if (display-graphic-p) 'nerd-icons))
-       ;; truncate long file names in neotree
-       (add-hook 'neo-after-create-hook
-          #'(lambda (_)
-              (with-current-buffer (get-buffer neo-buffer-name)
-                (setq truncate-lines t)
-                (setq word-wrap nil)
-                (make-local-variable 'auto-hscroll-mode)
-                (setq auto-hscroll-mode nil)))))
+  :config
+  (setq neo-smart-open t
+	neo-show-hidden-files t
+	neo-window-width 35
+	neo-window-fixed-size nil
+	inhibit-compacting-font-caches t
+	projectile-switch-project-action 'neotree-projectile-action) 
+  (setq neo-theme (if (display-graphic-p) 'nerd-icons))
+  ;; truncate long file names in neotree
+  (add-hook 'neo-after-create-hook
+            #'(lambda (_)
+		(with-current-buffer (get-buffer neo-buffer-name)
+                  (setq truncate-lines t)
+                  (setq word-wrap nil)
+                  (make-local-variable 'auto-hscroll-mode)
+                  (setq auto-hscroll-mode nil)))))
 
 #+end_src
 
@@ -1864,20 +1851,43 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
 (use-package flycheck
-  :ensure t
+  :ensure t 
   :config (add-hook 'after-init-hook #'global-flycheck-mode))
 
 (use-package flyover
-  :ensure t
-  :after flycheck
-  :hook (flycheck-mode . flyover-mode)
-  :config
-  ;; Show all error levels
-  (setq flyover-levels '(error warning info)))
-#+end_src
+  :ensure (:host github :repo "https://github.com/konrad1977/flyover")
+  :hook ((flycheck-mode . flyover-mode)
+         (flymake-mode . flyover-mode))
+  :custom
+  ;; Checker settings
+  (flyover-checkers '(flycheck flymake))
+  (flyover-levels '(error warning info))
 
-#+RESULTS:
-: [nil 26898 307 793349 nil elpaca-process-queues nil nil 709000 nil]
+  ;; Appearance
+  (flyover-use-theme-colors t)
+  (flyover-background-lightness 45)
+  (flyover-percent-darker 40)
+  (flyover-text-tint 'lighter)
+  (flyover-text-tint-percent 50)
+
+  ;; Icons
+  (flyover-info-icon " ")
+  (flyover-warning-icon " ")
+  (flyover-error-icon " ")
+
+  ;; Display settings
+  (flyover-hide-checker-name t)
+  (flyover-show-virtual-line t)
+  (flyover-virtual-line-type 'curved-dotted-arrow)
+  (flyover-line-position-offset 1)
+
+  ;; Message wrapping
+  (flyover-wrap-messages t)
+  (flyover-max-line-length 80)
+
+  ;; Performance
+  (flyover-debounce-interval 0.2))
+#+end_src
 
 
 * TREE-SITTER
@@ -1896,15 +1906,22 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 * LSPs
 
 #+begin_src emacs-lisp
+(setq lsp-bridge-user-multiserver-dir
+      (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
+(setq lsp-bridge-user-langserver-dir
+      (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
+#+end_src
+
+
+#+begin_src emacs-lisp
 (use-package lsp-bridge
-  :ensure nil
+  :ensure '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+		       :build (:not compile))
   :hook
   (org-mode . lsp-bridge-mode)
-  ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+  ;;  Ensure src-edit buffers (C-c ') get lsp-bridge
   (org-src-mode . (lambda () (lsp-bridge-mode 1)))
-  :custom
- (lsp-bridge-user-multiserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/multiserver/")
-  (lsp-bridge-user-langserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/langserver/")
   :init
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
@@ -1912,19 +1929,27 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
-        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp")
+        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python")
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
 	lsp-bridge-tex-lsp-server "texlab"
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
+  (setq lsp-bridge-enable-debug t) 
+  ;;  (setq lsp-bridge-log-level 'debug)
+  :config
+  (add-to-list 'lsp-bridge-multi-lang-server-mode-list
+               '(latex-mode . "latex_ltex2"))
+  (add-to-list 'lsp-bridge-multi-lang-server-mode-list
+               '(LaTeX-mode . "latex_ltex2"))
   )
 
 
 ;; Python support (lazy load)
 (use-package python
-  :ensure nil
+  :ensure t
+  :defer t
   :mode ("\\.py\\'" . python-mode)
   :hook ((python-mode . (lambda ()
                           (require 'lsp-bridge)
@@ -1951,25 +1976,37 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 (add-hook 'csharp-ts-mode-hook #'lsp-bridge-mode)
 
 ;;org-babel support
-(with-eval-after-load 'org
-  (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
-  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
+;; (with-eval-after-load 'org
+;;   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
+;;   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
 #+end_src
 
 #+RESULTS:
-: ((beamer . LaTeX) (latex . LaTeX) (jupyter-R . ess-r) (jupyter-python . python) (C . c) (C++ . c++) (asymptote . asy) (beamer . latex) (calc . fundamental) (cpp . c++) (ditaa . artist) (desktop . conf-desktop) (dot . fundamental) (elisp . emacs-lisp) (ocaml . tuareg) (screen . shell-script) (sqlite . sql) (toml . conf-toml) (shell . sh) (ash . sh) (sh . sh) (bash . sh) (jsh . sh) (bash2 . sh) (dash . sh) (dtksh . sh) (ksh . sh) (es . sh) (rc . sh) (itcsh . sh) (tcsh . sh) (jcsh . sh) (csh . sh) (ksh88 . sh) (oash . sh) (pdksh . sh) (mksh . sh) (posix . sh) (wksh . sh) (wsh . sh) (zsh . sh) (rpm . sh))
+| lsp-bridge-mode |
 
 
 #+begin_src emacs-lisp
 (use-package ess
-  :ensure t)
+  :ensure t
+  :defer t)
 #+end_src
 
 ** YASNIPPET
-#+begin_src 
+#+begin_src emacs-lisp
 ;; Packages you need
+(use-package yasnippet
+  :ensure t
+  :config
+  (yas-global-mode 1))
+
+(use-package yasnippet-snippets
+  :ensure t
+  :after yasnippet)
 
 #+end_src
+
+#+RESULTS:
+: [nil 26944 57335 682562 nil elpaca-process-queues nil nil 215000 nil]
 
 
 * PROJECTILE
@@ -2038,7 +2075,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 #+RESULTS:
-: [nil 26866 38434 76692 nil elpaca-process-queues nil nil 898000 nil]
+: [nil 26944 36733 746096 nil elpaca-process-queues nil nil 542000 nil]
 
 
 * RAINBOW MODE
@@ -2079,8 +2116,15 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (add-hook 'LaTeX-mode-hook 'TeX-fold-mode)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  (add-hook 'LaTeX-mode-hook 'flyspell-mode))
+  (add-hook 'LaTeX-mode-hook (lambda ()
+     (evil-define-key '(normal visual) LaTeX-mode-map
+       "j" "gj"
+       "k" "gk"
+       ))))
 #+end_src
+
+#+RESULTS:
+: [nil 26945 59122 513325 nil elpaca-process-queues nil nil 217000 nil]
 
 
 ** Pdf-Tools
@@ -2142,9 +2186,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+end_src
 
-#+RESULTS:
-: [nil 26893 2188 807214 nil elpaca-process-queues nil nil 2000 nil]
-
 ** Citar
 #+begin_src emacs-lisp
 (use-package citar
@@ -2185,7 +2226,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
           (org-noter))
       (message "No PDF found for entry: %s" key))))
 
- #+end_src 
+#+end_src 
 
 
 *** CITAR ORG ROAM
@@ -2217,7 +2258,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq wc-modeline-format "WC[%tw/%tcw]"))
 
 (use-package langtool
-  :bind ("C-c g" . langtool-check)
+  :bind ("C-c m" . langtool-check)
   :config
   (setq langtool-language-tool-jar nil)  ; Don't use JAR file
   (setq langtool-java-classpath nil)     ; Use command-line tool instead
@@ -2225,26 +2266,22 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq langtool-default-language "en-US"))
 #+end_src
 
+#+RESULTS:
+: [nil 26945 49444 496340 nil elpaca-process-queues nil nil 565000 nil]
+
 *** Writegood mode
 #+begin_src emacs-lisp
-(use-package writegood-mode
-  :ensure t
-  :bind ("C-c g" . writegood-mode)
-  :hook ((LaTeX-mode . writegood-mode)
-         (latex-mode . writegood-mode)
-         (org-mode . writegood-mode)
-         (LaTeX-mode . flycheck-mode))
-  :config
-  (setq help-at-pt-display-when-idle t)
-  )
+
 #+end_src
+
+
 * GIT
 
 #+begin_src emacs-lisp
 (use-package git-timemachine
   :ensure (:host codeberg :repo "pidu/git-timemachine")
   :defer t
-)
+  )
 #+end_src
 
 
@@ -2272,15 +2309,15 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
   :config
   (spacious-padding-mode 1)
   (setq spacious-padding-widths
-      '(;; Adjust other padding values as you see fit
-        :internal-border-width 15
-        :header-line-width 4
-        :mode-line-width 6
-        :tab-width 4
-        :scroll-bar-width 4
-        ;; Set the divider width to 1 to make it visible
-        :right-divider-width 10))
-)
+	'(;; Adjust other padding values as you see fit
+          :internal-border-width 15
+          :header-line-width 4
+          :mode-line-width 6
+          :tab-width 4
+          :scroll-bar-width 4
+          ;; Set the divider width to 1 to make it visible
+          :right-divider-width 10))
+  )
 #+end_src
 
 
@@ -2366,17 +2403,31 @@ https://github.com/rougier/notebook-mode
 #+begin_src emacs-lisp
 (use-package gptel
   :ensure t
-)
+  )
 #+end_src
 
 
 
+* SVG Tag Mode
+#+begin_src emacs-lisp
+(use-package svg-lib
+  :defer t
+  )
 
+(use-package svg-tag-mode
+  :defer t
+  :hook (org-mode . svg-tag-mode)
+  :config
+  (setq svg-tag-tags
+        '(("\\[\\[id:[^]]+\\]\\[\\(:[^]:]+:\\)\\]\\]" . 
+           ;; '(("\\[\\[id:[^]]+\\]\\[:\\([^]:]+\\):\\]\\]" . 
+           ((lambda (tag)
+              (svg-tag-make tag
+			    :beg 1
+                            :end -1
+                            :face 'org-tag
+                            :margin 0
+                            :radius 0
+                            :padding 0)))))))
 
-
-
-
-
-
-
-
+#+end_src

@@ -86,6 +86,7 @@ in
         pyqt6-webengine
         qrcode
         python-lsp-server
+        watchdog
       ]))
       R-with-my-packages
       zulu8
@@ -114,6 +115,7 @@ in
       hugo
       ripgrep
       ltex-ls-plus
+      texlab
     ];
 
   # This value determines the NixOS release from which the default

@@ -1,4 +1,4 @@
-(setq debug-on-error t)
+;; (setq debug-on-error t)
 (setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -78,9 +78,9 @@
   (define-key evil-motion-state-map (kbd "SPC") nil)
   (define-key evil-motion-state-map (kbd "RET") nil)
   (define-key evil-motion-state-map (kbd "TAB") nil))
-  
-  ;;setting RETURN key in org-mode to follow links
-  (setq org-return-follows-link t)
+
+;;setting RETURN key in org-mode to follow links
+(setq org-return-follows-link t)
 
 ;;Turns off elpaca-use-package-mode current declaration
 ;;Note this will cause evaluate the declaration immediately. It is not deferred.
@@ -220,7 +220,7 @@
     "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
     "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
     "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
-   
+    
 
     "o r" '(:ignore t :wk "Org Roam")
     "o r i" '(org-roam-node-insert :wk "Link Node")
@@ -230,7 +230,7 @@
     "o r b" '(consult-org-roam-backlinks :wk "Backlinks")
     "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
     "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
- 
+    
     "o n" '(:ignore t :wk "Research Note")
     "o n n" '(citar-create-note :wk "New Research Note")
     "o n o" '(citar-open-note :wk "Open Note")
@@ -291,7 +291,11 @@
     "w H" '(buf-move-left :wk "Buffer Move Left")
     "w J" '(buf-move-down :wk "Buffer Move Down")
     "w K" '(buf-move-up :wk "Buffer Move Up")
-    "w L" '(buf-move-right :wk "Buffer Move Right")))
+    "w L" '(buf-move-right :wk "Buffer Move Right")
+    ;; New Window
+    "w N" '(make-frame-command :wk "New Frame")
+    )
+  )
 
 (use-package pulsar
   :ensure t
@@ -556,40 +560,20 @@ one, an error is signaled."
           ("" . "")
           ("" . "")))
   (setq ;;org-modern-star '("◉" "○" "✸" "✿")
-        org-modern-table t 
-	org-ellipsis " "
-        org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
-        org-modern-block-fringe nil 
-        org-modern-priority
-        '((?A . "󱗗")  ;; High
-          (?B . "󰐃")  ;; Medium
-          (?C . "󰒲")))) ;; Low 
+   org-modern-table t 
+   org-ellipsis " "
+   org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
+   org-modern-block-fringe nil 
+   org-modern-priority
+   '((?A . "󱗗")  ;; High
+     (?B . "󰐃")  ;; Medium
+     (?C . "󰒲")))) ;; Low 
 
 (use-package org-modern-indent
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
   :config ; add late to hook
   (org-modern-indent-mode 1)
   (add-hook 'org-mode-hook #'org-modern-indent-mode t))
-
-(use-package svg-lib
-  :ensure t
-  :config
-)
-  
-(use-package svg-tag-mode
-  :hook (org-mode . svg-tag-mode)
-  :config
-  (setq svg-tag-tags
-        '(("\\[\\[id:[^]]+\\]\\[\\(:[^]:]+:\\)\\]\\]" . 
-        ;; '(("\\[\\[id:[^]]+\\]\\[:\\([^]:]+\\):\\]\\]" . 
-           ((lambda (tag)
-              (svg-tag-make tag
-			    :beg 1
-                            :end -1
-                            :face 'org-tag
-                            :margin 0
-                            :radius 0
-                            :padding 0)))))))
 
 (use-package olivetti
   :ensure t
@@ -607,6 +591,14 @@ one, an error is signaled."
   ((text-mode . olivetti-mode)
    (markdown-mode . olivetti-mode)
    (org-mode . olivetti-mode)))
+(defun my/olivetti-only-when-single-window ()
+  "Enable Olivetti mode only when there is a single window."
+  (if (= (count-windows) 1)
+      (olivetti-mode 1)
+    (olivetti-mode -1)))
+
+(add-hook 'window-configuration-change-hook
+          #'my/olivetti-only-when-single-window)
 
 (with-eval-after-load 'org
   (setq org-agenda-files (directory-files-recursively "~/Notes/Agenda" "\\.org$"))
@@ -617,8 +609,8 @@ one, an error is signaled."
         org-agenda-skip-timestamp-if-deadline-is-shown t)
   (setq org-agenda-span 1
         org-agenda-start-day "+0d")
-(setq org-agenda-current-time-string "")
-(setq org-agenda-time-grid '((daily) () "" "")))
+  (setq org-agenda-current-time-string "")
+  (setq org-agenda-time-grid '((daily) () "" "")))
 
 (setq org-todo-keywords
       '((sequence "TODO(t)" "DOING(s)" "|" "DONE(d)" )))
@@ -629,7 +621,7 @@ one, an error is signaled."
         ;; ("WAITING"   . (:foreground "white" :background "DarkOrange3"    :weight bold))
         ("DONE"      . (:foreground "white" :background "#ABD1B5"    :weight bold))
         ;; ("CANCELLED" . (:foreground "white" :background "DimGray"        :weight bold)) 
-))
+	))
 
 ;; (use-package org-supertag
 ;;   :ensure (org-supertag :host github :repo "yibie/org-supertag")
@@ -683,36 +675,36 @@ one, an error is signaled."
   (require 'org-roam-protocol)
   (setq org-roam-capture-templates
         '(
-;; Plain Template
-("d" "default" plain "%?"
-:target 
-(
-file+head "Unfiled/${slug}.org"
-"#+TITLE: ${title}
+	  ;; Plain Template
+	  ("d" "default" plain "%?"
+	   :target 
+	   (
+	    file+head "Unfiled/${slug}.org"
+	    "#+TITLE: ${title}
 #+filetags: %^{Tags}
 #+STARTUP: showall
 "
-)
-:unnarrowed t)
+	    )
+	   :unnarrowed t)
 
 
-("r" "roam-tag" plain "%?"
-:target 
-(
-file+head "TopLevelTopics/${slug}.org"
-"#+TITLE: ${title}
+	  ("r" "roam-tag" plain "%?"
+	   :target 
+	   (
+	    file+head "TopLevelTopics/${slug}.org"
+	    "#+TITLE: ${title}
 #+filetags: roam-tag %^{Tags}
 #+STARTUP: showall
 "
-)
-:unnarrowed t)
+	    )
+	   :unnarrowed t)
 
-;; Template for Person
-("p" "person" plain "%?"
-:target 
-(
-file+head "People/${slug}.org"                              
-"
+	  ;; Template for Person
+	  ("p" "person" plain "%?"
+	   :target 
+	   (
+	    file+head "People/${slug}.org"                              
+	    "
 :PROPERTIES:
 :ROAM_ALIASES: \"${fullname}\"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
@@ -723,16 +715,16 @@ file+head "People/${slug}.org"
 #+STARTUP: showall
 * TABLE OF CONTENTS :toc:
 "
-)
+	    )
            :unnarrowed t
            )
 	  
-;; Template for Agenda Board
-("a" "Agenda Board" plain "%?"
-:target 
-(
-file+head "Agenda/${slug}.org"                              
-"
+	  ;; Template for Agenda Board
+	  ("a" "Agenda Board" plain "%?"
+	   :target 
+	   (
+	    file+head "Agenda/${slug}.org"                              
+	    "
 :PROPERTIES:
 :ROAM_ALIASES: \"${Project Board}\"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
@@ -742,25 +734,25 @@ file+head "Agenda/${slug}.org"
 #+STARTUP: showall
 #+OPTIONS: toc:2
 "
-)
-:unnarrowed t
-)
+	    )
+	   :unnarrowed t
+	   )
 
-;; Agenda Task Template
-("t" "Agenda Task" entry
-"* TODO ${Task Name}%?
+	  ;; Agenda Task Template
+	  ("t" "Agenda Task" entry
+	   "* TODO ${Task Name}%?
 DEADLINE: %^t
 :PROPERTIES:
 :DATE: %<%d-%m-%Y-(%H-%M-%S)>
 :END:
 "
-:target (file "Agenda/${slug}.org")
-:unnarrowed t)
+	   :target (file "Agenda/${slug}.org")
+	   :unnarrowed t)
 
-("n" "literature note" plain "%?"
-:target
-(file+head "%(expand-file-name (or citar-org-roam-subdir \"\\ResearchNotes\") org-roam-directory)/${citar-citekey}.org"
-"
+	  ("n" "literature note" plain "%?"
+	   :target
+	   (file+head "%(expand-file-name (or citar-org-roam-subdir \"\\ResearchNotes\") org-roam-directory)/${citar-citekey}.org"
+		      "
 :PROPERTIES:
 :AUTHOR: ${citar-author}
 :DATE_PUBLISHED: ${citar-date}
@@ -768,10 +760,10 @@ DEADLINE: %^t
 #+TITLE: ${citar-title}
 #+filetags: Research %^{Tags}
 \n\n"
-)
-:unnarrowed t)
+		      )
+	   :unnarrowed t)
 
-)))
+	  )))
 
 (defun org-roam-buffer-toggle-and-focus ()
   "Toggle the org-roam buffer and switch focus to it."
@@ -782,35 +774,35 @@ DEADLINE: %^t
       (pop-to-buffer roam-buffer))))
 
 (use-package consult-org-roam
-   :ensure t
-   :after org-roam
-   :init
-   (require 'consult-org-roam)
-   ;; Activate the minor mode
-   (consult-org-roam-mode 1)
-   :custom
-   ;; Use `ripgrep' for searching with `consult-org-roam-search'
-   (consult-org-roam-grep-func #'consult-ripgrep)
-   ;; Configure a custom narrow key for `consult-buffer'
-   (consult-org-roam-buffer-narrow-key ?r)
-   ;; Display org-roam buffers right after non-org-roam buffers
-   ;; in consult-buffer (and not down at the bottom)
-   (consult-org-roam-buffer-after-buffers t)
-   :config
-   ;; Eventually suppress previewing for certain functions
-   (consult-customize
-    consult-org-roam-find-by-title
-    consult-org-roam-file-find      
-    consult-org-roam-backlinks       
-    consult-org-roam-forward-links
-    :preview-key "M-.")
-   :bind
-   ;; Define some convenient keybindings as an addition
-   ("C-c n e" . consult-org-roam-file-find)
-   ("C-c n b" . consult-org-roam-backlinks)
-   ("C-c n B" . consult-org-roam-backlinks-recursive)
-   ("C-c n l" . consult-org-roam-forward-links)
-   ("C-c n r" . consult-org-roam-search))
+  :ensure t
+  :after org-roam
+  :init
+  (require 'consult-org-roam)
+  ;; Activate the minor mode
+  (consult-org-roam-mode 1)
+  :custom
+  ;; Use `ripgrep' for searching with `consult-org-roam-search'
+  (consult-org-roam-grep-func #'consult-ripgrep)
+  ;; Configure a custom narrow key for `consult-buffer'
+  (consult-org-roam-buffer-narrow-key ?r)
+  ;; Display org-roam buffers right after non-org-roam buffers
+  ;; in consult-buffer (and not down at the bottom)
+  (consult-org-roam-buffer-after-buffers t)
+  :config
+  ;; Eventually suppress previewing for certain functions
+  (consult-customize
+   consult-org-roam-find-by-title
+   consult-org-roam-file-find      
+   consult-org-roam-backlinks       
+   consult-org-roam-forward-links
+   :preview-key "M-.")
+  :bind
+  ;; Define some convenient keybindings as an addition
+  ("C-c n e" . consult-org-roam-file-find)
+  ("C-c n b" . consult-org-roam-backlinks)
+  ("C-c n B" . consult-org-roam-backlinks-recursive)
+  ("C-c n l" . consult-org-roam-forward-links)
+  ("C-c n r" . consult-org-roam-search))
 
 (defun consult-org-roam-find-by-title ()
   "Find an Org Roam node by searching titles only.
@@ -843,8 +835,8 @@ tags from the candidate string presented to the completion framework."
                   (set-marker end nil))
                 (let ((id (org-roam-node-id node)))
                   (insert (concat "" (org-link-make-string
-                                       (concat "id:" id)
-                                       (concat "  :" description ":  "))
+                                      (concat "id:" id)
+                                      (concat "  :" description ":  "))
                                   "  "))  ; Add colons here
                   (run-hook-with-args 'org-roam-post-node-insert-hook
                                       id
@@ -895,35 +887,31 @@ tags from the candidate string presented to the completion framework."
 ;;         (org-roam-node-visit node)
 ;;       (my/navigate-note nil next-node (cons next-node (-map #'org-roam-backlink-source-node (org-roam-backlinks-get next-node)))))))
 
+(use-package org-roam-ql
+  :ensure t
+  :after (org-roam))
+
 (use-package org-noter
   :ensure t
+  :defer t
   :config
   (setq org-noter-notes-search-path '("~/Notes/ResearchNotes"))
   (setq org-noter-highlight-selected-text t)
 )
 
-;; (use-package org-pdftools
-;;   :hook (org-mode . org-pdftools-setup-link))
-
-;; (use-package org-noter-pdftools
-;;   :after org-noter
-;;   :config
-;;   (with-eval-after-load 'pdf-annot
-;;     (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
-
 (use-package org-roam-ui
   :ensure
-    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
-    :after org-roam
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
+  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :after org-roam
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
 
 (use-package org-transclusion
   :after org
@@ -992,7 +980,7 @@ tags from the candidate string presented to the completion framework."
   :init
   (vertico-mode)
 
- ;; Different scroll margin
+  ;; Different scroll margin
   ;; (setq vertico-scroll-margin 0)
 
   ;; Show more candidates
@@ -1014,7 +1002,7 @@ tags from the candidate string presented to the completion framework."
   ;; `completion-list-mode-map'.
   :ensure t
   :bind (:map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
+              ("M-A" . marginalia-cycle))
   ;; The :init section is always executed.
   :init
   (marginalia-mode))
@@ -1076,7 +1064,7 @@ tags from the candidate string presented to the completion framework."
    consult--source-recent-file consult--source-project-recent-file
    :preview-key "M-."
    ;;:preview-key '(:debounce 0.4 any)
-)
+   )
   ;; (setq consult-preview-key (kbd "M-."))
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
@@ -1085,7 +1073,7 @@ tags from the candidate string presented to the completion framework."
   ;; Optionally make narrowing help available in the minibuffer.
   ;; You may want to use `embark-prefix-help-command' or which-key instead.
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
-)
+  )
 
 
 (defun consult-fd-windows ()
@@ -1141,13 +1129,13 @@ tags from the candidate string presented to the completion framework."
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package vterm
-:ensure t
-:config
-(setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
-(setq vterm-max-scrollback 5000)
-(setq vterm-shell-args '("-l"))
-(evil-set-initial-state 'vterm-mode 'emacs)
-:hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
+  :ensure t
+  :config
+  (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
+  (setq vterm-max-scrollback 5000)
+  (setq vterm-shell-args '("-l"))
+  (evil-set-initial-state 'vterm-mode 'emacs)
+  :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
 
 (use-package vterm-toggle
   :ensure t
@@ -1448,34 +1436,60 @@ tags from the candidate string presented to the completion framework."
   :init (dirvish-override-dired-mode))
 
 (use-package neotree
- :config
- (setq neo-smart-open t
-       neo-show-hidden-files t
-       neo-window-width 35
-       neo-window-fixed-size nil
-       inhibit-compacting-font-caches t
-       projectile-switch-project-action 'neotree-projectile-action) 
- (setq neo-theme (if (display-graphic-p) 'nerd-icons))
-       ;; truncate long file names in neotree
-       (add-hook 'neo-after-create-hook
-          #'(lambda (_)
-              (with-current-buffer (get-buffer neo-buffer-name)
-                (setq truncate-lines t)
-                (setq word-wrap nil)
-                (make-local-variable 'auto-hscroll-mode)
-                (setq auto-hscroll-mode nil)))))
+  :config
+  (setq neo-smart-open t
+	neo-show-hidden-files t
+	neo-window-width 35
+	neo-window-fixed-size nil
+	inhibit-compacting-font-caches t
+	projectile-switch-project-action 'neotree-projectile-action) 
+  (setq neo-theme (if (display-graphic-p) 'nerd-icons))
+  ;; truncate long file names in neotree
+  (add-hook 'neo-after-create-hook
+            #'(lambda (_)
+		(with-current-buffer (get-buffer neo-buffer-name)
+                  (setq truncate-lines t)
+                  (setq word-wrap nil)
+                  (make-local-variable 'auto-hscroll-mode)
+                  (setq auto-hscroll-mode nil)))))
 
 (use-package flycheck
-  :ensure t
+  :ensure t 
   :config (add-hook 'after-init-hook #'global-flycheck-mode))
 
 (use-package flyover
-  :ensure t
-  :after flycheck
-  :hook (flycheck-mode . flyover-mode)
-  :config
-  ;; Show all error levels
-  (setq flyover-levels '(error warning info)))
+  :ensure (:host github :repo "https://github.com/konrad1977/flyover")
+  :hook ((flycheck-mode . flyover-mode)
+         (flymake-mode . flyover-mode))
+  :custom
+  ;; Checker settings
+  (flyover-checkers '(flycheck flymake))
+  (flyover-levels '(error warning info))
+
+  ;; Appearance
+  (flyover-use-theme-colors t)
+  (flyover-background-lightness 45)
+  (flyover-percent-darker 40)
+  (flyover-text-tint 'lighter)
+  (flyover-text-tint-percent 50)
+
+  ;; Icons
+  (flyover-info-icon " ")
+  (flyover-warning-icon " ")
+  (flyover-error-icon " ")
+
+  ;; Display settings
+  (flyover-hide-checker-name t)
+  (flyover-show-virtual-line t)
+  (flyover-virtual-line-type 'curved-dotted-arrow)
+  (flyover-line-position-offset 1)
+
+  ;; Message wrapping
+  (flyover-wrap-messages t)
+  (flyover-max-line-length 80)
+
+  ;; Performance
+  (flyover-debounce-interval 0.2))
 
 (use-package treesit-auto
   :custom
@@ -1486,15 +1500,19 @@ tags from the candidate string presented to the completion framework."
   (setq treesit-language-source-alist
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 
+(setq lsp-bridge-user-multiserver-dir
+      (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
+(setq lsp-bridge-user-langserver-dir
+      (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
+
 (use-package lsp-bridge
-  :ensure nil
+  :ensure '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+		       :build (:not compile))
   :hook
   (org-mode . lsp-bridge-mode)
-  ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+  ;;  Ensure src-edit buffers (C-c ') get lsp-bridge
   (org-src-mode . (lambda () (lsp-bridge-mode 1)))
-  :custom
- (lsp-bridge-user-multiserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/multiserver/")
-  (lsp-bridge-user-langserver-dir "/home/fern/.dotfiles/emacs/lsp-bridge-config/langserver/")
   :init
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
@@ -1502,19 +1520,27 @@ tags from the candidate string presented to the completion framework."
         lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
-        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp")
+        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python")
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
 	lsp-bridge-tex-lsp-server "texlab"
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
+  (setq lsp-bridge-enable-debug t) 
+  ;;  (setq lsp-bridge-log-level 'debug)
+  :config
+  (add-to-list 'lsp-bridge-multi-lang-server-mode-list
+               '(latex-mode . "latex_ltex2"))
+  (add-to-list 'lsp-bridge-multi-lang-server-mode-list
+               '(LaTeX-mode . "latex_ltex2"))
   )
 
 
 ;; Python support (lazy load)
 (use-package python
-  :ensure nil
+  :ensure t
+  :defer t
   :mode ("\\.py\\'" . python-mode)
   :hook ((python-mode . (lambda ()
                           (require 'lsp-bridge)
@@ -1541,12 +1567,23 @@ tags from the candidate string presented to the completion framework."
 (add-hook 'csharp-ts-mode-hook #'lsp-bridge-mode)
 
 ;;org-babel support
-(with-eval-after-load 'org
-  (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
-  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
+;; (with-eval-after-load 'org
+;;   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
+;;   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
 
 (use-package ess
-  :ensure t)
+  :ensure t
+  :defer t)
+
+;; Packages you need
+(use-package yasnippet
+  :ensure t
+  :config
+  (yas-global-mode 1))
+
+(use-package yasnippet-snippets
+  :ensure t
+  :after yasnippet)
 
 (use-package projectile
   :config
@@ -1627,7 +1664,11 @@ tags from the candidate string presented to the completion framework."
   (add-hook 'LaTeX-mode-hook 'TeX-fold-mode)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  (add-hook 'LaTeX-mode-hook 'flyspell-mode))
+  (add-hook 'LaTeX-mode-hook (lambda ()
+     (evil-define-key '(normal visual) LaTeX-mode-map
+       "j" "gj"
+       "k" "gk"
+       ))))
 
 (use-package pdf-tools
   :ensure t
@@ -1738,28 +1779,19 @@ tags from the candidate string presented to the completion framework."
   (setq wc-modeline-format "WC[%tw/%tcw]"))
 
 (use-package langtool
-  :bind ("C-c g" . langtool-check)
+  :bind ("C-c m" . langtool-check)
   :config
   (setq langtool-language-tool-jar nil)  ; Don't use JAR file
   (setq langtool-java-classpath nil)     ; Use command-line tool instead
   (setq langtool-bin "languagetool-commandline")  ; Use the executable
   (setq langtool-default-language "en-US"))
 
-(use-package writegood-mode
-  :ensure t
-  :bind ("C-c g" . writegood-mode)
-  :hook ((LaTeX-mode . writegood-mode)
-         (latex-mode . writegood-mode)
-         (org-mode . writegood-mode)
-         (LaTeX-mode . flycheck-mode))
-  :config
-  (setq help-at-pt-display-when-idle t)
-  )
+
 
 (use-package git-timemachine
   :ensure (:host codeberg :repo "pidu/git-timemachine")
   :defer t
-)
+  )
 
 (use-package transient
   :ensure t)
@@ -1773,15 +1805,15 @@ tags from the candidate string presented to the completion framework."
   :config
   (spacious-padding-mode 1)
   (setq spacious-padding-widths
-      '(;; Adjust other padding values as you see fit
-        :internal-border-width 15
-        :header-line-width 4
-        :mode-line-width 6
-        :tab-width 4
-        :scroll-bar-width 4
-        ;; Set the divider width to 1 to make it visible
-        :right-divider-width 10))
-)
+	'(;; Adjust other padding values as you see fit
+          :internal-border-width 15
+          :header-line-width 4
+          :mode-line-width 6
+          :tab-width 4
+          :scroll-bar-width 4
+          ;; Set the divider width to 1 to make it visible
+          :right-divider-width 10))
+  )
 
 (defun my/prettify-symbols-setup ()
 
@@ -1831,4 +1863,24 @@ tags from the candidate string presented to the completion framework."
 
 (use-package gptel
   :ensure t
-)
+  )
+
+(use-package svg-lib
+  :defer t
+  )
+
+(use-package svg-tag-mode
+  :defer t
+  :hook (org-mode . svg-tag-mode)
+  :config
+  (setq svg-tag-tags
+        '(("\\[\\[id:[^]]+\\]\\[\\(:[^]:]+:\\)\\]\\]" . 
+           ;; '(("\\[\\[id:[^]]+\\]\\[:\\([^]:]+\\):\\]\\]" . 
+           ((lambda (tag)
+              (svg-tag-make tag
+			    :beg 1
+                            :end -1
+                            :face 'org-tag
+                            :margin 0
+                            :radius 0
+                            :padding 0)))))))
