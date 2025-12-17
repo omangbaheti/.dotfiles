@@ -8,9 +8,9 @@
   - [[#package-manager][Package Manager]]
   - [[#benchmarking][Benchmarking]]
   - [[#load-evil-mode][Load Evil Mode]]
-  - [[#hydra][HYDRA]]
   - [[#casual][CASUAL]]
   - [[#general-keybindings][General Keybindings]]
+  - [[#hydra][HYDRA]]
   - [[#pulsar][Pulsar]]
 - [[#closing-minibuffers][CLOSING MINIBUFFERS]]
 - [[#buffer-move][BUFFER-MOVE]]
@@ -141,11 +141,11 @@
 ** Benchmarking
 
 #+begin_src emacs-lisp
-;; (use-package benchmark-init
-;;   :ensure t
-;;   :config
-;;   ;; To disable collection of benchmark data after init is done.
-;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 #+end_src
 
 ** Load Evil Mode
@@ -204,21 +204,14 @@
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 #+end_src
 
-** HYDRA
-#+begin_src emacs-lisp
-(use-package hydra
-  :ensure t)
 
-(use-package use-package-hydra
-  :ensure t)
-#+end_src
 
-** CASUAL
+** TODO CASUAL
 
 #+begin_src emacs-lisp
-(use-package casual
-  :ensure t
-  :config)
+;; (use-package casual
+;;   :ensure t
+;;   :config)
 #+end_src
 
 ** General Keybindings
@@ -410,9 +403,30 @@
 
 #+END_SRC
 
-#+RESULTS:
-: [nil 26945 55888 164952 nil elpaca-process-queues nil nil 742000 nil]
+** HYDRA
+#+begin_src emacs-lisp
+(use-package hydra
+  :ensure t
+  :after general
+  :config
+  (defhydra hydra-window-resize (:hint nil :timeout 5)
+"
+Resize window
+_=_: grow horiz    _-_: shrink horiz
+_[_: grow vert     _]_: shrink vert
+_q_: quit
+"
+    ("=" enlarge-window-horizontally)
+    ("-" shrink-window-horizontally)
+    ("[" enlarge-window)
+    ("]" shrink-window)
+    ("q" nil "quit"))
 
+  (leader-key "W" '(hydra-window-resize/body :which-key "resize window")))
+#+end_src
+
+#+RESULTS:
+: [nil 26946 26432 161501 nil elpaca-process-queues nil nil 87000 nil]
 
 ** Pulsar
 #+begin_src emacs-lisp
@@ -420,7 +434,7 @@
   :ensure t
   :hook
   (after-init . pulsar-global-mode)
-  :config
+  :custom
   (setq pulsar-pulse t)
   (setq pulsar-delay 0.025)
   (setq pulsar-iterations 20)
@@ -665,7 +679,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 (use-package org
   :ensure nil
-  :config
+  :custom
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
   (setq org-startup-folded t)              ;; fold on open [web:1]
   (setq org-cycle-hide-drawers 'all)
@@ -673,7 +687,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (setq org-log-done 'note)
   (setq org-confirm-babel-evaluate nil)
   (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
-  :custom  
   (jit-lock-defer-time nil)
   ;; ;; Stealth fontification kicks in quickly
   ;; (jit-lock-stealth-time 0.2)
@@ -1040,7 +1053,7 @@ DEADLINE: %^t
   :ensure t
   :after org-roam
   :init
-  (require 'consult-org-roam)
+  ;; (require 'consult-org-roam)
   ;; Activate the minor mode
   (consult-org-roam-mode 1)
   :custom
@@ -1166,9 +1179,9 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 
 *** ORG-ROAM-QL
 #+begin_src emacs-lisp
-(use-package org-roam-ql
-  :ensure t
-  :after (org-roam))
+;; (use-package org-roam-ql
+;;   :ensure t
+;;   :after (org-roam))
 #+end_src
 
 ** ORG NOTER
@@ -1922,7 +1935,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (org-mode . lsp-bridge-mode)
   ;;  Ensure src-edit buffers (C-c ') get lsp-bridge
   (org-src-mode . (lambda () (lsp-bridge-mode 1)))
-  :init
+  :custom
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
@@ -1946,10 +1959,8 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   )
 
 
-;; Python support (lazy load)
 (use-package python
   :ensure t
-  :defer t
   :mode ("\\.py\\'" . python-mode)
   :hook ((python-mode . (lambda ()
                           (require 'lsp-bridge)
@@ -1958,7 +1969,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
                              (require 'lsp-bridge)
                              (lsp-bridge-mode 1))))) 
 
-;; LaTeX support (lazy load)
 (add-hook 'LaTeX-mode-hook
           (lambda ()
             (require 'lsp-bridge)
@@ -1986,9 +1996,9 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 
 #+begin_src emacs-lisp
-(use-package ess
-  :ensure t
-  :defer t)
+;; (use-package ess
+;;   :ensure t
+;;   :defer t)
 #+end_src
 
 ** YASNIPPET
@@ -1996,7 +2006,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ;; Packages you need
 (use-package yasnippet
   :ensure t
-  :config
+  :custom
   (yas-global-mode 1))
 
 (use-package yasnippet-snippets
@@ -2053,8 +2063,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 (use-package jupyter
   :ensure t
-  :defer t
-  :init
+  :custom
   (with-eval-after-load 'org
     (org-babel-do-load-languages
      'org-babel-load-languages
@@ -2063,7 +2072,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
        (shell . t)
        (jupyter . t)
        (R . t))))
-  :config
   (require 'ob-jupyter)
   (org-babel-jupyter-aliases-from-kernelspecs)
   (setq org-confirm-babel-evaluate nil
@@ -2189,10 +2197,10 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ** Citar
 #+begin_src emacs-lisp
 (use-package citar
+  :ensure t
   :bind (("C-c b" . citar-insert-citation)
          :map minibuffer-local-map
          ("M-b" . citar-insert-preset))
-  :defer t
   :custom
 
   ;; Point to your bibliography files

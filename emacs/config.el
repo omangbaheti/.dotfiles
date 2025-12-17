@@ -51,11 +51,11 @@
 ;; Block until current queue processed.
 (elpaca-wait)
 
-;; (use-package benchmark-init
-;;   :ensure t
-;;   :config
-;;   ;; To disable collection of benchmark data after init is done.
-;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
 (setq evil-want-keybinding nil)
 (use-package evil
@@ -102,15 +102,9 @@
    '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 
-(use-package hydra
-  :ensure t)
-
-(use-package use-package-hydra
-  :ensure t)
-
-(use-package casual
-  :ensure t
-  :config)
+;; (use-package casual
+;;   :ensure t
+;;   :config)
 
 (use-package general
   :config
@@ -297,11 +291,30 @@
     )
   )
 
+(use-package hydra
+  :ensure t
+  :after general
+  :config
+  (defhydra hydra-window-resize (:hint nil :timeout 5)
+"
+Resize window
+_=_: grow horiz    _-_: shrink horiz
+_[_: grow vert     _]_: shrink vert
+_q_: quit
+"
+    ("=" enlarge-window-horizontally)
+    ("-" shrink-window-horizontally)
+    ("[" enlarge-window)
+    ("]" shrink-window)
+    ("q" nil "quit"))
+
+  (leader-key "W" '(hydra-window-resize/body :which-key "resize window")))
+
 (use-package pulsar
   :ensure t
   :hook
   (after-init . pulsar-global-mode)
-  :config
+  :custom
   (setq pulsar-pulse t)
   (setq pulsar-delay 0.025)
   (setq pulsar-iterations 20)
@@ -476,7 +489,7 @@ one, an error is signaled."
 
 (use-package org
   :ensure nil
-  :config
+  :custom
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
   (setq org-startup-folded t)              ;; fold on open [web:1]
   (setq org-cycle-hide-drawers 'all)
@@ -484,7 +497,6 @@ one, an error is signaled."
   (setq org-log-done 'note)
   (setq org-confirm-babel-evaluate nil)
   (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
-  :custom  
   (jit-lock-defer-time nil)
   ;; ;; Stealth fontification kicks in quickly
   ;; (jit-lock-stealth-time 0.2)
@@ -777,7 +789,7 @@ DEADLINE: %^t
   :ensure t
   :after org-roam
   :init
-  (require 'consult-org-roam)
+  ;; (require 'consult-org-roam)
   ;; Activate the minor mode
   (consult-org-roam-mode 1)
   :custom
@@ -887,9 +899,9 @@ tags from the candidate string presented to the completion framework."
 ;;         (org-roam-node-visit node)
 ;;       (my/navigate-note nil next-node (cons next-node (-map #'org-roam-backlink-source-node (org-roam-backlinks-get next-node)))))))
 
-(use-package org-roam-ql
-  :ensure t
-  :after (org-roam))
+;; (use-package org-roam-ql
+;;   :ensure t
+;;   :after (org-roam))
 
 (use-package org-noter
   :ensure t
@@ -1513,7 +1525,7 @@ tags from the candidate string presented to the completion framework."
   (org-mode . lsp-bridge-mode)
   ;;  Ensure src-edit buffers (C-c ') get lsp-bridge
   (org-src-mode . (lambda () (lsp-bridge-mode 1)))
-  :init
+  :custom
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
@@ -1537,10 +1549,8 @@ tags from the candidate string presented to the completion framework."
   )
 
 
-;; Python support (lazy load)
 (use-package python
   :ensure t
-  :defer t
   :mode ("\\.py\\'" . python-mode)
   :hook ((python-mode . (lambda ()
                           (require 'lsp-bridge)
@@ -1549,7 +1559,6 @@ tags from the candidate string presented to the completion framework."
                              (require 'lsp-bridge)
                              (lsp-bridge-mode 1))))) 
 
-;; LaTeX support (lazy load)
 (add-hook 'LaTeX-mode-hook
           (lambda ()
             (require 'lsp-bridge)
@@ -1571,14 +1580,14 @@ tags from the candidate string presented to the completion framework."
 ;;   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
 ;;   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
 
-(use-package ess
-  :ensure t
-  :defer t)
+;; (use-package ess
+;;   :ensure t
+;;   :defer t)
 
 ;; Packages you need
 (use-package yasnippet
   :ensure t
-  :config
+  :custom
   (yas-global-mode 1))
 
 (use-package yasnippet-snippets
@@ -1615,8 +1624,7 @@ tags from the candidate string presented to the completion framework."
 
 (use-package jupyter
   :ensure t
-  :defer t
-  :init
+  :custom
   (with-eval-after-load 'org
     (org-babel-do-load-languages
      'org-babel-load-languages
@@ -1625,7 +1633,6 @@ tags from the candidate string presented to the completion framework."
        (shell . t)
        (jupyter . t)
        (R . t))))
-  :config
   (require 'ob-jupyter)
   (org-babel-jupyter-aliases-from-kernelspecs)
   (setq org-confirm-babel-evaluate nil
@@ -1724,10 +1731,10 @@ tags from the candidate string presented to the completion framework."
                            (display-line-numbers-mode 0))))
 
 (use-package citar
+  :ensure t
   :bind (("C-c b" . citar-insert-citation)
          :map minibuffer-local-map
          ("M-b" . citar-insert-preset))
-  :defer t
   :custom
 
   ;; Point to your bibliography files

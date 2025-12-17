@@ -1,4 +1,6 @@
 (setq evil-want-keybinding nil)
+(setq package-quickstart t)
+(setq use-package-always-defer t)
 (org-babel-load-file
  (expand-file-name
   "~/.dotfiles/emacs/config.org"
