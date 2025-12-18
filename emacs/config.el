@@ -1525,7 +1525,7 @@ tags from the candidate string presented to the completion framework."
   (org-mode . lsp-bridge-mode)
   ;;  Ensure src-edit buffers (C-c ') get lsp-bridge
   (org-src-mode . (lambda () (lsp-bridge-mode 1)))
-  :custom
+  :init
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
@@ -1656,6 +1656,7 @@ tags from the candidate string presented to the completion framework."
   (setq TeX-view-program-selection '((output-pdf "PDF Tools")))
   (setq TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
   (setq TeX-source-correlate-start-server t)
+  (setq LaTeX-command "latex -shell-escape --synctex=1")
   ;; Auto-refresh PDF buffer after compilation
   (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
   ;; Academic writing specific settings
@@ -1672,10 +1673,15 @@ tags from the candidate string presented to the completion framework."
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
   (add-hook 'LaTeX-mode-hook (lambda ()
-     (evil-define-key '(normal visual) LaTeX-mode-map
-       "j" "gj"
-       "k" "gk"
-       ))))
+                               (evil-define-key '(normal visual) LaTeX-mode-map
+                                 "j" "gj"
+                                 "k" "gk"
+                                 )))
+  (add-hook 'LaTeX-mode-hook
+            (lambda ()
+              (setq TeX-source-correlate-mode t)))
+
+  )
 
 (use-package pdf-tools
   :ensure t

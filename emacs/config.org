@@ -391,6 +391,11 @@
     "w k" '(evil-window-up :wk "Window Up")
     "w l" '(evil-window-right :wk "Window Right")
     "w w" '(evil-window-next :wk "Goto Next Window")
+    ;;alternate bindings
+    "<left>" '(evil-window-left :wk "Window Left")
+    "<down>" '(evil-window-down :wk "Window Down")
+    "<up>" '(evil-window-up :wk "Window Up")
+    "<right>" '(evil-window-right :wk "Window Right")
     ;; Move Windows
     "w H" '(buf-move-left :wk "Buffer Move Left")
     "w J" '(buf-move-down :wk "Buffer Move Down")
@@ -1935,7 +1940,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (org-mode . lsp-bridge-mode)
   ;;  Ensure src-edit buffers (C-c ') get lsp-bridge
   (org-src-mode . (lambda () (lsp-bridge-mode 1)))
-  :custom
+  :init
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
@@ -2109,6 +2114,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq TeX-view-program-selection '((output-pdf "PDF Tools")))
   (setq TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
   (setq TeX-source-correlate-start-server t)
+  (setq LaTeX-command "latex -shell-escape --synctex=1")
   ;; Auto-refresh PDF buffer after compilation
   (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
   ;; Academic writing specific settings
@@ -2125,10 +2131,15 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
   (add-hook 'LaTeX-mode-hook (lambda ()
-     (evil-define-key '(normal visual) LaTeX-mode-map
-       "j" "gj"
-       "k" "gk"
-       ))))
+                               (evil-define-key '(normal visual) LaTeX-mode-map
+                                 "j" "gj"
+                                 "k" "gk"
+                                 )))
+  (add-hook 'LaTeX-mode-hook
+            (lambda ()
+              (setq TeX-source-correlate-mode t)))
+
+  )
 #+end_src
 
 #+RESULTS:
