@@ -281,6 +281,11 @@
     "w k" '(evil-window-up :wk "Window Up")
     "w l" '(evil-window-right :wk "Window Right")
     "w w" '(evil-window-next :wk "Goto Next Window")
+    ;;alternate bindings
+    "<left>" '(evil-window-left :wk "Window Left")
+    "<down>" '(evil-window-down :wk "Window Down")
+    "<up>" '(evil-window-up :wk "Window Up")
+    "<right>" '(evil-window-right :wk "Window Right")
     ;; Move Windows
     "w H" '(buf-move-left :wk "Buffer Move Left")
     "w J" '(buf-move-down :wk "Buffer Move Down")
@@ -489,7 +494,7 @@ one, an error is signaled."
 
 (use-package org
   :ensure nil
-  :custom
+  :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
   (setq org-startup-folded t)              ;; fold on open [web:1]
   (setq org-cycle-hide-drawers 'all)
@@ -1532,15 +1537,19 @@ tags from the candidate string presented to the completion framework."
         lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
-        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python")
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
+        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python")
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
 	lsp-bridge-tex-lsp-server "texlab"
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
-  (setq lsp-bridge-enable-debug t) 
+  ;; (setq lsp-bridge-enable-debug t) 
   ;;  (setq lsp-bridge-log-level 'debug)
+  (setq acm-enable-jupyter t
+        acm-enable-yas t
+	acm-enable-org-roam t
+        )
   :config
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list
                '(latex-mode . "latex_ltex2"))
@@ -1624,7 +1633,7 @@ tags from the candidate string presented to the completion framework."
 
 (use-package jupyter
   :ensure t
-  :custom
+  :init
   (with-eval-after-load 'org
     (org-babel-do-load-languages
      'org-babel-load-languages
