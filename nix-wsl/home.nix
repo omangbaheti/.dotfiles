@@ -36,7 +36,7 @@
       find = "fd";
       e="emacsclient -c";
       update-config = "sudo nixos-rebuild switch --flake .#nixos";
-      exp="explorer.exe .";
+      exp="/mnt/c/WINDOWS/explorer.exe .";
     };
 
     oh-my-zsh = {
