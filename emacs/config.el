@@ -87,6 +87,21 @@
 ;;Useful for configuring built-in emacs features.
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
+(use-package evil-snipe
+  :after evil
+  :demand t
+  :config
+  (setq evil-snipe-scope 'line
+        evil-snipe-repeat-scope 'whole-visible
+        evil-snipe-smart-case t)
+  (evil-snipe-mode 1)
+  (evil-snipe-override-mode 1))
+
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
+
 (use-package evil-goggles
   :ensure t
   :config
@@ -1906,3 +1921,6 @@ tags from the candidate string presented to the completion framework."
                             :margin 0
                             :radius 0
                             :padding 0)))))))
+
+(use-package nano-calendar
+  :ensure (:host github :repo "rougier/nano-calendar"))

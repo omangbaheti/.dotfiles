@@ -78,6 +78,7 @@
 - [[#org-kanban][ORG KANBAN]]
 - [[#gptel][GPTEL]]
 - [[#svg-tag-mode][SVG Tag Mode]]
+- [[#nano-calendar][NANO CALENDAR]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 ** Package Manager
@@ -184,7 +185,26 @@
 
 
 *** TODO Evil-Snipe
+#+begin_src emacs-lisp
+(use-package evil-snipe
+  :after evil
+  :demand t
+  :config
+  (setq evil-snipe-scope 'line
+        evil-snipe-repeat-scope 'whole-visible
+        evil-snipe-smart-case t)
+  (evil-snipe-mode 1)
+  (evil-snipe-override-mode 1))
+#+end_src
 
+*** Evil Surround
+
+#+begin_src emacs-lisp
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
+#+end_src
 
 *** Evil-goggles
 #+begin_src emacs-lisp
@@ -1945,7 +1965,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
-        lsp-bridge-enable-auto-format-code nil
+        lsp-bridge-enable-auto-format-code t
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
@@ -1959,9 +1979,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   ;;  (setq lsp-bridge-log-level 'debug)
   (setq acm-enable-jupyter t
         acm-enable-yas t
-	acm-enable-org-roam t
-        )
-  :config
+	acm-enable-org-roam t)
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list
                '(latex-mode . "latex_ltex2"))
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list
@@ -2002,7 +2020,10 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 #+RESULTS:
-
+#+begin_src emacs-lisp
+(with-eval-after-load 'lsp-bridge
+  (define-key lsp-bridge-mode-map (kbd "g D") #'lsp-bridge-popup-documentation))
+#+end_src
 
 #+begin_src emacs-lisp
 ;; (use-package ess
@@ -2023,9 +2044,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :after yasnippet)
 
 #+end_src
-
-#+RESULTS:
-: [nil 26944 57335 682562 nil elpaca-process-queues nil nil 215000 nil]
 
 
 * PROJECTILE
@@ -2090,9 +2108,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   )
 
 #+end_src
-
-#+RESULTS:
-: [nil 26944 36733 746096 nil elpaca-process-queues nil nil 542000 nil]
 
 
 * RAINBOW MODE
@@ -2453,4 +2468,11 @@ https://github.com/rougier/notebook-mode
                             :radius 0
                             :padding 0)))))))
 
+#+end_src
+
+* NANO CALENDAR
+
+#+begin_src emacs-lisp
+(use-package nano-calendar
+  :ensure (:host github :repo "rougier/nano-calendar"))
 #+end_src
