@@ -113,7 +113,6 @@
           treesit-auto
           treesit-grammars.with-all-grammars
           pdf-tools
-          (eaf.withApplications [ eaf-browser eaf-pdf-viewer ])
         ]
     );
   };

@@ -5,7 +5,6 @@
 
 * TABLE OF CONTENTS :toc:
 - [[#important-programs-to-load-first][IMPORTANT PROGRAMS TO LOAD FIRST]]
-  - [[#package-manager][Package Manager]]
   - [[#benchmarking][Benchmarking]]
   - [[#load-evil-mode][Load Evil Mode]]
   - [[#casual][CASUAL]]
@@ -81,9 +80,10 @@
 - [[#nano-calendar][NANO CALENDAR]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
-** Package Manager
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+** Benchmarking
+
+#+begin_src emacs-lisp
 ;; (setq debug-on-error t)
 (setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
@@ -124,39 +124,18 @@
     (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
-
-
-;; Install use-package support
-
-(elpaca elpaca-use-package
-  ;; Enable :elpaca use-package keyword.
-  (elpaca-use-package-mode)
-  ;; Assume :elpaca t unless otherwise specified.
-  (setq elpaca-use-package-by-default t))
-
-;; Block until current queue processed.
-(elpaca-wait)
-#+END_SRC
-
-
-** Benchmarking
-
-#+begin_src emacs-lisp
-(use-package benchmark-init
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 #+end_src
+
+#+RESULTS:
+: [nil 26954 5706 99574 nil elpaca-process-queues nil nil 434000 nil]
 
 ** Load Evil Mode
 
 #+BEGIN_SRC emacs-lisp
 (setq evil-want-keybinding nil)
+(setq evil-want-integration t)
 (use-package evil
   :init
-  (setq evil-want-keybinging nil)
-  (setq evil-want-integration t)
   (setq evil-vsplit-window-right t)
   (setq evil-split-window-below t)
   (setq evil-search-module 'evil-search)
@@ -168,7 +147,6 @@
   (setq evil-collection-mode-list '(dashboard dired ibuffer))
   (evil-collection-init))
 (use-package evil-tutor)
-
 (with-eval-after-load 'evil-maps
   (define-key evil-motion-state-map (kbd "SPC") nil)
   (define-key evil-motion-state-map (kbd "RET") nil)
@@ -237,6 +215,8 @@
 ** General Keybindings
 #+BEGIN_SRC emacs-lisp
 (use-package general
+  :ensure t
+  :after evil
   :config
   (general-evil-setup)
   ;; set up 'SPC' as the global leader key
@@ -462,11 +442,12 @@ _q_: quit
   :ensure t
   :hook
   (after-init . pulsar-global-mode)
-  :custom
+  :init
   (setq pulsar-pulse t)
   (setq pulsar-delay 0.025)
   (setq pulsar-iterations 20)
   (setq pulsar-face 'evil-ex-lazy-highlight)
+  :config
   (add-to-list 'pulsar-pulse-functions 'evil-scroll-down)
   (add-to-list 'pulsar-pulse-functions 'flymake-goto-next-error)
   (add-to-list 'pulsar-pulse-functions 'flymake-goto-prev-error)
@@ -702,7 +683,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 #+begin_src emacs-lisp
 (setq font-lock-multiline t)
-(setq jit-lock-defer-time 0) ; Immediate fontification
+;; (setq jit-lock-defer-time 0) ; Immediate fontification
 (setq fast-but-imprecise-scrolling nil)
 
 (use-package org
@@ -719,7 +700,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   ;; ;; Stealth fontification kicks in quickly
   ;; (jit-lock-stealth-time 0.2)
   ;; (jit-lock-stealth-nice 0.1)
-  (jit-lock-stealth-load 200)
+  ;;(jit-lock-stealth-load 200)
   ;; ;; Ensure maximum chunks get refontified eagerly
   (jit-lock-chunk-size 5000)
   )      
@@ -860,6 +841,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   ((text-mode . olivetti-mode)
    (markdown-mode . olivetti-mode)
    (org-mode . olivetti-mode)))
+
 (defun my/olivetti-only-when-single-window ()
   "Enable Olivetti mode only when there is a single window."
   (if (= (count-windows) 1)
@@ -869,9 +851,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (add-hook 'window-configuration-change-hook
           #'my/olivetti-only-when-single-window)
 #+end_src
-
-#+RESULTS:
-| my/olivetti-only-when-single-window | doom-modeline-invalidate-huds | doom-modeline-refresh-bars | evil-refresh-cursor | window--adjust-process-windows |
 
 ** ORG-AGENDA
 #+begin_src emacs-lisp
@@ -1079,18 +1058,14 @@ DEADLINE: %^t
   :ensure t
   :after org-roam
   :init
-  ;; (require 'consult-org-roam)
   ;; Activate the minor mode
   (consult-org-roam-mode 1)
-  :custom
-  ;; Use `ripgrep' for searching with `consult-org-roam-search'
-  (consult-org-roam-grep-func #'consult-ripgrep)
-  ;; Configure a custom narrow key for `consult-buffer'
-  (consult-org-roam-buffer-narrow-key ?r)
-  ;; Display org-roam buffers right after non-org-roam buffers
-  ;; in consult-buffer (and not down at the bottom)
-  (consult-org-roam-buffer-after-buffers t)
   :config
+  ;; Use SETQ to set variables, not call them as functions
+  (setq consult-org-roam-grep-func #'consult-ripgrep)
+  (setq consult-org-roam-buffer-narrow-key ?r)
+  (setq consult-org-roam-buffer-after-buffers t)
+  
   ;; Eventually suppress previewing for certain functions
   (consult-customize
    consult-org-roam-find-by-title
@@ -1099,7 +1074,6 @@ DEADLINE: %^t
    consult-org-roam-forward-links
    :preview-key "M-.")
   :bind
-  ;; Define some convenient keybindings as an addition
   ("C-c n e" . consult-org-roam-file-find)
   ("C-c n b" . consult-org-roam-backlinks)
   ("C-c n B" . consult-org-roam-backlinks-recursive)
@@ -1551,15 +1525,13 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 #+begin_src emacs-lisp
 (use-package doom-themes
   :ensure t
-  :custom
-  ;; Global settings (defaults)
-  (doom-themes-enable-bold t)   ; if nil, bold is universally disabled
-  (doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;; for treemacs users
-  (doom-themes-treemacs-theme "doom-nord") ; use "doom-colors" for less minimal icon theme
+  :init
+  ;; Global settings (defaults) - use SETQ to set variables
   :config
   (load-theme 'doom-nord-aurora t)
-
+  (setq doom-themes-enable-bold t)
+  (setq doom-themes-enable-italic t)
+  (setq doom-themes-treemacs-theme "doom-nord")
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
   ;; Enable custom neotree theme (nerd-icons must be installed!)
@@ -1945,10 +1917,10 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 * LSPs
 
 #+begin_src emacs-lisp
-(setq lsp-bridge-user-multiserver-dir
-      (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
-(setq lsp-bridge-user-langserver-dir
-      (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
+;;(setq lsp-bridge-user-multiserver-dir
+ ;;     (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
+;;(setq lsp-bridge-user-langserver-dir
+  ;;    (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
 #+end_src
 
 
@@ -1980,10 +1952,10 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq acm-enable-jupyter t
         acm-enable-yas t
 	acm-enable-org-roam t)
-  (add-to-list 'lsp-bridge-multi-lang-server-mode-list
-               '(latex-mode . "latex_ltex2"))
-  (add-to-list 'lsp-bridge-multi-lang-server-mode-list
-               '(LaTeX-mode . "latex_ltex2"))
+  ;;(add-to-list 'lsp-bridge-multi-lang-server-mode-list
+    ;;           '(latex-mode . "latex_ltex2"))
+  ;;(add-to-list 'lsp-bridge-multi-lang-server-mode-list
+     ;;          '(LaTeX-mode . "latex_ltex2"))
   )
 
 
@@ -2036,14 +2008,18 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ;; Packages you need
 (use-package yasnippet
   :ensure t
-  :custom
-  (yas-global-mode 1))
+:config
+  (yas-global-mode 1)
+)
 
 (use-package yasnippet-snippets
   :ensure t
   :after yasnippet)
 
 #+end_src
+
+#+RESULTS:
+: [nil 26954 7973 453655 nil elpaca-process-queues nil nil 555000 nil]
 
 
 * PROJECTILE
@@ -2052,7 +2028,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 (use-package projectile
   :config
-  (projectile-mode -1))
+  (projectile-mode 1))
 #+end_src
 
 
@@ -2472,7 +2448,3 @@ https://github.com/rougier/notebook-mode
 
 * NANO CALENDAR
 
-#+begin_src emacs-lisp
-(use-package nano-calendar
-  :ensure (:host github :repo "rougier/nano-calendar"))
-#+end_src
