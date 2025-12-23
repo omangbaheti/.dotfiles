@@ -124,6 +124,26 @@
     (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
+
+;; Install a package via the elpaca macro
+;; See the "recipes" section of the manual for more details.
+
+;; (elpaca example-package)
+
+;; Install use-package support
+(elpaca elpaca-use-package
+  ;; Enable use-package :ensure support for Elpaca.
+  (elpaca-use-package-mode))
+
+(elpaca wait)
+
+
+;;Turns off elpaca-use-package-mode current declaration
+;;Note this will cause evaluate the declaration immediately. It is not deferred.
+;;Useful for configuring built-in emacs features.
+(use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
+
+
 #+end_src
 
 #+RESULTS:
@@ -135,6 +155,7 @@
 (setq evil-want-keybinding nil)
 (setq evil-want-integration t)
 (use-package evil
+  :ensure t
   :init
   (setq evil-vsplit-window-right t)
   (setq evil-split-window-below t)
@@ -142,11 +163,14 @@
   (evil-mode))
 
 (use-package evil-collection
+  :ensure t
   :after evil
   :config
   (setq evil-collection-mode-list '(dashboard dired ibuffer))
-  (evil-collection-init))
-(use-package evil-tutor)
+  (evil-collection-init)) 
+
+(use-package evil-tutor :ensure t)
+
 (with-eval-after-load 'evil-maps
   (define-key evil-motion-state-map (kbd "SPC") nil)
   (define-key evil-motion-state-map (kbd "RET") nil)
@@ -155,16 +179,13 @@
 ;;setting RETURN key in org-mode to follow links
 (setq org-return-follows-link t)
 
-;;Turns off elpaca-use-package-mode current declaration
-;;Note this will cause evaluate the declaration immediately. It is not deferred.
-;;Useful for configuring built-in emacs features.
-(use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 #+END_SRC
 
 
 *** TODO Evil-Snipe
 #+begin_src emacs-lisp
 (use-package evil-snipe
+  :ensure t
   :after evil
   :demand t
   :config
@@ -676,7 +697,9 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 ** UNDO-FU
 
 #+begin_src emacs-lisp
-(use-package undo-fu)
+(use-package undo-fu
+  :ensure t
+)
 #+end_src
 
 * ORG MODE
@@ -696,13 +719,13 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (setq org-log-done 'note)
   (setq org-confirm-babel-evaluate nil)
   (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
-  (jit-lock-defer-time nil)
+  ;; (jit-lock-defer-time nil)
   ;; ;; Stealth fontification kicks in quickly
   ;; (jit-lock-stealth-time 0.2)
   ;; (jit-lock-stealth-nice 0.1)
   ;;(jit-lock-stealth-load 200)
   ;; ;; Ensure maximum chunks get refontified eagerly
-  (jit-lock-chunk-size 5000)
+  ;; (jit-lock-chunk-size 5000)
   )      
 #+end_src
 
@@ -712,6 +735,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 #+begin_src emacs-lisp
 (use-package evil-org
+  :ensure t
   :diminish evil-org-mode
   :after org
   :config
@@ -724,6 +748,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 #+begin_src emacs-lisp
 (use-package toc-org
+  :ensure t
   :commands toc-org-enable
   :init (add-hook 'org-mode-hook 'toc-org-enable))
 #+end_src
@@ -732,7 +757,9 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook 'org-indent-mode)
-(use-package org-bullets)
+(use-package org-bullets
+  :ensure t
+)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 #+end_src
 
@@ -1219,6 +1246,7 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 
 #+begin_src emacs-lisp
 (use-package org-transclusion
+  :ensure t
   :after org
   :hook (org-mode . org-transclusion-mode))
 #+end_src
@@ -1248,6 +1276,7 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 
 #+begin_src emacs-lisp
 (use-package which-key
+  :ensure t
   :init
   (which-key-mode 1)
   :config
@@ -1270,6 +1299,7 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 Sudo-edit gives us the ability to open files with sudo privileges or switch over to editing with sudo privileges if we initially opened the file without such privileges.
 #+begin_src emacs-lisp
 (use-package sudo-edit
+  :ensure t
   :config 
   (leader-key
     "fu" '(sudo-edit-find-file :wk "Sudo find file")
@@ -1328,6 +1358,7 @@ Nicer M-x menu
 
 #+begin_src emacs-lisp
 (use-package zoxide
+  :ensure t
   :config
   :custom
   (zoxide-add-to-history t))
@@ -1338,10 +1369,10 @@ Nicer M-x menu
 
 #+begin_src emacs-lisp
 (use-package marginalia
+  :ensure t
   ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
   ;; available in the *Completions* buffer, add it to the
   ;; `completion-list-mode-map'.
-  :ensure t
   :bind (:map minibuffer-local-map
               ("M-A" . marginalia-cycle))
   ;; The :init section is always executed.
@@ -1369,10 +1400,12 @@ Enabling Frequency + Recency Sorting of options in vertico
 
 #+begin_src emacs-lisp
 (use-package prescient
+  :ensure t
   :config
   (prescient-persist-mode))
 
 (use-package vertico-prescient
+ :ensure t
   :after vertico
   :config
   (vertico-prescient-mode))
@@ -1382,7 +1415,7 @@ Enabling Frequency + Recency Sorting of options in vertico
 * CONSULT
 #+begin_src emacs-lisp
 (use-package consult
-
+  :ensure t
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
   :hook (completion-list-mode . consult-preview-at-point-mode)
@@ -1821,6 +1854,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 * FILEMANAGER
 #+begin_src emacs-lisp
 (use-package dirvish
+  :ensure t
   :after evil
   :init (dirvish-override-dired-mode))
 #+end_src
@@ -1837,6 +1871,7 @@ Neotree is a file tree viewer.  When you open neotree, it jumps to the current f
 
 #+BEGIN_SRC emacs-lisp
 (use-package neotree
+  :ensure t
   :config
   (setq neo-smart-open t
 	neo-show-hidden-files t
@@ -2012,21 +2047,27 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (yas-global-mode 1)
 )
 
-(use-package yasnippet-snippets
-  :ensure t
-  :after yasnippet)
-
 #+end_src
 
 #+RESULTS:
 : [nil 26954 7973 453655 nil elpaca-process-queues nil nil 555000 nil]
 
+#+begin_src emacs-lisp
+(use-package yasnippet-snippets
+  :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
+  :after yasnippet)
+
+#+end_src
+
+#+RESULTS:
+: [nil 26954 23058 634634 nil elpaca-process-queues nil nil 39000 nil]
 
 * PROJECTILE
 [[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.
  
 #+begin_src emacs-lisp
 (use-package projectile
+  :ensure t
   :config
   (projectile-mode 1))
 #+end_src
@@ -2090,6 +2131,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
 (use-package rainbow-delimiters
+  :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 
@@ -2247,6 +2289,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
 (use-package citar-org-roam
+  :ensure t
   :after (citar org-roam)
   :config 
   (setq citar-org-roam-capture-template-key "n")
@@ -2258,6 +2301,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
 (use-package citar-embark
+  :ensure t
   :after citar embark
   :config (citar-embark-mode))
 #+end_src
@@ -2267,11 +2311,13 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 ;; Word count for academic papers
 (use-package wc-mode
+  :ensure t
   :hook (LaTeX-mode . wc-mode)
   :config
   (setq wc-modeline-format "WC[%tw/%tcw]"))
 
 (use-package langtool
+  :ensure t
   :bind ("C-c m" . langtool-check)
   :config
   (setq langtool-language-tool-jar nil)  ; Don't use JAR file
@@ -2425,10 +2471,12 @@ https://github.com/rougier/notebook-mode
 * SVG Tag Mode
 #+begin_src emacs-lisp
 (use-package svg-lib
+  :ensure t
   :defer t
   )
 
 (use-package svg-tag-mode
+  :ensure t
   :defer t
   :hook (org-mode . svg-tag-mode)
   :config

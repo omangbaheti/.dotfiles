@@ -39,40 +39,42 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
+;; Install a package via the elpaca macro
+;; See the "recipes" section of the manual for more details.
+
+;; (elpaca example-package)
 
 ;; Install use-package support
-
 (elpaca elpaca-use-package
-  ;; Enable :elpaca use-package keyword.
-  (elpaca-use-package-mode)
-  ;; Assume :elpaca t unless otherwise specified.
-  (setq elpaca-use-package-by-default t))
+  ;; Enable use-package :ensure support for Elpaca.
+  (elpaca-use-package-mode))
 
-;; Block until current queue processed.
-(elpaca-wait)
+(elpaca wait)
 
-(use-package benchmark-init
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
+;;Turns off elpaca-use-package-mode current declaration
+;;Note this will cause evaluate the declaration immediately. It is not deferred.
+;;Useful for configuring built-in emacs features.
+(use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
 (setq evil-want-keybinding nil)
+(setq evil-want-integration t)
 (use-package evil
+  :ensure t
   :init
-  (setq evil-want-keybinging nil)
-  (setq evil-want-integration t)
   (setq evil-vsplit-window-right t)
   (setq evil-split-window-below t)
   (setq evil-search-module 'evil-search)
   (evil-mode))
 
 (use-package evil-collection
+  :ensure t
   :after evil
   :config
   (setq evil-collection-mode-list '(dashboard dired ibuffer))
-  (evil-collection-init))
-(use-package evil-tutor)
+  (evil-collection-init)) 
+
+(use-package evil-tutor :ensure t)
 
 (with-eval-after-load 'evil-maps
   (define-key evil-motion-state-map (kbd "SPC") nil)
@@ -82,12 +84,8 @@
 ;;setting RETURN key in org-mode to follow links
 (setq org-return-follows-link t)
 
-;;Turns off elpaca-use-package-mode current declaration
-;;Note this will cause evaluate the declaration immediately. It is not deferred.
-;;Useful for configuring built-in emacs features.
-(use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
-
 (use-package evil-snipe
+  :ensure t
   :after evil
   :demand t
   :config
@@ -122,6 +120,8 @@
 ;;   :config)
 
 (use-package general
+  :ensure t
+  :after evil
   :config
   (general-evil-setup)
   ;; set up 'SPC' as the global leader key
@@ -334,11 +334,12 @@ _q_: quit
   :ensure t
   :hook
   (after-init . pulsar-global-mode)
-  :custom
+  :init
   (setq pulsar-pulse t)
   (setq pulsar-delay 0.025)
   (setq pulsar-iterations 20)
   (setq pulsar-face 'evil-ex-lazy-highlight)
+  :config
   (add-to-list 'pulsar-pulse-functions 'evil-scroll-down)
   (add-to-list 'pulsar-pulse-functions 'flymake-goto-next-error)
   (add-to-list 'pulsar-pulse-functions 'flymake-goto-prev-error)
@@ -501,10 +502,12 @@ one, an error is signaled."
 
 (add-hook 'org-mode-hook #'my-org-electric-pair-hook)
 
-(use-package undo-fu)
+(use-package undo-fu
+  :ensure t
+)
 
 (setq font-lock-multiline t)
-(setq jit-lock-defer-time 0) ; Immediate fontification
+;; (setq jit-lock-defer-time 0) ; Immediate fontification
 (setq fast-but-imprecise-scrolling nil)
 
 (use-package org
@@ -517,16 +520,17 @@ one, an error is signaled."
   (setq org-log-done 'note)
   (setq org-confirm-babel-evaluate nil)
   (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
-  (jit-lock-defer-time nil)
+  ;; (jit-lock-defer-time nil)
   ;; ;; Stealth fontification kicks in quickly
   ;; (jit-lock-stealth-time 0.2)
   ;; (jit-lock-stealth-nice 0.1)
-  (jit-lock-stealth-load 200)
+  ;;(jit-lock-stealth-load 200)
   ;; ;; Ensure maximum chunks get refontified eagerly
-  (jit-lock-chunk-size 5000)
+  ;; (jit-lock-chunk-size 5000)
   )
 
 (use-package evil-org
+  :ensure t
   :diminish evil-org-mode
   :after org
   :config
@@ -535,11 +539,14 @@ one, an error is signaled."
             (lambda () (evil-org-set-key-theme))))
 
 (use-package toc-org
+  :ensure t
   :commands toc-org-enable
   :init (add-hook 'org-mode-hook 'toc-org-enable))
 
 (add-hook 'org-mode-hook 'org-indent-mode)
-(use-package org-bullets)
+(use-package org-bullets
+  :ensure t
+)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
 (require 'org-tempo)
@@ -623,6 +630,7 @@ one, an error is signaled."
   ((text-mode . olivetti-mode)
    (markdown-mode . olivetti-mode)
    (org-mode . olivetti-mode)))
+
 (defun my/olivetti-only-when-single-window ()
   "Enable Olivetti mode only when there is a single window."
   (if (= (count-windows) 1)
@@ -809,18 +817,14 @@ DEADLINE: %^t
   :ensure t
   :after org-roam
   :init
-  ;; (require 'consult-org-roam)
   ;; Activate the minor mode
   (consult-org-roam-mode 1)
-  :custom
-  ;; Use `ripgrep' for searching with `consult-org-roam-search'
-  (consult-org-roam-grep-func #'consult-ripgrep)
-  ;; Configure a custom narrow key for `consult-buffer'
-  (consult-org-roam-buffer-narrow-key ?r)
-  ;; Display org-roam buffers right after non-org-roam buffers
-  ;; in consult-buffer (and not down at the bottom)
-  (consult-org-roam-buffer-after-buffers t)
   :config
+  ;; Use SETQ to set variables, not call them as functions
+  (setq consult-org-roam-grep-func #'consult-ripgrep)
+  (setq consult-org-roam-buffer-narrow-key ?r)
+  (setq consult-org-roam-buffer-after-buffers t)
+  
   ;; Eventually suppress previewing for certain functions
   (consult-customize
    consult-org-roam-find-by-title
@@ -829,7 +833,6 @@ DEADLINE: %^t
    consult-org-roam-forward-links
    :preview-key "M-.")
   :bind
-  ;; Define some convenient keybindings as an addition
   ("C-c n e" . consult-org-roam-file-find)
   ("C-c n b" . consult-org-roam-backlinks)
   ("C-c n B" . consult-org-roam-backlinks-recursive)
@@ -946,6 +949,7 @@ tags from the candidate string presented to the completion framework."
         org-roam-ui-open-on-start t))
 
 (use-package org-transclusion
+  :ensure t
   :after org
   :hook (org-mode . org-transclusion-mode))
 
@@ -965,6 +969,7 @@ tags from the candidate string presented to the completion framework."
 ;;                     (ansi-color-apply-on-region beg end)))))))
 
 (use-package which-key
+  :ensure t
   :init
   (which-key-mode 1)
   :config
@@ -982,6 +987,7 @@ tags from the candidate string presented to the completion framework."
         which-key-separator " → " ))
 
 (use-package sudo-edit
+  :ensure t
   :config 
   (leader-key
     "fu" '(sudo-edit-find-file :wk "Sudo find file")
@@ -1024,15 +1030,16 @@ tags from the candidate string presented to the completion framework."
         vertico-cycle t))
 
 (use-package zoxide
+  :ensure t
   :config
   :custom
   (zoxide-add-to-history t))
 
 (use-package marginalia
+  :ensure t
   ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
   ;; available in the *Completions* buffer, add it to the
   ;; `completion-list-mode-map'.
-  :ensure t
   :bind (:map minibuffer-local-map
               ("M-A" . marginalia-cycle))
   ;; The :init section is always executed.
@@ -1048,16 +1055,18 @@ tags from the candidate string presented to the completion framework."
         '((file (styles partial-completion orderless)))))
 
 (use-package prescient
+  :ensure t
   :config
   (prescient-persist-mode))
 
 (use-package vertico-prescient
+ :ensure t
   :after vertico
   :config
   (vertico-prescient-mode))
 
 (use-package consult
-
+  :ensure t
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
   :hook (completion-list-mode . consult-preview-at-point-mode)
@@ -1176,15 +1185,13 @@ tags from the candidate string presented to the completion framework."
 
 (use-package doom-themes
   :ensure t
-  :custom
-  ;; Global settings (defaults)
-  (doom-themes-enable-bold t)   ; if nil, bold is universally disabled
-  (doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  ;; for treemacs users
-  (doom-themes-treemacs-theme "doom-nord") ; use "doom-colors" for less minimal icon theme
+  :init
+  ;; Global settings (defaults) - use SETQ to set variables
   :config
   (load-theme 'doom-nord-aurora t)
-
+  (setq doom-themes-enable-bold t)
+  (setq doom-themes-enable-italic t)
+  (setq doom-themes-treemacs-theme "doom-nord")
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
   ;; Enable custom neotree theme (nerd-icons must be installed!)
@@ -1464,10 +1471,12 @@ tags from the candidate string presented to the completion framework."
 (setq doom-modeline-after-update-env-hook nil)
 
 (use-package dirvish
+  :ensure t
   :after evil
   :init (dirvish-override-dired-mode))
 
 (use-package neotree
+  :ensure t
   :config
   (setq neo-smart-open t
 	neo-show-hidden-files t
@@ -1532,10 +1541,10 @@ tags from the candidate string presented to the completion framework."
   (setq treesit-language-source-alist
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 
-(setq lsp-bridge-user-multiserver-dir
-      (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
-(setq lsp-bridge-user-langserver-dir
-      (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
+;;(setq lsp-bridge-user-multiserver-dir
+ ;;     (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
+;;(setq lsp-bridge-user-langserver-dir
+  ;;    (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
 
 (use-package lsp-bridge
   :ensure '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
@@ -1549,7 +1558,7 @@ tags from the candidate string presented to the completion framework."
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
-        lsp-bridge-enable-auto-format-code nil
+        lsp-bridge-enable-auto-format-code t
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
@@ -1563,13 +1572,11 @@ tags from the candidate string presented to the completion framework."
   ;;  (setq lsp-bridge-log-level 'debug)
   (setq acm-enable-jupyter t
         acm-enable-yas t
-	acm-enable-org-roam t
-        )
-  :config
-  (add-to-list 'lsp-bridge-multi-lang-server-mode-list
-               '(latex-mode . "latex_ltex2"))
-  (add-to-list 'lsp-bridge-multi-lang-server-mode-list
-               '(LaTeX-mode . "latex_ltex2"))
+	acm-enable-org-roam t)
+  ;;(add-to-list 'lsp-bridge-multi-lang-server-mode-list
+    ;;           '(latex-mode . "latex_ltex2"))
+  ;;(add-to-list 'lsp-bridge-multi-lang-server-mode-list
+     ;;          '(LaTeX-mode . "latex_ltex2"))
   )
 
 
@@ -1604,6 +1611,9 @@ tags from the candidate string presented to the completion framework."
 ;;   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
 ;;   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
 
+(with-eval-after-load 'lsp-bridge
+  (define-key lsp-bridge-mode-map (kbd "g D") #'lsp-bridge-popup-documentation))
+
 ;; (use-package ess
 ;;   :ensure t
 ;;   :defer t)
@@ -1611,16 +1621,18 @@ tags from the candidate string presented to the completion framework."
 ;; Packages you need
 (use-package yasnippet
   :ensure t
-  :custom
-  (yas-global-mode 1))
+:config
+  (yas-global-mode 1)
+)
 
 (use-package yasnippet-snippets
-  :ensure t
+  :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
   :after yasnippet)
 
 (use-package projectile
+  :ensure t
   :config
-  (projectile-mode -1))
+  (projectile-mode 1))
 
 (use-package dashboard
   :ensure t 
@@ -1666,6 +1678,7 @@ tags from the candidate string presented to the completion framework."
   )
 
 (use-package rainbow-delimiters
+  :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package auctex
@@ -1799,6 +1812,7 @@ tags from the candidate string presented to the completion framework."
       (message "No PDF found for entry: %s" key))))
 
 (use-package citar-org-roam
+  :ensure t
   :after (citar org-roam)
   :config 
   (setq citar-org-roam-capture-template-key "n")
@@ -1806,16 +1820,19 @@ tags from the candidate string presented to the completion framework."
   (citar-org-roam-mode))
 
 (use-package citar-embark
+  :ensure t
   :after citar embark
   :config (citar-embark-mode))
 
 ;; Word count for academic papers
 (use-package wc-mode
+  :ensure t
   :hook (LaTeX-mode . wc-mode)
   :config
   (setq wc-modeline-format "WC[%tw/%tcw]"))
 
 (use-package langtool
+  :ensure t
   :bind ("C-c m" . langtool-check)
   :config
   (setq langtool-language-tool-jar nil)  ; Don't use JAR file
@@ -1903,10 +1920,12 @@ tags from the candidate string presented to the completion framework."
   )
 
 (use-package svg-lib
+  :ensure t
   :defer t
   )
 
 (use-package svg-tag-mode
+  :ensure t
   :defer t
   :hook (org-mode . svg-tag-mode)
   :config
@@ -1921,6 +1940,3 @@ tags from the candidate string presented to the completion framework."
                             :margin 0
                             :radius 0
                             :padding 0)))))))
-
-(use-package nano-calendar
-  :ensure (:host github :repo "rougier/nano-calendar"))
