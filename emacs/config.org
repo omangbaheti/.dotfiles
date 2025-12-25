@@ -53,7 +53,9 @@
   - [[#doom-themes][Doom Themes]]
   - [[#doom-modeline-setups][Doom modeline setups]]
 - [[#filemanager][FILEMANAGER]]
+  - [[#dirvish][DIRVISH]]
   - [[#neotree][NEOTREE]]
+  - [[#grease][GREASE]]
 - [[#flycheck][FLYCHECK]]
 - [[#tree-sitter][TREE-SITTER]]
 - [[#lsps][LSPs]]
@@ -875,8 +877,8 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
       (olivetti-mode 1)
     (olivetti-mode -1)))
 
-(add-hook 'window-configuration-change-hook
-          #'my/olivetti-only-when-single-window)
+;; (add-hook 'window-configuration-change-hook
+;;           #'my/olivetti-only-when-single-window)
 #+end_src
 
 ** ORG-AGENDA
@@ -1852,6 +1854,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 
 
 * FILEMANAGER
+** DIRVISH
 #+begin_src emacs-lisp
 (use-package dirvish
   :ensure t
@@ -1891,6 +1894,21 @@ Neotree is a file tree viewer.  When you open neotree, it jumps to the current f
 
 #+end_src
 
+
+** GREASE
+#+begin_src emacs-lisp
+(use-package grease
+  :ensure (:host github :repo "https://github.com/mwac-dev/grease.el")
+  :commands (grease-open grease-toggle grease-here)
+  :config
+  ;; Icons are enabled by default if nerd-icons is available
+  ;; Sorting defaults to 'type (directories first, then files)
+  ;; Hidden files are hidden by default
+  )
+#+end_src
+
+#+RESULTS:
+: [nil 26957 19447 794219 nil elpaca-process-queues nil nil 35000 nil]
 
 * FLYCHECK
 Modern on-the-fly syntax checking extension for GNU Emacs

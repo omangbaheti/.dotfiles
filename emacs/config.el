@@ -637,8 +637,8 @@ one, an error is signaled."
       (olivetti-mode 1)
     (olivetti-mode -1)))
 
-(add-hook 'window-configuration-change-hook
-          #'my/olivetti-only-when-single-window)
+;; (add-hook 'window-configuration-change-hook
+;;           #'my/olivetti-only-when-single-window)
 
 (with-eval-after-load 'org
   (setq org-agenda-files (directory-files-recursively "~/Notes/Agenda" "\\.org$"))
