@@ -137,7 +137,7 @@
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode))
 
-(elpaca wait)
+(elpaca-wait)
 
 
 ;;Turns off elpaca-use-package-mode current declaration
