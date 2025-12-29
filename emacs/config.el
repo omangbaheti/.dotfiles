@@ -1,4 +1,7 @@
 ;; (setq debug-on-error t)
+;; why is emacs throwing a warning here
+(setq elpaca-core-date '(20251229))
+
 (setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -49,7 +52,7 @@
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode))
 
-(elpaca wait)
+(elpaca-wait)
 
 
 ;;Turns off elpaca-use-package-mode current declaration
@@ -481,6 +484,8 @@ one, an error is signaled."
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
+;; WHy am i havin to do this
+(setq enable-local-variables t)
 
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
@@ -1494,6 +1499,15 @@ tags from the candidate string presented to the completion framework."
                   (make-local-variable 'auto-hscroll-mode)
                   (setq auto-hscroll-mode nil)))))
 
+(use-package grease
+  :ensure (:host github :repo "https://github.com/mwac-dev/grease.el")
+  :commands (grease-open grease-toggle grease-here)
+  :config
+  ;; Icons are enabled by default if nerd-icons is available
+  ;; Sorting defaults to 'type (directories first, then files)
+  ;; Hidden files are hidden by default
+  )
+
 (use-package flycheck
   :ensure t 
   :config (add-hook 'after-init-hook #'global-flycheck-mode))
@@ -1541,20 +1555,24 @@ tags from the candidate string presented to the completion framework."
   (setq treesit-language-source-alist
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 
-;;(setq lsp-bridge-user-multiserver-dir
- ;;     (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
-;;(setq lsp-bridge-user-langserver-dir
-  ;;    (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
-
 (use-package lsp-bridge
-  :ensure '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+  :ensure '(lsp-bridge :type git 
+                       :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  :hook
-  (org-mode . lsp-bridge-mode)
-  ;;  Ensure src-edit buffers (C-c ') get lsp-bridge
-  (org-src-mode . (lambda () (lsp-bridge-mode 1)))
+  :hook ((org-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+         (org-src-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (LaTeX-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (python-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (python-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (nix-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (csharp-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1))))
   :init
+  (setq lsp-bridge-user-multiserver-dir
+        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
+  (setq lsp-bridge-user-langserver-dir
+        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
@@ -1566,53 +1584,31 @@ tags from the candidate string presented to the completion framework."
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
-	lsp-bridge-tex-lsp-server "texlab"
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
   ;; (setq lsp-bridge-enable-debug t) 
-  ;;  (setq lsp-bridge-log-level 'debug)
+  ;; (setq lsp-bridge-log-level 'debug)
   (setq acm-enable-jupyter t
         acm-enable-yas t
 	acm-enable-org-roam t)
-  ;;(add-to-list 'lsp-bridge-multi-lang-server-mode-list
-    ;;           '(latex-mode . "latex_ltex2"))
-  ;;(add-to-list 'lsp-bridge-multi-lang-server-mode-list
-     ;;          '(LaTeX-mode . "latex_ltex2"))
-  )
+  :config
 
+  (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
+  (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
+  )
 
 (use-package python
   :ensure t
-  :mode ("\\.py\\'" . python-mode)
-  :hook ((python-mode . (lambda ()
-                          (require 'lsp-bridge)
-                          (lsp-bridge-mode 1)))
-         (python-ts-mode . (lambda ()
-                             (require 'lsp-bridge)
-                             (lsp-bridge-mode 1))))) 
-
-(add-hook 'LaTeX-mode-hook
-          (lambda ()
-            (require 'lsp-bridge)
-            (lsp-bridge-mode 1)))
-
-
+  :mode ("\\.py\\'" . python-mode))
 
 ;; Nix integration
 (use-package nix-mode
   :ensure t
-  :mode "\\.nix\\'"
-  :hook (nix-mode . lsp-bridge-mode))
-
-;; C# integration (tree-sitter mode only)
-(add-hook 'csharp-ts-mode-hook #'lsp-bridge-mode)
+  :mode "\\.nix\\'")
 
 ;;org-babel support
 ;; (with-eval-after-load 'org
 ;;   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
 ;;   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
-
-(with-eval-after-load 'lsp-bridge
-  (define-key lsp-bridge-mode-map (kbd "g D") #'lsp-bridge-popup-documentation))
 
 ;; (use-package ess
 ;;   :ensure t
@@ -1682,9 +1678,10 @@ tags from the candidate string presented to the completion framework."
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package auctex
-  :defer t
+  :ensure t
   :config
   ;; Basic AUCTeX settings
+  (setq TeX-save-query nil)
   (setq TeX-auto-save t)
   (setq TeX-parse-self t)
   (setq TeX-master nil)
@@ -1856,7 +1853,7 @@ tags from the candidate string presented to the completion framework."
 
 (use-package spacious-padding
   :ensure t
-  :config
+  :init
   (spacious-padding-mode 1)
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit

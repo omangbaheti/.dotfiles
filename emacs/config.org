@@ -87,6 +87,9 @@
 
 #+begin_src emacs-lisp
 ;; (setq debug-on-error t)
+;; why is emacs throwing a warning here
+(setq elpaca-core-date '(20251229))
+
 (setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -655,6 +658,8 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
+;; WHy am i havin to do this
+(setq enable-local-variables t)
 #+end_src
 
 #+RESULTS:
@@ -1969,24 +1974,26 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 * LSPs
 
-#+begin_src emacs-lisp
-;;(setq lsp-bridge-user-multiserver-dir
- ;;     (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
-;;(setq lsp-bridge-user-langserver-dir
-  ;;    (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
-#+end_src
-
 
 #+begin_src emacs-lisp
 (use-package lsp-bridge
-  :ensure '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+  :ensure '(lsp-bridge :type git 
+                       :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  :hook
-  (org-mode . lsp-bridge-mode)
-  ;;  Ensure src-edit buffers (C-c ') get lsp-bridge
-  (org-src-mode . (lambda () (lsp-bridge-mode 1)))
+  :hook ((org-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+         (org-src-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (LaTeX-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (python-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (python-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (nix-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+         (csharp-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1))))
   :init
+  (setq lsp-bridge-user-multiserver-dir
+        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
+  (setq lsp-bridge-user-langserver-dir
+        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
@@ -1998,45 +2005,26 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
-	lsp-bridge-tex-lsp-server "texlab"
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
   ;; (setq lsp-bridge-enable-debug t) 
-  ;;  (setq lsp-bridge-log-level 'debug)
+  ;; (setq lsp-bridge-log-level 'debug)
   (setq acm-enable-jupyter t
         acm-enable-yas t
 	acm-enable-org-roam t)
-  ;;(add-to-list 'lsp-bridge-multi-lang-server-mode-list
-    ;;           '(latex-mode . "latex_ltex2"))
-  ;;(add-to-list 'lsp-bridge-multi-lang-server-mode-list
-     ;;          '(LaTeX-mode . "latex_ltex2"))
-  )
+  :config
 
+  (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
+  (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
+  )
 
 (use-package python
   :ensure t
-  :mode ("\\.py\\'" . python-mode)
-  :hook ((python-mode . (lambda ()
-                          (require 'lsp-bridge)
-                          (lsp-bridge-mode 1)))
-         (python-ts-mode . (lambda ()
-                             (require 'lsp-bridge)
-                             (lsp-bridge-mode 1))))) 
-
-(add-hook 'LaTeX-mode-hook
-          (lambda ()
-            (require 'lsp-bridge)
-            (lsp-bridge-mode 1)))
-
-
+  :mode ("\\.py\\'" . python-mode))
 
 ;; Nix integration
 (use-package nix-mode
   :ensure t
-  :mode "\\.nix\\'"
-  :hook (nix-mode . lsp-bridge-mode))
-
-;; C# integration (tree-sitter mode only)
-(add-hook 'csharp-ts-mode-hook #'lsp-bridge-mode)
+  :mode "\\.nix\\'")
 
 ;;org-babel support
 ;; (with-eval-after-load 'org
@@ -2044,11 +2032,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ;;   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
 #+end_src
 
-#+RESULTS:
-#+begin_src emacs-lisp
-(with-eval-after-load 'lsp-bridge
-  (define-key lsp-bridge-mode-map (kbd "g D") #'lsp-bridge-popup-documentation))
-#+end_src
+
 
 #+begin_src emacs-lisp
 ;; (use-package ess
@@ -2158,9 +2142,10 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
 (use-package auctex
-  :defer t
+  :ensure t
   :config
   ;; Basic AUCTeX settings
+  (setq TeX-save-query nil)
   (setq TeX-auto-save t)
   (setq TeX-parse-self t)
   (setq TeX-master nil)
@@ -2384,7 +2369,7 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
 #+begin_src emacs-lisp
 (use-package spacious-padding
   :ensure t
-  :config
+  :init
   (spacious-padding-mode 1)
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
