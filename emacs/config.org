@@ -872,8 +872,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (olivetti-minimum-body-width 80)   ; Minimum width in characters
   (olivetti-recall-visual-line-mode-entry-state t)
   :hook
-  ((text-mode . olivetti-mode)
-   (markdown-mode . olivetti-mode)
+  ((markdown-mode . olivetti-mode)
    (org-mode . olivetti-mode)))
 
 (defun my/olivetti-only-when-single-window ()
@@ -885,6 +884,9 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 ;; (add-hook 'window-configuration-change-hook
 ;;           #'my/olivetti-only-when-single-window)
 #+end_src
+
+#+RESULTS:
+: my/olivetti-only-when-single-window
 
 ** ORG-AGENDA
 #+begin_src emacs-lisp
@@ -1997,7 +1999,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
-        lsp-bridge-enable-auto-format-code t
+        lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
@@ -2369,8 +2371,7 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
 #+begin_src emacs-lisp
 (use-package spacious-padding
   :ensure t
-  :init
-  (spacious-padding-mode 1)
+  :config
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
           :internal-border-width 15
@@ -2379,9 +2380,15 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
           :tab-width 4
           :scroll-bar-width 4
           ;; Set the divider width to 1 to make it visible
-          :right-divider-width 10))
+          :right-divider-width 10
+          ))
+  (spacious-padding-mode 15)
+  (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
   )
 #+end_src
+
+#+RESULTS:
+: [nil 26963 8587 642661 nil elpaca-process-queues nil nil 386000 nil]
 
 
 * Prettifying 

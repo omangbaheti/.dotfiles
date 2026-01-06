@@ -632,8 +632,7 @@ one, an error is signaled."
   (olivetti-minimum-body-width 80)   ; Minimum width in characters
   (olivetti-recall-visual-line-mode-entry-state t)
   :hook
-  ((text-mode . olivetti-mode)
-   (markdown-mode . olivetti-mode)
+  ((markdown-mode . olivetti-mode)
    (org-mode . olivetti-mode)))
 
 (defun my/olivetti-only-when-single-window ()
@@ -1576,7 +1575,7 @@ tags from the candidate string presented to the completion framework."
   (setq lsp-bridge-enable-diagnostics t
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
-        lsp-bridge-enable-auto-format-code t
+        lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
@@ -1853,8 +1852,7 @@ tags from the candidate string presented to the completion framework."
 
 (use-package spacious-padding
   :ensure t
-  :init
-  (spacious-padding-mode 1)
+  :config
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
           :internal-border-width 15
@@ -1863,7 +1861,10 @@ tags from the candidate string presented to the completion framework."
           :tab-width 4
           :scroll-bar-width 4
           ;; Set the divider width to 1 to make it visible
-          :right-divider-width 10))
+          :right-divider-width 10
+          ))
+  (spacious-padding-mode 15)
+  (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
   )
 
 (defun my/prettify-symbols-setup ()
