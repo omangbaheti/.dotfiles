@@ -1734,7 +1734,7 @@ tags from the candidate string presented to the completion framework."
   (setq pdf-annot-activate-created-annotations t)
   (setq pdf-cache-image-limit 15)
   (setq pdf-view-resize-factor 1.1)
-  
+  (setq pdf-view-large-file-size (* 50 1024 1024))
   ;; Sync settings
   (setq pdf-sync-forward-display-action
         '(display-buffer-reuse-window (reusable-frames . t)))
