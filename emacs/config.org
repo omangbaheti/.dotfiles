@@ -2003,7 +2003,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
-        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python")
+        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python" "")
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
@@ -2029,18 +2029,20 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :mode "\\.nix\\'")
 
 ;;org-babel support
-;; (with-eval-after-load 'org
-;;   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
-;;   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
+(with-eval-after-load 'org
+  (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
+  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode)))
 #+end_src
-
 
 
 #+begin_src emacs-lisp
-;; (use-package ess
-;;   :ensure t
-;;   :defer t)
+(use-package ess
+  :ensure t
+)
 #+end_src
+
+#+RESULTS:
+: [nil 26976 1932 587401 nil elpaca-process-queues nil nil 63000 nil]
 
 ** YASNIPPET
 #+begin_src emacs-lisp
@@ -2112,6 +2114,8 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 (use-package jupyter
   :ensure t
   :init
+  (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
+  (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
   (with-eval-after-load 'org
     (org-babel-do-load-languages
      'org-babel-load-languages
@@ -2119,16 +2123,26 @@ Modern on-the-fly syntax checking extension for GNU Emacs
        (python . t)
        (shell . t)
        (jupyter . t)
-       (R . t))))
+       (R . t)
+       )
+     )
+    )
   (require 'ob-jupyter)
   (org-babel-jupyter-aliases-from-kernelspecs)
   (setq org-confirm-babel-evaluate nil
         org-src-fontify-natively t
         org-src-tab-acts-natively t
         org-src-preserve-indentation t)
+  (setq org-babel-default-header-args:jupyter-R '((:session . "R")
+                                                  (:kernel . "ir")
+                                                  (:exports . "both")
+                                                  (:results . "output")))
   )
 
 #+end_src
+
+#+RESULTS:
+: [nil 26976 12152 16126 nil elpaca-process-queues nil nil 538000 nil]
 
 
 * RAINBOW MODE
@@ -2428,7 +2442,6 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
 | my/prettify-symbols-setup |
 
 #+begin_src emacs-lisp
-(setenv "JUPYTER_PATH" "/home/nixos/.local/share/jupyter/kernels")
 #+end_src
 
 * TODO 

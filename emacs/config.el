@@ -1579,7 +1579,7 @@ tags from the candidate string presented to the completion framework."
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
-        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python")
+        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python" "")
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "pylsp"
 	lsp-bridge-nix-lsp-server "nil"
@@ -1605,13 +1605,13 @@ tags from the candidate string presented to the completion framework."
   :mode "\\.nix\\'")
 
 ;;org-babel support
-;; (with-eval-after-load 'org
-;;   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
-;;   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r)))
+(with-eval-after-load 'org
+  (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
+  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode)))
 
-;; (use-package ess
-;;   :ensure t
-;;   :defer t)
+(use-package ess
+  :ensure t
+)
 
 ;; Packages you need
 (use-package yasnippet
@@ -1656,6 +1656,8 @@ tags from the candidate string presented to the completion framework."
 (use-package jupyter
   :ensure t
   :init
+  (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
+  (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
   (with-eval-after-load 'org
     (org-babel-do-load-languages
      'org-babel-load-languages
@@ -1663,13 +1665,20 @@ tags from the candidate string presented to the completion framework."
        (python . t)
        (shell . t)
        (jupyter . t)
-       (R . t))))
+       (R . t)
+       )
+     )
+    )
   (require 'ob-jupyter)
   (org-babel-jupyter-aliases-from-kernelspecs)
   (setq org-confirm-babel-evaluate nil
         org-src-fontify-natively t
         org-src-tab-acts-natively t
         org-src-preserve-indentation t)
+  (setq org-babel-default-header-args:jupyter-R '((:session . "R")
+                                                  (:kernel . "ir")
+                                                  (:exports . "both")
+                                                  (:results . "output")))
   )
 
 (use-package rainbow-delimiters
@@ -1895,7 +1904,7 @@ tags from the candidate string presented to the completion framework."
 (add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
 (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
 
-(setenv "JUPYTER_PATH" "/home/nixos/.local/share/jupyter/kernels")
+
 
 (use-package rainbow-csv
   :ensure (:host github :repo "emacs-vs/rainbow-csv")
