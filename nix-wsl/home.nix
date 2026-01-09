@@ -48,6 +48,7 @@
     initContent = ''
    DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
    LIBGL_ALWAYS_INDIRECT=1  
+   export R_LIBS_SITE=$(ls -d /nix/store/*-r-*/library | tr '\n' ':')
    PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
      eval "$(zoxide init zsh)"
      #env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
@@ -124,6 +125,7 @@
 
   home.sessionVariables = {
     EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+    # R_LIBS_SITE = builtins.concatStringsSep ":" (builtins.filterStrings (x: builtins.match ".*-r-.*" x != null) (builtins.attrValues pkgs));
   };
 
   home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";

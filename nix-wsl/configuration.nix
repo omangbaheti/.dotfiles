@@ -24,6 +24,28 @@ let
       multcomp
     ];
   };
+  python-with-packages = pkgs.python3.withPackages (ps: with ps; [
+    numpy
+    pandas
+    dill
+    requests
+    matplotlib
+    scipy
+    # Remove jupyter and jupyterlab - managed by services.jupyter
+    seaborn
+    xlib
+    epc
+    sexpdata
+    six
+    inflect
+    pyqt6
+    pyqt6-sip
+    pyqt6-webengine
+    qrcode
+    python-lsp-server
+    watchdog
+    ipykernel  # Keep this for the kernel
+  ]);
 in
 {
   nix.settings.experimental-features = ["nix-command" "flakes"];
@@ -32,6 +54,7 @@ in
   wsl.defaultUser = "nixos";
   programs.zsh.enable = true;
   
+
   users.defaultUserShell = pkgs.zsh;
   fonts.packages = with pkgs.nerd-fonts; 
     [ 
@@ -43,6 +66,38 @@ in
       symbols-only
     ];
   nixpkgs.config.allowUnfree = true;
+
+  services.jupyter = {
+    enable = true;
+    password = "argon2:$argon2id$v=19$m=10240,t=10,p=8$+d1QjDGEk7oxAlImDwwDuQ$xwz6lp0qiMj0bSfeKAiWk7PAHqvjmDmRAYOq93lwNJk";
+    kernels = {
+      python3 = {
+        displayName = "Python 3";
+        argv = [
+          "${python-with-packages.interpreter}"
+          "-m"
+          "ipykernel_launcher"
+          "-f"
+          "{connection_file}"
+        ];
+        language = "python";
+      };
+      
+      R = {
+        displayName = "R";
+        argv = [
+          "${R-with-my-packages}/bin/R"
+          "--slave"
+          "-e"
+          "IRkernel::main()"
+          "--args"
+          "{connection_file}"
+        ];
+        language = "R";
+      };
+    };
+  };
+
   environment.systemPackages = with pkgs;
     [
       home-manager
@@ -66,28 +121,7 @@ in
       coreutils
       nnn  
       nodejs_24
-      (python3.withPackages (ps: with ps; [
-        numpy
-        pandas
-        dill
-        requests
-        matplotlib
-        scipy
-        jupyter
-        jupyterlab
-        seaborn
-        xlib
-        epc
-        sexpdata
-        six
-        inflect
-        pyqt6
-        pyqt6-sip
-        pyqt6-webengine
-        qrcode
-        python-lsp-server
-        watchdog
-      ]))
+      python-with-packages
       R-with-my-packages
       zulu8
       fd
