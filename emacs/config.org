@@ -369,6 +369,7 @@
     "o n f" '(citar-org-roam-open-current-refs :wk "Open Paper")
     
     "o s" '(:ignore t :wk "Insert Source Block Templates")
+    "o s r" '(tempo-template-jupyter-R :wk "Insert Jupyter R block")
     "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
     "o s p" '(tempo-template-python :wk "Insert Python block")
     "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
@@ -788,11 +789,20 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (require 'org-tempo)
 
 (tempo-define-template "jupyter-python"
-                       '("#+begin_src jupyter-python :tangle temp.py :session py :async yes"
+                       '("#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t"
                          n p n
                          "#+end_src")
                        "<jpy"
                        "Insert Jupyter Python block"
+                       'org-tempo-tags)
+
+
+(tempo-define-template "jupyter-R"
+                       '("#+begin_src jupyter-R :session R :async yes :pandoc t"
+                         n p n
+                         "#+end_src")
+                       "<jpr"
+                       "Insert Jupyter-R block"
                        'org-tempo-tags)
 
 (tempo-define-template "python"
