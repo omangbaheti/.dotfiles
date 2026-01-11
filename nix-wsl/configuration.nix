@@ -12,6 +12,9 @@ let
       IRkernel
       ez
       dplyr
+      effsize
+      tidyr
+      purrr
       car
       nlme
       reshape2
