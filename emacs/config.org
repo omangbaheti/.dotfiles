@@ -186,7 +186,6 @@
 
 #+END_SRC
 
-
 *** TODO Evil-Snipe
 #+begin_src emacs-lisp
 (use-package evil-snipe
@@ -227,7 +226,6 @@
    '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 #+end_src
-
 
 
 ** TODO CASUAL
@@ -307,20 +305,11 @@
     "m T" '(org-todo-list :wk "Org todo list")
     )
 
-
-
   (leader-key
     :states '(normal)
     "m n" '(org-babel-next-src-block :wk "Next src block")
     "m p" '(org-babel-previous-src-block :wk "Previous src block")
     )
-
-  ;; (leader-key
-  ;;   :states '(normal visual)
-  ;;   "m s" '(:ignore t :wk "Insert Source Block Templates")
-  ;;   "m s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
-  ;;   "m s p" '(tempo-template-python :wk "Insert Python block")
-  ;;   "m s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block"))
 
   (leader-key
     "m b" '(:ignore t :wk "Tables")
@@ -328,18 +317,13 @@
 
   (leader-key
     "m d" '(:ignore t :wk "Date/deadline")
-    "m d t" '(org-time-stamp :wk "Org time stamp"))
+    "m d t" '(org-time-stamp :wk "Org time stamp")
+    )
   
   (leader-key
     "m c" '(:ignore t :wk "Org Capture")
-    "m c s" '(org-roam-capture :wk "Org Capture"))
-  
-  ;; (leader-key
-  ;;   "n" '(:ignore t :wk "Notes")
-  ;;   "n o" '(citar-open :wk "Citar Open Note")
-  ;;   "n s" '(citar-org-noter-open :wk "Org-Noter Session")
-  ;;   "n n" '(citar-create-note :wk "Citar New Note")
-  ;;   )
+    "m c s" '(org-roam-capture :wk "Org Capture")
+    )
   
   (leader-key
     :states '(normal visual)
@@ -350,7 +334,6 @@
     "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
     "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
     "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
-    
 
     "o r" '(:ignore t :wk "Org Roam")
     "o r i" '(org-roam-node-insert :wk "Link Node")
@@ -404,7 +387,6 @@
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t t" '(visual-line-mode :wk "Toggle truncated lines"))
 
-
   (leader-key
     "w" '(:ignore t :wk "Windows")
     ;; Window splits
@@ -435,9 +417,6 @@
 
 #+END_SRC
 
-#+RESULTS:
-: [nil 26947 17381 253514 nil elpaca-process-queues nil nil 739000 nil]
-
 ** HYDRA
 #+begin_src emacs-lisp
 (use-package hydra
@@ -459,9 +438,6 @@ _q_: quit
 
   (leader-key "W" '(hydra-window-resize/body :which-key "resize window")))
 #+end_src
-
-#+RESULTS:
-: [nil 26946 26432 161501 nil elpaca-process-queues nil nil 87000 nil]
 
 ** Pulsar
 #+begin_src emacs-lisp
@@ -662,10 +638,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 ;; WHy am i havin to do this
 (setq enable-local-variables t)
 #+end_src
-
-#+RESULTS:
-: yes-or-no-p
-
 
 ** Display Line Numbers and Truncated Lines
 
@@ -1095,9 +1067,6 @@ DEADLINE: %^t
 
 #+end_src
 
-#+RESULTS:
-: org-roam-buffer-toggle-and-focus
-
 *** ORG-ROAM-CONSULT
 #+begin_src emacs-lisp
 (use-package consult-org-roam
@@ -1135,10 +1104,6 @@ tags from the candidate string presented to the completion framework."
     (org-roam-node-visit (consult-org-roam-node-read))))
 
 #+end_src
-
-#+RESULTS:
-: consult-org-roam-find-by-title
-
 
 *** ORG-ROAM-TAGS
 I dont know how it does this tag conversion yet but it works
@@ -1225,9 +1190,9 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 
 *** ORG-ROAM-QL
 #+begin_src emacs-lisp
-;; (use-package org-roam-ql
-;;   :ensure t
-;;   :after (org-roam))
+(use-package org-roam-ql
+  :ensure t
+  :after (org-roam))
 #+end_src
 
 ** ORG NOTER
@@ -1257,7 +1222,8 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
   (setq org-roam-ui-sync-theme t
         org-roam-ui-follow t
         org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t))
+        org-roam-ui-open-on-start t)
+  )
 #+end_src
 
 
@@ -1267,7 +1233,8 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 (use-package org-transclusion
   :ensure t
   :after org
-  :hook (org-mode . org-transclusion-mode))
+  :hook (org-mode . org-transclusion-mode)
+  )
 #+end_src
 
 #+RESULTS:
@@ -1396,7 +1363,8 @@ Nicer M-x menu
               ("M-A" . marginalia-cycle))
   ;; The :init section is always executed.
   :init
-  (marginalia-mode))
+  (marginalia-mode)
+  )
 #+end_src
 
 
@@ -1484,13 +1452,11 @@ Enabling Frequency + Recency Sorting of options in vertico
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
   )
 
-
 (defun consult-fd-windows ()
   "Run consult-fd searching from home directory."
   (interactive)
   (let ((default-directory "/mnt/c/Users"))
     (consult-fd)))
-
 
 (defun consult-find-home ()
   "Run consult-fd searching from home directory."
@@ -1498,10 +1464,6 @@ Enabling Frequency + Recency Sorting of options in vertico
   (let ((default-directory "~/"))
     (consult-find)))
 #+end_src
-
-#+RESULTS:
-: consult-find-home
-
 
 * EMBARK 
 #+begin_src emacs-lisp
@@ -1544,6 +1506,9 @@ Enabling Frequency + Recency Sorting of options in vertico
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
+
+#+RESULTS:
+: [nil 26980 8254 400308 nil elpaca-process-queues nil nil 874000 nil]
 
 
 * SHELLS AND TERMINALS
@@ -1595,7 +1560,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 #+end_src
 
 ** Doom modeline setups
-
 #+begin_src emacs-lisp
 
 (use-package doom-modeline
@@ -1871,6 +1835,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 
 
 * FILEMANAGER
+
 ** DIRVISH
 #+begin_src emacs-lisp
 (use-package dirvish
@@ -1880,8 +1845,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 #+end_src
 
 ** NEOTREE 
-
-
 Neotree is a file tree viewer.  When you open neotree, it jumps to the current file thanks to neo-smart-open.  The neo-window-fixed-size setting makes the neotree width be adjustable.  NeoTree provides following themes: classic, ascii, arrow, icons, and nerd.  Theme can be config'd by setting "two" themes for neo-theme: one for the GUI and one for the terminal.  I like to use 'SPC t' for 'toggle' keybindings, so I have used 'SPC t n' for toggle-neotree.
 
 | COMMAND        | DESCRIPTION                 | KEYBINDING |
@@ -1923,9 +1886,6 @@ Neotree is a file tree viewer.  When you open neotree, it jumps to the current f
   ;; Hidden files are hidden by default
   )
 #+end_src
-
-#+RESULTS:
-: [nil 26957 19447 794219 nil elpaca-process-queues nil nil 35000 nil]
 
 * FLYCHECK
 Modern on-the-fly syntax checking extension for GNU Emacs
@@ -2051,9 +2011,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 )
 #+end_src
 
-#+RESULTS:
-: [nil 26976 1932 587401 nil elpaca-process-queues nil nil 63000 nil]
-
 ** YASNIPPET
 #+begin_src emacs-lisp
 ;; Packages you need
@@ -2144,10 +2101,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   )
 
 #+end_src
-
-#+RESULTS:
-: [nil 26976 12152 16126 nil elpaca-process-queues nil nil 538000 nil]
-
 
 * RAINBOW MODE
 
@@ -2349,15 +2302,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq langtool-default-language "en-US"))
 #+end_src
 
-#+RESULTS:
-: [nil 26945 49444 496340 nil elpaca-process-queues nil nil 565000 nil]
-
-*** Writegood mode
-#+begin_src emacs-lisp
-
-#+end_src
-
-
 * GIT
 
 #+begin_src emacs-lisp
@@ -2367,7 +2311,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   )
 #+end_src
 
-
 * TRANSIENT
 Its a built-in emacs package, its here only so that elpaca can manage it instead of emacs package manager
 #+begin_src emacs-lisp
@@ -2375,14 +2318,12 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
   :ensure t)
 #+end_src
 
-
 * DEADGREP
 #+begin_src emacs-lisp
 (use-package deadgrep
   :ensure t
   :bind (("C-c H" . deadgrep)))
 #+end_src
-
 
 * SPACIOUS PADDING
 
@@ -2404,10 +2345,6 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
   (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
   )
 #+end_src
-
-#+RESULTS:
-: [nil 26963 8587 642661 nil elpaca-process-queues nil nil 386000 nil]
-
 
 * Prettifying 
 Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bosio]]
@@ -2442,12 +2379,6 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
 (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
 #+end_src
 
-#+RESULTS:
-| my/prettify-symbols-setup |
-
-#+begin_src emacs-lisp
-#+end_src
-
 * TODO 
 https://github.com/emacs-vs/codemetrics
 https://github.com/emacs-vs/rainbow-csv
@@ -2464,9 +2395,6 @@ https://github.com/rougier/notebook-mode
          (tsv-mode . rainbow-csv-mode)))
 
 #+end_src
-
-#+RESULTS:
-: [nil 26894 13084 654248 nil elpaca-process-queues nil nil 15000 nil]
 
 * NANO ELFEED
 
@@ -2492,8 +2420,6 @@ https://github.com/rougier/notebook-mode
   :ensure t
   )
 #+end_src
-
-
 
 * SVG Tag Mode
 #+begin_src emacs-lisp

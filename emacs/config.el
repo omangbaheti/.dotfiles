@@ -936,9 +936,9 @@ tags from the candidate string presented to the completion framework."
 ;;         (org-roam-node-visit node)
 ;;       (my/navigate-note nil next-node (cons next-node (-map #'org-roam-backlink-source-node (org-roam-backlinks-get next-node)))))))
 
-;; (use-package org-roam-ql
-;;   :ensure t
-;;   :after (org-roam))
+(use-package org-roam-ql
+  :ensure t
+  :after (org-roam))
 
 (use-package org-noter
   :ensure t
