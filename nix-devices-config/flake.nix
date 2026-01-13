@@ -48,7 +48,6 @@
           name = "fern";
           email = "omangbaheti@gmail.com";
           dotfilesDir = "~/.dotfiles";
-          term = "bash";
           browser = "firefox";
           editor = "code";
           spawnEditor = "code";

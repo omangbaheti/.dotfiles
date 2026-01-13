@@ -13,7 +13,7 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-boot.kernelPackages = pkgs.linuxPackages;
+  boot.kernelPackages = pkgs.linuxPackages;
   networking.hostName = systemSettings.hostname; # Define your hostname.
   #networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -31,7 +31,7 @@ boot.kernelPackages = pkgs.linuxPackages;
   nixpkgs.config.allowUnfree = systemSettings.allowUnfree;
 
   # Set your time zone.
-  time.timeZone = systemSettings.timezone;
+  # time.timeZone = systemSettings.timezone;
 
   # Select internationalisation properties.
   i18n.defaultLocale = systemSettings.defaultLocale;
@@ -46,8 +46,8 @@ boot.kernelPackages = pkgs.linuxPackages;
   # Configure keymap in X11
   services.xserver = 
   {
-    layout = "us";
-    xkbVariant = "";
+    xkb.layout = "us";
+    xkb.variant = "";
   };
 
   # Enable CUPS to print documents.
@@ -100,7 +100,8 @@ boot.kernelPackages = pkgs.linuxPackages;
 
   # Allow unfree packages
   
-
+  programs.zsh.enable = true;
+  users.defaultUserShell = pkgs.zsh;
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; 
@@ -111,6 +112,8 @@ boot.kernelPackages = pkgs.linuxPackages;
   git-lfs
   gitkraken
   zoxide
+  zsh
+  oh-my-posh
   fzf
   emacs
   ripgrep
@@ -155,6 +158,9 @@ boot.kernelPackages = pkgs.linuxPackages;
   jre
   languagetool
   protonvpn-gui
+  localsend
+  chromium
+  qbittorrent
   ];
 
   services.fprintd.enable = false;
