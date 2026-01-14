@@ -52,7 +52,7 @@ let
 in
 {
   nix.settings.experimental-features = ["nix-command" "flakes"];
-  
+  nix.settings.trusted-users = [ "root" "nixos" ];
   wsl.enable = true;
   wsl.defaultUser = "nixos";
   programs.zsh.enable = true;
@@ -153,6 +153,8 @@ in
       ripgrep
       ltex-ls-plus
       texlab
+      poetry
+      devenv
     ];
 
   # This value determines the NixOS release from which the default
