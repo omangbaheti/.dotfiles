@@ -2385,6 +2385,7 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
   (push '(":ROAM_REFS:" . " ") prettify-symbols-alist)
   (push '(":PRIORITY:" . "") prettify-symbols-alist)
   (push '(":END:" . "") prettify-symbols-alist)
+  (push '(":RESULTS:" . "") prettify-symbols-alist)
   ;; Tags
   (push '(":projects:" . "  Projects") prettify-symbols-alist)
   (push '(":work:"     . "  Work") prettify-symbols-alist)

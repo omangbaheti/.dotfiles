@@ -1881,6 +1881,7 @@ tags from the candidate string presented to the completion framework."
   (push '(":ROAM_REFS:" . " ") prettify-symbols-alist)
   (push '(":PRIORITY:" . "") prettify-symbols-alist)
   (push '(":END:" . "") prettify-symbols-alist)
+  (push '(":RESULTS:" . "") prettify-symbols-alist)
   ;; Tags
   (push '(":projects:" . "  Projects") prettify-symbols-alist)
   (push '(":work:"     . "  Work") prettify-symbols-alist)
