@@ -23,6 +23,7 @@
   - [[#minibuffer-escape][Minibuffer escape]]
   - [[#electric][Electric]]
   - [[#undo-fu][UNDO-FU]]
+  - [[#helpful][Helpful]]
 - [[#org-mode][ORG MODE]]
   - [[#evil-org][EVIL ORG]]
   - [[#enabling-table-of-content][Enabling Table of Content]]
@@ -377,8 +378,9 @@
   (leader-key
     "h" '(:ignore t :wk "Help")
     "h p" '(describe-package :wk "Describe Package")
-    "h f" '(describe-function :wk "Describe function")
-    "h v" '(describe-variable :wk "Describe Variable")
+    "h f" '(helpful-function :wk "Describe function")
+    "h v" '(helpful-variable :wk "Describe Variable")
+    "h k" '(helpful-key :wk "Describe Key")
     "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
     "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
 
@@ -416,6 +418,9 @@
   )
 
 #+END_SRC
+
+#+RESULTS:
+: [nil 26983 2675 875233 nil elpaca-process-queues nil nil 475000 nil]
 
 ** HYDRA
 #+begin_src emacs-lisp
@@ -681,6 +686,24 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   :ensure t
 )
 #+end_src
+
+** Helpful
+
+#+begin_src emacs-lisp
+(use-package helpful
+  :ensure t              ;; install from MELPA if not present
+  :bind
+  ;; Replace default help bindings with helpful equivalents
+  (("C-h f" . helpful-function)
+   ("C-h v" . helpful-variable)
+   ("C-h k" . helpful-key)
+   ("C-h x" . helpful-command)
+   ;; optional: help at point
+   ("C-c C-d" . helpful-at-point)))
+#+end_src
+
+#+RESULTS:
+: [nil 26983 2606 54281 nil elpaca-process-queues nil nil 501000 nil]
 
 * ORG MODE
 

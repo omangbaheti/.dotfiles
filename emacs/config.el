@@ -189,20 +189,11 @@
     "m T" '(org-todo-list :wk "Org todo list")
     )
 
-
-
   (leader-key
     :states '(normal)
     "m n" '(org-babel-next-src-block :wk "Next src block")
     "m p" '(org-babel-previous-src-block :wk "Previous src block")
     )
-
-  ;; (leader-key
-  ;;   :states '(normal visual)
-  ;;   "m s" '(:ignore t :wk "Insert Source Block Templates")
-  ;;   "m s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
-  ;;   "m s p" '(tempo-template-python :wk "Insert Python block")
-  ;;   "m s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block"))
 
   (leader-key
     "m b" '(:ignore t :wk "Tables")
@@ -210,18 +201,13 @@
 
   (leader-key
     "m d" '(:ignore t :wk "Date/deadline")
-    "m d t" '(org-time-stamp :wk "Org time stamp"))
+    "m d t" '(org-time-stamp :wk "Org time stamp")
+    )
   
   (leader-key
     "m c" '(:ignore t :wk "Org Capture")
-    "m c s" '(org-roam-capture :wk "Org Capture"))
-  
-  ;; (leader-key
-  ;;   "n" '(:ignore t :wk "Notes")
-  ;;   "n o" '(citar-open :wk "Citar Open Note")
-  ;;   "n s" '(citar-org-noter-open :wk "Org-Noter Session")
-  ;;   "n n" '(citar-create-note :wk "Citar New Note")
-  ;;   )
+    "m c s" '(org-roam-capture :wk "Org Capture")
+    )
   
   (leader-key
     :states '(normal visual)
@@ -232,7 +218,6 @@
     "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
     "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
     "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
-    
 
     "o r" '(:ignore t :wk "Org Roam")
     "o r i" '(org-roam-node-insert :wk "Link Node")
@@ -285,7 +270,6 @@
     "t" '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t t" '(visual-line-mode :wk "Toggle truncated lines"))
-
 
   (leader-key
     "w" '(:ignore t :wk "Windows")
@@ -960,12 +944,14 @@ tags from the candidate string presented to the completion framework."
   (setq org-roam-ui-sync-theme t
         org-roam-ui-follow t
         org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t))
+        org-roam-ui-open-on-start t)
+  )
 
 (use-package org-transclusion
   :ensure t
   :after org
-  :hook (org-mode . org-transclusion-mode))
+  :hook (org-mode . org-transclusion-mode)
+  )
 
 ;; (require 'ansi-color)
 
@@ -1058,7 +1044,8 @@ tags from the candidate string presented to the completion framework."
               ("M-A" . marginalia-cycle))
   ;; The :init section is always executed.
   :init
-  (marginalia-mode))
+  (marginalia-mode)
+  )
 
 (use-package orderless
   :ensure t
@@ -1130,13 +1117,11 @@ tags from the candidate string presented to the completion framework."
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
   )
 
-
 (defun consult-fd-windows ()
   "Run consult-fd searching from home directory."
   (interactive)
   (let ((default-directory "/mnt/c/Users"))
     (consult-fd)))
-
 
 (defun consult-find-home ()
   "Run consult-fd searching from home directory."
@@ -1855,8 +1840,6 @@ tags from the candidate string presented to the completion framework."
   (setq langtool-bin "languagetool-commandline")  ; Use the executable
   (setq langtool-default-language "en-US"))
 
-
-
 (use-package git-timemachine
   :ensure (:host codeberg :repo "pidu/git-timemachine")
   :defer t
@@ -1913,8 +1896,6 @@ tags from the candidate string presented to the completion framework."
 
 (add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
 (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
-
-
 
 (use-package rainbow-csv
   :ensure (:host github :repo "emacs-vs/rainbow-csv")
