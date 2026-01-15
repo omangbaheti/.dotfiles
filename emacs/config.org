@@ -1170,7 +1170,6 @@ I dont know how it does this tag conversion yet but it works
                      (list :link-description description
                            :finalize 'insert-link))))))
     (deactivate-mark)))
-
 ;; (advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
 #+end_src
 
@@ -1216,6 +1215,55 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 (use-package org-roam-ql
   :ensure t
   :after (org-roam))
+#+end_src
+
+*** ORG-ROAM-EXTENSIONS
+#+begin_src emacs-lisp
+;; (defun citar-create-missing-note-with-tags ()
+;;   "Create missing citar notes and tag them with Research and unindexed"
+;;   (interactive)
+;;   (require 'citar)
+;;   (require 'org-roam)
+;;   (let* ((entries (citar-get-entries))
+;;          (keys (hash-table-keys entries)))
+;;     (dolist (key keys)
+;;       ;; Check org-roam database directly for notes with this citation key
+;;       (let ((existing-nodes (org-roam-db-query
+;;                              [:select [id]
+;;                                       :from nodes
+;;                                       :where (like title $s1)]
+;;                              (concat "%" key "%"))))
+        
+;;         (when (null existing-nodes)
+;;           ;; Create note
+;;           (message "Creating note for: %s" key)
+;;           (citar-create-note (list key))
+          
+;;           (sit-for 1)
+;;           (org-roam-db-sync)
+;;           (when-let* ((nodes (org-roam-db-query
+;;                               [:select [id file]
+;;                                        :from nodes
+;;                                        :where (like title $s1)]
+;;                               (concat "%" key "%")))
+;;                       (node-id (caar nodes))
+;;                       (node-file (cadar nodes)))
+            
+;;             ;; Visit the note file
+;;             (with-current-buffer (find-file-noselect node-file)
+;;               (goto-char (point-max))
+;;               ;; Insert "Research" tag using your custom function
+;;               (let ((org-roam-node-read 
+;;                      (lambda (&optional _ _) 
+;;                        (org-roam-node-from-title-or-alias "Research"))))
+;;                 (org-roam-tag-node-insert))
+;;               ;; Insert "unindexed" tag using your custom function
+;;               (let ((org-roam-node-read 
+;;                      (lambda (&optional _ _) 
+;;                        (org-roam-node-from-title-or-alias "unindexed"))))
+;;                 (org-roam-tag-node-insert))
+;;               ;; Save the buffer
+;;               (save-buffer)))))))) 
 #+end_src
 
 ** ORG NOTER
@@ -2472,4 +2520,5 @@ https://github.com/rougier/notebook-mode
 #+end_src
 
 * NANO CALENDAR
+
 

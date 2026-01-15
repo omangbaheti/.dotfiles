@@ -155,6 +155,7 @@ in
       texlab
       poetry
       devenv
+      nix-direnv
     ];
 
   # This value determines the NixOS release from which the default

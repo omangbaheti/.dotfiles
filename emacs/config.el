@@ -261,8 +261,9 @@
   (leader-key
     "h" '(:ignore t :wk "Help")
     "h p" '(describe-package :wk "Describe Package")
-    "h f" '(describe-function :wk "Describe function")
-    "h v" '(describe-variable :wk "Describe Variable")
+    "h f" '(helpful-function :wk "Describe function")
+    "h v" '(helpful-variable :wk "Describe Variable")
+    "h k" '(helpful-key :wk "Describe Key")
     "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
     "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
 
@@ -495,6 +496,17 @@ one, an error is signaled."
 (use-package undo-fu
   :ensure t
 )
+
+(use-package helpful
+  :ensure t              ;; install from MELPA if not present
+  :bind
+  ;; Replace default help bindings with helpful equivalents
+  (("C-h f" . helpful-function)
+   ("C-h v" . helpful-variable)
+   ("C-h k" . helpful-key)
+   ("C-h x" . helpful-command)
+   ;; optional: help at point
+   ("C-c C-d" . helpful-at-point)))
 
 (setq font-lock-multiline t)
 ;; (setq jit-lock-defer-time 0) ; Immediate fontification
@@ -884,7 +896,6 @@ tags from the candidate string presented to the completion framework."
                      (list :link-description description
                            :finalize 'insert-link))))))
     (deactivate-mark)))
-
 ;; (advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
 
 ;; (defun my/navigate-note (arg &optional node choices)
@@ -923,6 +934,24 @@ tags from the candidate string presented to the completion framework."
 (use-package org-roam-ql
   :ensure t
   :after (org-roam))
+
+;; (defun citar-create-missing-note-with-tags ()
+;;   "Create missing citar notes and tag them with Research and unindexed"
+;;   (interactive)
+;;   (let ((keys (citar-get-entries)))
+;;     (dolist (key keys)
+;;       (let* ((entry (citar-get-entry key))
+;;              (note (citar-get-note key)))
+;; 	;; Now, create note if missing
+;; 	(unless note
+;; 	  (message "Creating note for %s" key)
+;;           )
+;;         )
+;;       )
+;;     )
+;;   )
+
+
 
 (use-package org-noter
   :ensure t

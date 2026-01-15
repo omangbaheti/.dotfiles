@@ -53,6 +53,7 @@
      eval "$(zoxide init zsh)"
      #env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
      eval "$(oh-my-posh init zsh)"
+     eval "$(direnv hook zsh)"
      function isWinDir 
      {
         case "$PWD/" in
