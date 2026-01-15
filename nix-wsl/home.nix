@@ -48,12 +48,13 @@
     initContent = ''
    DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
    LIBGL_ALWAYS_INDIRECT=1  
+   eval "$(direnv hook zsh)"
    export R_LIBS_SITE=$(ls -d /nix/store/*-r-*/library | tr '\n' ':')
+
    PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
      eval "$(zoxide init zsh)"
-     #env "YAZI_CONFIG_HOME=~/.dotfiles/yazi" yazi
      eval "$(oh-my-posh init zsh)"
-     eval "$(direnv hook zsh)"
+
      function isWinDir 
      {
         case "$PWD/" in
@@ -98,6 +99,14 @@
     enable = true;
     enableZshIntegration = true;
     nix-direnv.enable = true;
+    
+    config = {
+      global = {
+        log_format = "-";
+        log_filter = "^$";
+        hide_env_diff = true;
+      };
+    };
   };
 
   services.emacs = {
