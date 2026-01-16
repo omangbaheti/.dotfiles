@@ -81,6 +81,7 @@
 - [[#gptel][GPTEL]]
 - [[#svg-tag-mode][SVG Tag Mode]]
 - [[#nano-calendar][NANO CALENDAR]]
+- [[#convert-pdfs][CONVERT PDFS]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 
@@ -1218,52 +1219,9 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 #+end_src
 
 *** ORG-ROAM-EXTENSIONS
+
 #+begin_src emacs-lisp
-;; (defun citar-create-missing-note-with-tags ()
-;;   "Create missing citar notes and tag them with Research and unindexed"
-;;   (interactive)
-;;   (require 'citar)
-;;   (require 'org-roam)
-;;   (let* ((entries (citar-get-entries))
-;;          (keys (hash-table-keys entries)))
-;;     (dolist (key keys)
-;;       ;; Check org-roam database directly for notes with this citation key
-;;       (let ((existing-nodes (org-roam-db-query
-;;                              [:select [id]
-;;                                       :from nodes
-;;                                       :where (like title $s1)]
-;;                              (concat "%" key "%"))))
-        
-;;         (when (null existing-nodes)
-;;           ;; Create note
-;;           (message "Creating note for: %s" key)
-;;           (citar-create-note (list key))
-          
-;;           (sit-for 1)
-;;           (org-roam-db-sync)
-;;           (when-let* ((nodes (org-roam-db-query
-;;                               [:select [id file]
-;;                                        :from nodes
-;;                                        :where (like title $s1)]
-;;                               (concat "%" key "%")))
-;;                       (node-id (caar nodes))
-;;                       (node-file (cadar nodes)))
-            
-;;             ;; Visit the note file
-;;             (with-current-buffer (find-file-noselect node-file)
-;;               (goto-char (point-max))
-;;               ;; Insert "Research" tag using your custom function
-;;               (let ((org-roam-node-read 
-;;                      (lambda (&optional _ _) 
-;;                        (org-roam-node-from-title-or-alias "Research"))))
-;;                 (org-roam-tag-node-insert))
-;;               ;; Insert "unindexed" tag using your custom function
-;;               (let ((org-roam-node-read 
-;;                      (lambda (&optional _ _) 
-;;                        (org-roam-node-from-title-or-alias "unindexed"))))
-;;                 (org-roam-tag-node-insert))
-;;               ;; Save the buffer
-;;               (save-buffer)))))))) 
+
 #+end_src
 
 ** ORG NOTER
@@ -2522,3 +2480,158 @@ https://github.com/rougier/notebook-mode
 * NANO CALENDAR
 
 
+* CONVERT PDFS
+
+#+begin_src emacs-lisp
+(defun my-get-citar-resources (citekey)
+  "Get all resources associated with CITEKEY.
+Returns an alist of (type . resource) pairs."
+  (let ((resources '()))
+    (dolist (type citar-open-resources)
+      (when-let ((resource (citar--get-resource citekey type)))
+        (push (cons type resource) resources)))
+    (nreverse resources)))
+
+(defun my-get-citar-pdf-path (citekey)
+  "Get the PDF file path for CITEKEY, if it exists."
+  (when-let* ((files-hash (citar-get-files (list citekey)))
+              (file-list (gethash citekey files-hash))
+              (pdf-file (seq-find (lambda (f) 
+                                    (string-match-p "\\.pdf\\'" f))
+                                  file-list)))
+    pdf-file))
+
+;; Alternative: Get all PDF paths
+(defun my-get-citar-pdf-paths (citekey)
+  "Get all PDF file paths for CITEKEY."
+  (when-let ((files-hash (citar-get-files (list citekey)))
+             (file-list (gethash citekey files-hash)))
+    (seq-filter (lambda (f) (string-match-p "\\.pdf\\'" f))
+                file-list)))
+#+end_src
+
+
+#+begin_src emacs-lisp
+(defun my-export-citar-to-jsonl ()
+  "Export all citar entries to JSONL file in ~/Notes.
+Each line contains: id, citekey, pdf file path, and OCRconverted flag.
+Preserves existing entries to avoid overwriting."
+  (interactive)
+  (let* ((output-file (expand-file-name "~/Notes/citar-entries.jsonl"))
+         (existing-citekeys (make-hash-table :test 'equal))
+         (existing-entries '())
+         (all-entries (citar-get-entries))
+         (entry-id 0))
+    
+    ;; Read existing entries if file exists
+    (when (file-exists-p output-file)
+      (with-temp-buffer
+        (insert-file-contents output-file)
+        (goto-char (point-min))
+        (while (not (eobp))
+          (let* ((line (buffer-substring-no-properties 
+                        (line-beginning-position) 
+                        (line-end-position)))
+                 (json-object (ignore-errors (json-read-from-string line))))
+            (when json-object
+              (let ((citekey (cdr (assoc 'citekey json-object))))
+                (when citekey
+                  (puthash citekey t existing-citekeys)
+                  (push json-object existing-entries)
+                  (setq entry-id (max entry-id (1+ (cdr (assoc 'id json-object)))))))))
+          (forward-line 1))))
+    
+    ;; Reverse to maintain original order
+    (setq existing-entries (nreverse existing-entries))
+    
+    ;; Process all citekeys
+    (with-temp-file output-file
+      ;; Write existing entries first
+      (dolist (entry existing-entries)
+        (insert (json-encode entry))
+        (insert "\n"))
+      
+      ;; Add new entries only
+      (maphash (lambda (citekey _entry-data)
+                 (unless (gethash citekey existing-citekeys)
+                   (let ((pdf-paths (my-get-citar-pdf-paths citekey)))
+                     (if pdf-paths
+                         ;; Create one entry per PDF file
+                         (dolist (pdf-path pdf-paths)
+                           (message "Path: %s" pdf-path)
+                           (let ((entry `((id . ,entry-id)
+                                          (citekey . ,citekey)
+                                          (pdf_file_path . ,pdf-path)
+                                          (OCRconverted . :json-false))))
+                             (insert (json-encode entry))
+                             (insert "\n")
+                             (setq entry-id (1+ entry-id))))))))
+               all-entries))
+    
+    (message "Exported %d citar entries to %s" 
+             (hash-table-count all-entries) output-file)))
+#+end_src 
+
+
+
+#+begin_src emacs-lisp
+(defun my-export-citar-to-jsonl ()
+  "Export all citar entries to JSONL file in ~/Notes.
+Each line contains: id, citekey, pdf file path, and OCRconverted flag.
+Preserves existing entries to avoid overwriting."
+  (interactive)
+  (let* ((output-file (expand-file-name "~/Notes/citar-entries.jsonl"))
+         (existing-citekeys (make-hash-table :test 'equal))
+         (existing-entries '())
+         (all-entries (citar-get-entries))
+         (entry-id 0))
+    
+    ;; Read existing entries if file exists
+    (when (file-exists-p output-file)
+      (with-temp-buffer
+        (insert-file-contents output-file)
+        (goto-char (point-min))
+        (while (not (eobp))
+          (let* ((line (buffer-substring-no-properties 
+                        (line-beginning-position) 
+                        (line-end-position)))
+                 (json-object (ignore-errors (json-read-from-string line))))
+            (when json-object
+              (let ((citekey (cdr (assoc 'citekey json-object))))
+                (when citekey
+                  (puthash citekey t existing-citekeys)
+                  (push json-object existing-entries)
+                  (setq entry-id (max entry-id (1+ (cdr (assoc 'id json-object)))))))))
+          (forward-line 1))))
+    
+    ;; Reverse to maintain original order
+    (setq existing-entries (nreverse existing-entries))
+    
+    ;; Process all citekeys
+    (with-temp-file output-file
+      ;; Write existing entries first
+      (dolist (entry existing-entries)
+        (insert (json-encode entry))
+        (insert "\n"))
+      
+      ;; Add new entries only
+      (maphash (lambda (citekey _entry-data)
+                 (unless (gethash citekey existing-citekeys)
+                   (when-let ((pdf-path (my-get-citar-pdf-path citekey)))
+                     (message "Path: %s" pdf-path)
+                     (let ((entry `((id . ,entry-id)
+                                    (citekey . ,citekey)
+                                    (pdf_file_path . ,pdf-path)
+                                    (OCRconverted . :json-false))))
+                       (insert (json-encode entry))
+                       (insert "\n")
+                       (setq entry-id (1+ entry-id))))))
+               all-entries))
+    
+    (message "Exported %d citar entries to %s" 
+             (hash-table-count all-entries) output-file)))
+
+#+end_src
+
+#+RESULTS:
+: my-export-citar-to-jsonl

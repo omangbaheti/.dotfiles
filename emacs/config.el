@@ -935,22 +935,6 @@ tags from the candidate string presented to the completion framework."
   :ensure t
   :after (org-roam))
 
-;; (defun citar-create-missing-note-with-tags ()
-;;   "Create missing citar notes and tag them with Research and unindexed"
-;;   (interactive)
-;;   (let ((keys (citar-get-entries)))
-;;     (dolist (key keys)
-;;       (let* ((entry (citar-get-entry key))
-;;              (note (citar-get-note key)))
-;; 	;; Now, create note if missing
-;; 	(unless note
-;; 	  (message "Creating note for %s" key)
-;;           )
-;;         )
-;;       )
-;;     )
-;;   )
-
 
 
 (use-package org-noter
@@ -1968,3 +1952,108 @@ tags from the candidate string presented to the completion framework."
                             :margin 0
                             :radius 0
                             :padding 0)))))))
+
+(defun my-get-citar-resources (citekey)
+  "Get all resources associated with CITEKEY.
+Returns an alist of (type . resource) pairs."
+  (let ((resources '()))
+    (dolist (type citar-open-resources)
+      (when-let ((resource (citar--get-resource citekey type)))
+        (push (cons type resource) resources)))
+    (nreverse resources)))
+
+(defun my-get-citar-pdf-path (citekey)
+  "Get the PDF file path for CITEKEY, if it exists."
+  (when-let* ((files-hash (citar-get-files (list citekey)))
+              (file-list (gethash citekey files-hash))
+              (pdf-file (seq-find (lambda (f) 
+                                    (string-match-p "\\.pdf\\'" f))
+                                  file-list)))
+    pdf-file))
+
+;; Alternative: Get all PDF paths
+(defun my-get-citar-pdf-paths (citekey)
+  "Get all PDF file paths for CITEKEY."
+  (when-let ((files-hash (citar-get-files (list citekey)))
+             (file-list (gethash citekey files-hash)))
+    (seq-filter (lambda (f) (string-match-p "\\.pdf\\'" f))
+                file-list)))
+
+(defvar my-mistral-ocr-cache-file "~/Notes/mistral-ocr/processed.el")
+(defvar my-mistral-ocr-jsonl-file "~/Notes/mistral-ocr/batch.jsonl")
+
+(require 'json)
+(require 'subr-x)
+(setq my-mistral-ocr-jsonl-file "~/Notes/mistral-ocr/batch.jsonl")
+(setq my-mistral-ocr-cache-file "~/Notes/mistral-ocr/processed.el")
+
+(defun my--ensure-mistral-cache ()
+  (make-directory (file-name-directory my-mistral-ocr-cache-file) t)
+  (unless (file-exists-p my-mistral-ocr-cache-file)
+    (with-temp-file my-mistral-ocr-cache-file
+      (insert "nil"))))
+
+(defun my--load-mistral-cache ()
+  (my--ensure-mistral-cache)
+  (with-temp-buffer
+    (insert-file-contents my-mistral-ocr-cache-file)
+    (read (current-buffer))))
+
+(defun my--save-mistral-cache (cache)
+  (with-temp-file my-mistral-ocr-cache-file
+    (prin1 cache (current-buffer))))
+
+(defun my--extract-citekeys-from-org-buffer ()
+  "Extract citar citekeys from the current buffer."
+  (let (keys)
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "@\\([A-Za-z0-9:_-]+\\)" nil t)
+        (push (match-string 1) keys)))
+    (delete-dups keys)))
+
+(defun my--collect-all-citar-keys ()
+  "Scan all org-roam files for citekeys."
+  (let (keys)
+    (dolist (file (org-roam-list-files))
+      (with-temp-buffer
+        (insert-file-contents file)
+        (setq keys (nconc keys (my--extract-citekeys-from-org-buffer)))))
+    (delete-dups keys)))
+
+(defun my--make-jsonl-entry (pdf-path)
+  "Create one JSONL line for mistral batch OCR."
+  (json-encode
+   `(("model" . "mistral-ocr-latest")
+     ("input" .
+      (("type" . "input_file")
+       ("path" . ,pdf-path))))))
+
+(defun my-build-mistral-ocr-batch ()
+  "Build JSONL batch file for Mistral OCR from org-roam + citar."
+  (interactive)
+  (let* ((citekeys (my--collect-all-citar-keys))
+         (cache (my--load-mistral-cache))
+         (new-cache (copy-sequence cache))
+         (new-entries 0))
+
+    (with-temp-buffer
+      (when (file-exists-p my-mistral-ocr-jsonl-file)
+        (insert-file-contents my-mistral-ocr-jsonl-file))
+
+      (dolist (key citekeys)
+        (condition-case err
+            (let ((pdf (my-get-citar-pdf-path key)))
+              (when (and pdf (file-exists-p pdf))
+                (unless (member pdf cache)
+                  (insert (my--make-jsonl-entry pdf) "\n")
+                  (push pdf new-cache)
+                  (cl-incf new-entries))))
+          (error
+           (message "Skipping %s: %s" key err))))
+
+      (write-region (point-min) (point-max) my-mistral-ocr-jsonl-file))
+
+    (my--save-mistral-cache new-cache)
+
+    (message "Mistral OCR batch updated: %d new PDFs added." new-entries)))
