@@ -815,6 +815,27 @@ DEADLINE: %^t
 
 	  )))
 
+(use-package md-roam
+  :after org-roam
+  :ensure (:host github :repo "nobiot/md-roam")
+  :custom
+  (md-roam-file-extension "md")  ; or "markdown"
+  :config
+  ;; Enable Org-roam for markdown files
+  (setq org-roam-file-extensions '("org" "md"))
+  
+  ;; Activate md-roam-mode
+  (md-roam-mode 1))
+  
+  ;; Optional: Add markdown capture template
+  ;; (add-to-list 'org-roam-capture-templates
+  ;;              '("m" "Markdown" plain "" :target
+  ;;                (file+head "%<%Y-%m-%dT%H%M%S>.md"
+  ;;                           "---\ntitle: ${title}\nid: %<%Y-%m-%dT%H%M%S>\ncategory: \n---\n")
+  ;;                :unnarrowed t))
+  
+  ;; Optional: Enable completion-at-point for Corfu in markdown-mode)
+
 (defun org-roam-buffer-toggle-and-focus ()
   "Toggle the org-roam buffer and switch focus to it."
   (interactive)
@@ -1979,81 +2000,117 @@ Returns an alist of (type . resource) pairs."
     (seq-filter (lambda (f) (string-match-p "\\.pdf\\'" f))
                 file-list)))
 
-(defvar my-mistral-ocr-cache-file "~/Notes/mistral-ocr/processed.el")
-(defvar my-mistral-ocr-jsonl-file "~/Notes/mistral-ocr/batch.jsonl")
-
-(require 'json)
-(require 'subr-x)
-(setq my-mistral-ocr-jsonl-file "~/Notes/mistral-ocr/batch.jsonl")
-(setq my-mistral-ocr-cache-file "~/Notes/mistral-ocr/processed.el")
-
-(defun my--ensure-mistral-cache ()
-  (make-directory (file-name-directory my-mistral-ocr-cache-file) t)
-  (unless (file-exists-p my-mistral-ocr-cache-file)
-    (with-temp-file my-mistral-ocr-cache-file
-      (insert "nil"))))
-
-(defun my--load-mistral-cache ()
-  (my--ensure-mistral-cache)
-  (with-temp-buffer
-    (insert-file-contents my-mistral-ocr-cache-file)
-    (read (current-buffer))))
-
-(defun my--save-mistral-cache (cache)
-  (with-temp-file my-mistral-ocr-cache-file
-    (prin1 cache (current-buffer))))
-
-(defun my--extract-citekeys-from-org-buffer ()
-  "Extract citar citekeys from the current buffer."
-  (let (keys)
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward "@\\([A-Za-z0-9:_-]+\\)" nil t)
-        (push (match-string 1) keys)))
-    (delete-dups keys)))
-
-(defun my--collect-all-citar-keys ()
-  "Scan all org-roam files for citekeys."
-  (let (keys)
-    (dolist (file (org-roam-list-files))
-      (with-temp-buffer
-        (insert-file-contents file)
-        (setq keys (nconc keys (my--extract-citekeys-from-org-buffer)))))
-    (delete-dups keys)))
-
-(defun my--make-jsonl-entry (pdf-path)
-  "Create one JSONL line for mistral batch OCR."
-  (json-encode
-   `(("model" . "mistral-ocr-latest")
-     ("input" .
-      (("type" . "input_file")
-       ("path" . ,pdf-path))))))
-
-(defun my-build-mistral-ocr-batch ()
-  "Build JSONL batch file for Mistral OCR from org-roam + citar."
+(defun my-export-citar-to-jsonl ()
+  "Export all citar entries to JSONL file in ~/Notes.
+Each line contains: id, citekey, pdf file path, and OCRconverted flag.
+Preserves existing entries to avoid overwriting."
   (interactive)
-  (let* ((citekeys (my--collect-all-citar-keys))
-         (cache (my--load-mistral-cache))
-         (new-cache (copy-sequence cache))
-         (new-entries 0))
+  (let* ((output-file (expand-file-name "~/Notes/citar-entries.jsonl"))
+         (existing-citekeys (make-hash-table :test 'equal))
+         (existing-entries '())
+         (all-entries (citar-get-entries))
+         (entry-id 0))
+    
+    ;; Read existing entries if file exists
+    (when (file-exists-p output-file)
+      (with-temp-buffer
+        (insert-file-contents output-file)
+        (goto-char (point-min))
+        (while (not (eobp))
+          (let* ((line (buffer-substring-no-properties 
+                        (line-beginning-position) 
+                        (line-end-position)))
+                 (json-object (ignore-errors (json-read-from-string line))))
+            (when json-object
+              (let ((citekey (cdr (assoc 'citekey json-object))))
+                (when citekey
+                  (puthash citekey t existing-citekeys)
+                  (push json-object existing-entries)
+                  (setq entry-id (max entry-id (1+ (cdr (assoc 'id json-object)))))))))
+          (forward-line 1))))
+    
+    ;; Reverse to maintain original order
+    (setq existing-entries (nreverse existing-entries))
+    
+    ;; Process all citekeys
+    (with-temp-file output-file
+      ;; Write existing entries first
+      (dolist (entry existing-entries)
+        (insert (json-encode entry))
+        (insert "\n"))
+      
+      ;; Add new entries only
+      (maphash (lambda (citekey _entry-data)
+                 (unless (gethash citekey existing-citekeys)
+                   (let ((pdf-paths (my-get-citar-pdf-paths citekey)))
+                     (if pdf-paths
+                         ;; Create one entry per PDF file
+                         (dolist (pdf-path pdf-paths)
+                           (message "Path: %s" pdf-path)
+                           (let ((entry `((id . ,entry-id)
+                                          (citekey . ,citekey)
+                                          (pdf_file_path . ,pdf-path)
+                                          (OCRconverted . :json-false))))
+                             (insert (json-encode entry))
+                             (insert "\n")
+                             (setq entry-id (1+ entry-id))))))))
+               all-entries))
+    
+    (message "Exported %d citar entries to %s" 
+             (hash-table-count all-entries) output-file)))
 
-    (with-temp-buffer
-      (when (file-exists-p my-mistral-ocr-jsonl-file)
-        (insert-file-contents my-mistral-ocr-jsonl-file))
-
-      (dolist (key citekeys)
-        (condition-case err
-            (let ((pdf (my-get-citar-pdf-path key)))
-              (when (and pdf (file-exists-p pdf))
-                (unless (member pdf cache)
-                  (insert (my--make-jsonl-entry pdf) "\n")
-                  (push pdf new-cache)
-                  (cl-incf new-entries))))
-          (error
-           (message "Skipping %s: %s" key err))))
-
-      (write-region (point-min) (point-max) my-mistral-ocr-jsonl-file))
-
-    (my--save-mistral-cache new-cache)
-
-    (message "Mistral OCR batch updated: %d new PDFs added." new-entries)))
+(defun my-export-citar-to-jsonl ()
+  "Export all citar entries to JSONL file in ~/Notes.
+Each line contains: id, citekey, pdf file path, and OCRconverted flag.
+Preserves existing entries to avoid overwriting."
+  (interactive)
+  (let* ((output-file (expand-file-name "~/Notes/citar-entries.jsonl"))
+         (existing-citekeys (make-hash-table :test 'equal))
+         (existing-entries '())
+         (all-entries (citar-get-entries))
+         (entry-id 0))
+    
+    ;; Read existing entries if file exists
+    (when (file-exists-p output-file)
+      (with-temp-buffer
+        (insert-file-contents output-file)
+        (goto-char (point-min))
+        (while (not (eobp))
+          (let* ((line (buffer-substring-no-properties 
+                        (line-beginning-position) 
+                        (line-end-position)))
+                 (json-object (ignore-errors (json-read-from-string line))))
+            (when json-object
+              (let ((citekey (cdr (assoc 'citekey json-object))))
+                (when citekey
+                  (puthash citekey t existing-citekeys)
+                  (push json-object existing-entries)
+                  (setq entry-id (max entry-id (1+ (cdr (assoc 'id json-object)))))))))
+          (forward-line 1))))
+    
+    ;; Reverse to maintain original order
+    (setq existing-entries (nreverse existing-entries))
+    
+    ;; Process all citekeys
+    (with-temp-file output-file
+      ;; Write existing entries first
+      (dolist (entry existing-entries)
+        (insert (json-encode entry))
+        (insert "\n"))
+      
+      ;; Add new entries only
+      (maphash (lambda (citekey _entry-data)
+                 (unless (gethash citekey existing-citekeys)
+                   (when-let ((pdf-path (my-get-citar-pdf-path citekey)))
+                     (message "Path: %s" pdf-path)
+                     (let ((entry `((id . ,entry-id)
+                                    (citekey . ,citekey)
+                                    (pdf_file_path . ,pdf-path)
+                                    (OCRconverted . :json-false))))
+                       (insert (json-encode entry))
+                       (insert "\n")
+                       (setq entry-id (1+ entry-id))))))
+               all-entries))
+    
+    (message "Exported %d citar entries to %s" 
+             (hash-table-count all-entries) output-file)))

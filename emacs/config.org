@@ -1079,6 +1079,33 @@ DEADLINE: %^t
 
 #+end_src
 
+*** MD-ROAM
+#+begin_src emacs-lisp
+(use-package md-roam
+  :after org-roam
+  :ensure (:host github :repo "nobiot/md-roam")
+  :custom
+  (md-roam-file-extension "md")  ; or "markdown"
+  :config
+  ;; Enable Org-roam for markdown files
+  (setq org-roam-file-extensions '("org" "md"))
+  
+  ;; Activate md-roam-mode
+  (md-roam-mode 1))
+  
+  ;; Optional: Add markdown capture template
+  ;; (add-to-list 'org-roam-capture-templates
+  ;;              '("m" "Markdown" plain "" :target
+  ;;                (file+head "%<%Y-%m-%dT%H%M%S>.md"
+  ;;                           "---\ntitle: ${title}\nid: %<%Y-%m-%dT%H%M%S>\ncategory: \n---\n")
+  ;;                :unnarrowed t))
+  
+  ;; Optional: Enable completion-at-point for Corfu in markdown-mode)
+#+end_src
+
+#+RESULTS:
+: [nil 26985 63809 460079 nil elpaca-process-queues nil nil 656000 nil]
+
 *** ORG-ROAM-TOGGLE-AND-FOCUS
 #+begin_src emacs-lisp
 (defun org-roam-buffer-toggle-and-focus ()
