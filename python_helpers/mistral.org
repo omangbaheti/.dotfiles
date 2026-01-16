@@ -1,0 +1,463 @@
+#+TITLE: Mistal OCR Converter 
+
+* Creating Client 
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
+from mistralai import Mistral
+from pathlib import Path
+import json
+import base64
+import csv
+import time
+import pandas as pd
+from IPython.display import display, clear_output
+
+api_key = ''
+client = Mistral(api_key=api_key)
+ocr_model = "mistral-ocr-latest"
+#+end_src
+
+#+RESULTS:
+
+* Creating batch file
+
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
+def create_batch_file(pdf_paths, output_file):
+    with open(output_file, 'w') as file:
+        for index, pdf_path in enumerate(pdf_paths):
+            print(pdf_path)
+            # Read and encode PDF
+            with open(pdf_path, 'rb') as pdf_file:
+                pdf_data = pdf_file.read()
+                base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
+            
+            entry = {
+                "custom_id": str(index),
+                "body": {
+                    "document": {
+                        "type": "document_url",
+                        "document_url": f"data:application/pdf;base64,{base64_pdf}"
+                    },
+                    "table_format":"markdown",
+                    "include_image_base64": True
+                }
+            }
+            file.write(json.dumps(entry) + '\n')
+
+# Create batch file from your PDFs
+pdf_files = ["/home/nixos/Notes/Files/FingerTextExploringOptimizing_Lee_2021.pdf", "/home/nixos/Notes/Files/AllOneNeeds_Lee_2021.pdf"]
+create_batch_file(pdf_files, "batch_ocr.jsonl")
+#+end_src 
+
+
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
+def create_batches_from_jsonl(jsonl_path, output_dir, batch_size=10):
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Load entries from the JSONL file, skipping those where OCRconverted is True
+    entries = []
+    with open(jsonl_path, 'r') as f:
+        for line in f:
+            entry = json.loads(line)
+            if not entry.get('OCRconverted', False):
+                entries.append(entry)
+
+    # Process in batches
+    for i in range(0, len(entries), batch_size):
+        batch = entries[i:i + batch_size]
+        batch_filename = os.path.join(output_dir, f'batch_{i//batch_size + 1}.jsonl')
+        with open(batch_filename, 'w') as batch_file:
+            for pdf_entry in batch:
+                pdf_path = pdf_entry['pdf_file_path']
+                citekey = pdf_entry['citekey']
+
+                # Read and encode PDF
+                with open(pdf_path, 'rb') as pdf_file:
+                    pdf_data = pdf_file.read()
+                    base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
+
+                batch_entry = {
+                    "custom_id": citekey,
+                    "body": {
+                        "document": {
+                            "type": "document_url",
+                            "document_url": f"data:application/pdf;base64,{base64_pdf}"
+                        },
+                        "table_format": "markdown",
+                        "include_image_base64": True
+                    }
+                }
+
+                batch_file.write(json.dumps(batch_entry) + '\n')
+
+# Example usage
+jsonl_path = os.path.expanduser('~/Notes/citar-entries.jsonl')
+output_dir = os.path.expanduser('~/Notes/batches')
+create_batches_from_jsonl(jsonl_path, output_dir)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
+batch_data = client.files.upload(
+    file={
+        "file_name": "/home/nixos/Notes/batches/batch_1.jsonl",
+        "content": open("/home/nixos/Notes/batches/batch_1.jsonl", "rb")
+    },
+    purpose="batch"
+)
+
+
+created_job = client.batch.jobs.create(
+    input_files=[batch_data.id],
+    model=ocr_model,
+    endpoint="/v1/ocr",
+    metadata={"job_type": "testing"}
+)
+
+print(f"Job ID: {created_job.id}")
+#+end_src
+
+
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
+import csv
+import shutil
+from pathlib import Path
+
+batches_dir = Path("/home/nixos/Notes/batches")
+done_dir = batches_dir / "done"
+done_dir.mkdir(exist_ok=True)
+
+csv_path = Path("/home/nixos/Notes/batch_jobs.csv")
+
+job_records = []
+
+for jsonl_file in sorted(batches_dir.glob("*.jsonl")):
+    # Upload batch file
+    with jsonl_file.open("rb") as f:
+        batch_data = client.files.upload(
+            file={
+                "file_name": str(jsonl_file),
+                "content": f
+            },
+            purpose="batch"
+        )
+
+    # Create batch job
+    created_job = client.batch.jobs.create(
+        input_files=[batch_data.id],
+        model=ocr_model,
+        endpoint="/v1/ocr",
+        metadata={
+            "job_type": "testing",
+            "batch_file": jsonl_file.name
+        }
+    )
+
+    print(f"{jsonl_file.name} -> Job ID: {created_job.id}")
+
+    job_records.append({
+        "batch_file": jsonl_file.name,
+        "file_id": batch_data.id,
+        "job_id": created_job.id
+    })
+
+    # Move file after successful submission
+    shutil.move(str(jsonl_file), done_dir / jsonl_file.name)
+
+# Write job IDs to CSV
+write_header = not csv_path.exists()
+with csv_path.open("a", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(
+        f,
+        fieldnames=["batch_file", "file_id", "job_id"]
+    )
+    if write_header:
+        writer.writeheader()
+    writer.writerows(job_records)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+batch_1.jsonl -> Job ID: ab290996-2c3b-42b2-a54a-c0844798f75b
+batch_10.jsonl -> Job ID: ad82296f-134c-413b-a892-b6e7e2601594
+batch_11.jsonl -> Job ID: 4fc06470-f129-4e64-9a70-2e839bc9ee57
+batch_12.jsonl -> Job ID: f63b3b02-2c96-46c2-bab8-e17aa7d88d49
+batch_13.jsonl -> Job ID: 84444b2f-d218-4b92-893e-97b11154fbb8
+batch_14.jsonl -> Job ID: 250a2899-5922-4f6a-bd9e-6ceddbe757c5
+batch_15.jsonl -> Job ID: dc7bb05b-47f5-4f45-a613-ca92c598d8c2
+batch_16.jsonl -> Job ID: 6074e10e-33a7-4025-b4d4-7f3b5a6874e9
+batch_17.jsonl -> Job ID: dceb2171-9042-4710-b6f8-6ae3d4d4728f
+batch_18.jsonl -> Job ID: ed62c969-3aef-4795-bf08-2218828ea2b3
+batch_19.jsonl -> Job ID: 250a9207-e87b-4bbd-9542-3a272246062f
+batch_2.jsonl -> Job ID: 11b97666-9e65-46fd-b418-f2ff9abc4365
+batch_20.jsonl -> Job ID: 01d906de-1909-41ce-8c58-9ec96e9e0724
+batch_21.jsonl -> Job ID: 7cd89e6a-30b6-48d2-a91c-a00f828142c7
+batch_22.jsonl -> Job ID: f6945359-5921-405b-9c3d-3e9884c9aaab
+batch_23.jsonl -> Job ID: ce86eba7-a27b-4d88-9aa6-de26e39d240b
+batch_24.jsonl -> Job ID: 33662012-9ce6-4c95-9212-7a6e081f9d1b
+batch_25.jsonl -> Job ID: 037831cb-7ea9-40cd-9265-d32312516835
+batch_26.jsonl -> Job ID: a488aef3-2eed-4d11-96f0-e770e34edb33
+batch_27.jsonl -> Job ID: 157e6661-fa82-4f5d-8b7d-b046fa7286b3
+batch_28.jsonl -> Job ID: c1261d82-99ed-4c0b-b91e-c3b858e0578c
+batch_29.jsonl -> Job ID: 073dcec3-0629-45df-80cb-0cba89d9fdd3
+batch_3.jsonl -> Job ID: 0684f776-e9fd-45da-bc72-30473510cacc
+batch_30.jsonl -> Job ID: f1b46c02-2992-462e-a515-530ad4a0740a
+batch_31.jsonl -> Job ID: 7e56047f-3554-45e7-b9c5-fe4d2cb6518e
+batch_32.jsonl -> Job ID: 21fac2c0-c709-4719-8dce-d6fb7401c487
+batch_33.jsonl -> Job ID: d84dcc17-086e-4d63-8258-e4fe1af199bd
+batch_34.jsonl -> Job ID: ce1ee5c0-e8ad-42b2-b73e-697ce78cdce5
+batch_35.jsonl -> Job ID: d193926c-0175-49a3-93b5-83da0c0a34fa
+batch_36.jsonl -> Job ID: 50605a69-918d-474f-96d1-d16b52065f31
+batch_37.jsonl -> Job ID: 7321ba0b-1049-468f-a1fb-27cee3e7424b
+batch_38.jsonl -> Job ID: 7031a2ab-09ff-4fe2-aed1-958c3210ed5a
+batch_39.jsonl -> Job ID: c5e3d521-5056-4164-969f-4b37e8050738
+batch_4.jsonl -> Job ID: 8f7a81aa-6bcc-4c36-907d-45b8604528e6
+batch_40.jsonl -> Job ID: ee17f1e7-5100-46dc-be4a-dd86695a5a7b
+batch_41.jsonl -> Job ID: 7c3d223e-c0c1-4a90-8d34-d0ca262c9df9
+batch_42.jsonl -> Job ID: 91bff57b-7db7-4e09-a6ce-7d671f43515d
+batch_43.jsonl -> Job ID: 6d888b99-38c2-4327-ae45-124a8ff3e2b3
+batch_44.jsonl -> Job ID: 2e11805b-ed85-46c3-9340-362a4ad9ba66
+batch_45.jsonl -> Job ID: 86e46d35-5774-4032-9530-841f46a8db1a
+batch_46.jsonl -> Job ID: e01acd01-6912-40eb-a8ac-f0614b3e21cc
+batch_5.jsonl -> Job ID: ba0223ed-6fa0-4b9d-8cc4-67edceb7a5a6
+batch_6.jsonl -> Job ID: 5b5a3811-5ec7-4f1c-8297-e72bb938e31e
+batch_7.jsonl -> Job ID: c56ab98d-9ac3-4190-b6a7-2b720e645780
+batch_8.jsonl -> Job ID: d5059918-5085-4688-a9b2-527ff990a1c0
+batch_9.jsonl -> Job ID: 5a742ab8-5143-47d5-93cc-120b83aee81a
+#+end_example
+
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
+while True:
+    retrieved_job = client.batch.jobs.get(job_id=created_job.id)
+    
+    print(f"Status: {retrieved_job.status}")
+    print(f"Total requests: {retrieved_job.total_requests}")
+    print(f"Successful: {retrieved_job.succeeded_requests}")
+    print(f"Failed: {retrieved_job.failed_requests}")
+    
+    if retrieved_job.status not in ["QUEUED", "RUNNING"]:
+        break
+    
+    time.sleep(5) 
+#+end_src
+
+
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
+csv_path = Path("/home/nixos/Notes/batch_jobs.csv")
+
+def monitor_all_batch_jobs(poll_interval=60):
+    df = pd.read_csv(csv_path)
+
+    while True:
+        rows = []
+        for _, row in df.iterrows():
+            job_id = row["job_id"]
+            batch_file = row["batch_file"]
+
+            job = client.batch.jobs.get(job_id=job_id)
+
+            rows.append({
+                "batch_file": batch_file,
+                "job_id": job_id,
+                "status": job.status,
+                "total": job.total_requests,
+                "succeeded": job.succeeded_requests,
+                "failed": job.failed_requests,
+            })
+
+        status_df = pd.DataFrame(rows).sort_values(
+            by=["status", "batch_file"]
+        )
+        print("Hello")
+
+        clear_output(wait=True)
+        display(
+            status_df.style
+            .set_caption("Batch Job Status")
+            .set_properties(**{"text-align": "center"})
+        )
+
+        # Exit when all jobs are finished
+        if all(s not in ("QUEUED", "RUNNING") for s in status_df["status"]):
+            break
+        time.sleep(poll_interval)
+
+monitor_all_batch_jobs()
+#+end_src
+
+#+RESULTS:
+:RESULTS:
+: Hello
+|    | batch_file     | job_id                               | status  | total | succeeded | failed |
+|----+----------------+--------------------------------------+---------+-------+-----------+--------|
+| 0  | batch_1.jsonl  | ab290996-2c3b-42b2-a54a-c0844798f75b | SUCCESS | 10    | 10        | 0      |
+| 1  | batch_10.jsonl | ad82296f-134c-413b-a892-b6e7e2601594 | SUCCESS | 10    | 10        | 0      |
+| 2  | batch_11.jsonl | 4fc06470-f129-4e64-9a70-2e839bc9ee57 | SUCCESS | 10    | 10        | 0      |
+| 3  | batch_12.jsonl | f63b3b02-2c96-46c2-bab8-e17aa7d88d49 | SUCCESS | 10    | 10        | 0      |
+| 4  | batch_13.jsonl | 84444b2f-d218-4b92-893e-97b11154fbb8 | SUCCESS | 10    | 10        | 0      |
+| 5  | batch_14.jsonl | 250a2899-5922-4f6a-bd9e-6ceddbe757c5 | SUCCESS | 10    | 10        | 0      |
+| 6  | batch_15.jsonl | dc7bb05b-47f5-4f45-a613-ca92c598d8c2 | SUCCESS | 10    | 10        | 0      |
+| 7  | batch_16.jsonl | 6074e10e-33a7-4025-b4d4-7f3b5a6874e9 | SUCCESS | 10    | 10        | 0      |
+| 8  | batch_17.jsonl | dceb2171-9042-4710-b6f8-6ae3d4d4728f | SUCCESS | 10    | 10        | 0      |
+| 9  | batch_18.jsonl | ed62c969-3aef-4795-bf08-2218828ea2b3 | SUCCESS | 10    | 10        | 0      |
+| 10 | batch_19.jsonl | 250a9207-e87b-4bbd-9542-3a272246062f | SUCCESS | 10    | 10        | 0      |
+| 11 | batch_2.jsonl  | 11b97666-9e65-46fd-b418-f2ff9abc4365 | SUCCESS | 10    | 10        | 0      |
+| 12 | batch_20.jsonl | 01d906de-1909-41ce-8c58-9ec96e9e0724 | SUCCESS | 10    | 10        | 0      |
+| 13 | batch_21.jsonl | 7cd89e6a-30b6-48d2-a91c-a00f828142c7 | SUCCESS | 10    | 10        | 0      |
+| 14 | batch_22.jsonl | f6945359-5921-405b-9c3d-3e9884c9aaab | SUCCESS | 10    | 10        | 0      |
+| 15 | batch_23.jsonl | ce86eba7-a27b-4d88-9aa6-de26e39d240b | SUCCESS | 10    | 10        | 0      |
+| 16 | batch_24.jsonl | 33662012-9ce6-4c95-9212-7a6e081f9d1b | SUCCESS | 10    | 10        | 0      |
+| 17 | batch_25.jsonl | 037831cb-7ea9-40cd-9265-d32312516835 | SUCCESS | 10    | 10        | 0      |
+| 18 | batch_26.jsonl | a488aef3-2eed-4d11-96f0-e770e34edb33 | SUCCESS | 10    | 10        | 0      |
+| 19 | batch_27.jsonl | 157e6661-fa82-4f5d-8b7d-b046fa7286b3 | SUCCESS | 10    | 10        | 0      |
+| 20 | batch_28.jsonl | c1261d82-99ed-4c0b-b91e-c3b858e0578c | SUCCESS | 10    | 10        | 0      |
+| 21 | batch_29.jsonl | 073dcec3-0629-45df-80cb-0cba89d9fdd3 | SUCCESS | 10    | 10        | 0      |
+| 22 | batch_3.jsonl  | 0684f776-e9fd-45da-bc72-30473510cacc | SUCCESS | 10    | 10        | 0      |
+| 23 | batch_30.jsonl | f1b46c02-2992-462e-a515-530ad4a0740a | SUCCESS | 10    | 10        | 0      |
+| 24 | batch_31.jsonl | 7e56047f-3554-45e7-b9c5-fe4d2cb6518e | SUCCESS | 10    | 10        | 0      |
+| 25 | batch_32.jsonl | 21fac2c0-c709-4719-8dce-d6fb7401c487 | SUCCESS | 10    | 10        | 0      |
+| 26 | batch_33.jsonl | d84dcc17-086e-4d63-8258-e4fe1af199bd | SUCCESS | 10    | 10        | 0      |
+| 27 | batch_34.jsonl | ce1ee5c0-e8ad-42b2-b73e-697ce78cdce5 | SUCCESS | 10    | 10        | 0      |
+| 28 | batch_35.jsonl | d193926c-0175-49a3-93b5-83da0c0a34fa | SUCCESS | 10    | 10        | 0      |
+| 29 | batch_36.jsonl | 50605a69-918d-474f-96d1-d16b52065f31 | SUCCESS | 10    | 10        | 0      |
+| 30 | batch_37.jsonl | 7321ba0b-1049-468f-a1fb-27cee3e7424b | SUCCESS | 10    | 10        | 0      |
+| 31 | batch_38.jsonl | 7031a2ab-09ff-4fe2-aed1-958c3210ed5a | SUCCESS | 10    | 10        | 0      |
+| 32 | batch_39.jsonl | c5e3d521-5056-4164-969f-4b37e8050738 | SUCCESS | 10    | 10        | 0      |
+| 33 | batch_4.jsonl  | 8f7a81aa-6bcc-4c36-907d-45b8604528e6 | SUCCESS | 10    | 10        | 0      |
+| 34 | batch_40.jsonl | ee17f1e7-5100-46dc-be4a-dd86695a5a7b | SUCCESS | 10    | 10        | 0      |
+| 35 | batch_41.jsonl | 7c3d223e-c0c1-4a90-8d34-d0ca262c9df9 | SUCCESS | 10    | 10        | 0      |
+| 36 | batch_42.jsonl | 91bff57b-7db7-4e09-a6ce-7d671f43515d | SUCCESS | 10    | 10        | 0      |
+| 37 | batch_43.jsonl | 6d888b99-38c2-4327-ae45-124a8ff3e2b3 | SUCCESS | 10    | 10        | 0      |
+| 38 | batch_44.jsonl | 2e11805b-ed85-46c3-9340-362a4ad9ba66 | SUCCESS | 10    | 10        | 0      |
+| 39 | batch_45.jsonl | 86e46d35-5774-4032-9530-841f46a8db1a | SUCCESS | 10    | 10        | 0      |
+| 40 | batch_46.jsonl | e01acd01-6912-40eb-a8ac-f0614b3e21cc | SUCCESS | 2     | 2         | 0      |
+| 41 | batch_5.jsonl  | ba0223ed-6fa0-4b9d-8cc4-67edceb7a5a6 | SUCCESS | 10    | 10        | 0      |
+| 42 | batch_6.jsonl  | 5b5a3811-5ec7-4f1c-8297-e72bb938e31e | SUCCESS | 10    | 10        | 0      |
+| 43 | batch_7.jsonl  | c56ab98d-9ac3-4190-b6a7-2b720e645780 | SUCCESS | 10    | 10        | 0      |
+| 44 | batch_8.jsonl  | d5059918-5085-4688-a9b2-527ff990a1c0 | SUCCESS | 10    | 10        | 0      |
+| 45 | batch_9.jsonl  | 5a742ab8-5143-47d5-93cc-120b83aee81a | SUCCESS | 10    | 10        | 0      |
+#+caption: Batch Job Status
+:END:
+
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
+csv_path = Path("/home/nixos/Notes/batch_jobs.csv")
+output_path = Path("/home/nixos/Notes/batch_results.jsonl")
+
+def collect_all_batch_results():
+    df = pd.read_csv(csv_path)
+    for _, row in df.iterrows():
+        job_id = row["job_id"]
+
+        # Retrieve job to get output file ID
+        job = client.batch.jobs.get(job_id=job_id)
+        output_file_id = job.output_file
+
+        if not output_file_id:
+            continue  # job not finished or no output
+
+        # Download output file
+        response = client.files.download(file_id=output_file_id)
+        content = response.read()  # read streaming content
+
+        # Append to file
+        with open(output_path, "ab") as f:
+            f.write(content)
+
+collect_all_batch_results()
+#+end_src
+
+#+RESULTS:
+
+
+* Batch Results
+
+
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t :results none
+input_path = "/home/nixos/Notes/batch_results.jsonl"
+entries_path = Path("/home/nixos/Notes/citar-entries.jsonl")
+out_root = Path("/home/nixos/Notes/markdown_docs")
+out_root.mkdir(exist_ok=True)
+
+# --- Load citar entries once ---
+with entries_path.open("r", encoding="utf-8") as f:
+    citar_entries = [json.loads(line) for line in f if line.strip()]
+
+# Index by citekey for fast lookup
+citar_index = {e.get("citekey"): e for e in citar_entries}
+
+updated_keys = set()
+
+with open(input_path, "r", encoding="utf-8") as f:
+    for i, line in enumerate(f):
+        line = line.strip()
+        if not line:
+            continue
+
+        obj = json.loads(line)
+
+        response = obj.get("response", {})
+        body = response.get("body", {})
+        pages = sorted(body.get("pages", []), key=lambda p: p.get("index", 0))
+
+        # Decide document name
+        custom_id = obj.get("custom_id")
+        doc_name = custom_id if custom_id else f"doc_{i:04d}"
+
+        doc_dir = out_root / doc_name
+        img_dir = doc_dir / "images"
+        doc_dir.mkdir(parents=True, exist_ok=True)
+        img_dir.mkdir(exist_ok=True)
+
+        md_parts = []
+        img_counter = 1
+
+        for page in pages:
+            page_md = page.get("markdown", "") or ""
+
+            # Process images on this page
+            images = page.get("images", [])
+            for img in images:
+                b64 = img.get("image_base64")
+                print(b64)
+                if not b64:
+                    continue
+
+                # Choose an extension; if you know it's PNG/JPEG, adjust accordingly
+                img_filename = f"img-{img_counter}.jpg"
+                img_path = img_dir / img_filename
+
+                # Decode and save
+                try:
+                    if b64.startswith("data:"):
+                        b64 = b64.split(",", 1)[1]
+                    img_bytes = base64.b64decode(b64)
+                    img_path.write_bytes(img_bytes)
+                except Exception:
+                    # Skip bad images
+                    continue
+
+                # Optionally append a reference into the markdown
+                page_md += f"\n\n![image {img_counter}](images/{img_filename})"
+                img_counter += 1
+
+            if page_md:
+                md_parts.append(page_md)
+
+        if not md_parts:
+            continue
+
+        full_md = "\n\n---\n\n".join(md_parts)  # separator between pages
+        (doc_dir / f"{doc_name}.md").write_text(full_md, encoding="utf-8")
+        if custom_id in citar_index:
+            citar_index[custom_id]["OCRconverted"] = True
+            updated_keys.add(custom_id)
+
+# --- Write updated citar-entries.jsonl back to disk ---
+tmp_path = entries_path.with_suffix(".jsonl.tmp")
+with tmp_path.open("w", encoding="utf-8") as f:
+    for entry in citar_entries:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+tmp_path.replace(entries_path)
+#+end_src
+
