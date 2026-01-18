@@ -720,7 +720,7 @@ one, an error is signaled."
   :config
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-  (org-roam-db-autosync-mode)
+  (setq org-roam-db-gc-threshold most-positive-fixnum)
   ;; If using org-roam-protocol
   (require 'org-roam-protocol)
   (setq org-roam-capture-templates
@@ -818,15 +818,14 @@ DEADLINE: %^t
 (use-package md-roam
   :after org-roam
   :ensure (:host github :repo "nobiot/md-roam")
-  :custom
-  (md-roam-file-extension "md")  ; or "markdown"
   :config
   ;; Enable Org-roam for markdown files
   (setq org-roam-file-extensions '("org" "md"))
-  
   ;; Activate md-roam-mode
-  (md-roam-mode 1))
-  
+  (md-roam-mode 1)
+  (org-roam-db-autosync-mode 1)
+)
+  ;; (md-roam-file-extension "md")  ; or "markdown"
   ;; Optional: Add markdown capture template
   ;; (add-to-list 'org-roam-capture-templates
   ;;              '("m" "Markdown" plain "" :target
@@ -1530,7 +1529,6 @@ tags from the candidate string presented to the completion framework."
 (use-package grease
   :ensure (:host github :repo "https://github.com/mwac-dev/grease.el")
   :commands (grease-open grease-toggle grease-here)
-  :config
   ;; Icons are enabled by default if nerd-icons is available
   ;; Sorting defaults to 'type (directories first, then files)
   ;; Hidden files are hidden by default
@@ -1949,8 +1947,7 @@ tags from the candidate string presented to the completion framework."
   )
 
 (use-package gptel
-  :ensure t
-  )
+  :ensure t)
 
 (use-package svg-lib
   :ensure t
@@ -1974,9 +1971,14 @@ tags from the candidate string presented to the completion framework."
                             :radius 0
                             :padding 0)))))))
 
+(use-package direnv
+  :ensure t
+ :config
+ (direnv-mode))
+
 (defun my-get-citar-resources (citekey)
   "Get all resources associated with CITEKEY.
-Returns an alist of (type . resource) pairs."
+returns an alist of (type . resource) pairs."
   (let ((resources '()))
     (dolist (type citar-open-resources)
       (when-let ((resource (citar--get-resource citekey type)))
@@ -1992,13 +1994,13 @@ Returns an alist of (type . resource) pairs."
                                   file-list)))
     pdf-file))
 
-;; Alternative: Get all PDF paths
-(defun my-get-citar-pdf-paths (citekey)
-  "Get all PDF file paths for CITEKEY."
-  (when-let ((files-hash (citar-get-files (list citekey)))
-             (file-list (gethash citekey files-hash)))
-    (seq-filter (lambda (f) (string-match-p "\\.pdf\\'" f))
-                file-list)))
+;; ;; Alternative: Get all PDF paths
+;; (defun my-get-citar-pdf-paths (citekey)
+;;   "Get all PDF file paths for CITEKEY."
+;;   (when-let ((files-hash (citar-get-files (list citekey)))
+;;              (file-list (gethash citekey files-hash)))
+;;     (seq-filter (lambda (f) (string-match-p "\\.pdf\\'" f))
+;;                 file-list)))
 
 (defun my-export-citar-to-jsonl ()
   "Export all citar entries to JSONL file in ~/Notes.
