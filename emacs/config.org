@@ -332,6 +332,8 @@
     :states '(normal visual)
     "o" '(:ignore t :wk "More Org")
     
+    "o j" '(consult-org-heading :wk "Org Jump")   
+ 
     "o t" '(:ignore t :wk "Transclusion")
     "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
     "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
