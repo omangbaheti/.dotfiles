@@ -25,6 +25,7 @@ let
       emmeans
       ARTool
       multcomp
+      digest
     ];
   };
   python-with-packages = pkgs.python3.withPackages (ps: with ps; [
@@ -156,6 +157,7 @@ in
       poetry
       devenv
       nix-direnv
+      basedpyright
     ];
 
   # This value determines the NixOS release from which the default

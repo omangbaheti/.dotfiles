@@ -1610,7 +1610,7 @@ tags from the candidate string presented to the completion framework."
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
         lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python" "")
         lsp-bridge-use-popup t
-        lsp-bridge-python-lsp-server "pylsp"
+        lsp-bridge-python-lsp-server "basedpyright"
 	lsp-bridge-nix-lsp-server "nil"
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
   ;; (setq lsp-bridge-enable-debug t) 

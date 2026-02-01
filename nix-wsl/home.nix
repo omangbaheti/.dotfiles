@@ -46,8 +46,8 @@
     };
 
     initContent = ''
-   DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
-   LIBGL_ALWAYS_INDIRECT=1  
+   #DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
+   #LIBGL_ALWAYS_INDIRECT=1  
    eval "$(direnv hook zsh)"
    export R_LIBS_SITE=$(ls -d /nix/store/*-r-*/library | tr '\n' ':')
 
@@ -115,7 +115,7 @@
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs;
+    package = pkgs.emacs-pgtk;
     extraPackages = (
       epkgs: with unstable.emacsPackages;   
         [ 
@@ -135,6 +135,7 @@
 
   home.sessionVariables = {
     EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+    GTK_THEME = "Adwaita-dark";
     # R_LIBS_SITE = builtins.concatStringsSep ":" (builtins.filterStrings (x: builtins.match ".*-r-.*" x != null) (builtins.attrValues pkgs));
   };
 

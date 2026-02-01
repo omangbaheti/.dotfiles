@@ -17,7 +17,7 @@
   - [[#setting-the-font-face][Setting the Font Face]]
   - [[#zooming-inout][Zooming In/Out]]
 - [[#emacs-sane-defaults][EMACS SANE DEFAULTS]]
-  - [[#disable-menubar-toolbar][Disable Menubar, Toolbar]]
+  - [[#disable-menubar][Disable Menubar,]]
   - [[#display-line-numbers-and-truncated-lines][Display Line Numbers and Truncated Lines]]
   - [[#backups][Backups]]
   - [[#minibuffer-escape][Minibuffer escape]]
@@ -626,9 +626,10 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 * EMACS SANE DEFAULTS
 
-** Disable Menubar, Toolbar
+** Disable Menubar, 
 
 #+begin_src emacs-lisp
+(setq frame-title-format "%b")
 (scroll-bar-mode -1)               ; disable scrollbar
 (window-divider-mode 1)
 (custom-set-faces
@@ -2032,7 +2033,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
         lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python" "")
         lsp-bridge-use-popup t
-        lsp-bridge-python-lsp-server "pylsp"
+        lsp-bridge-python-lsp-server "basedpyright"
 	lsp-bridge-nix-lsp-server "nil"
         lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
   ;; (setq lsp-bridge-enable-debug t) 
