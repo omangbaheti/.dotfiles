@@ -7,6 +7,8 @@ from pathlib import Path
 import json
 import base64
 import csv
+import uuid
+import re
 import time
 import pandas as pd
 from IPython.display import display, clear_output
@@ -19,35 +21,6 @@ ocr_model = "mistral-ocr-latest"
 #+RESULTS:
 
 * Creating batch file
-
-#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
-def create_batch_file(pdf_paths, output_file):
-    with open(output_file, 'w') as file:
-        for index, pdf_path in enumerate(pdf_paths):
-            print(pdf_path)
-            # Read and encode PDF
-            with open(pdf_path, 'rb') as pdf_file:
-                pdf_data = pdf_file.read()
-                base64_pdf = base64.b64encode(pdf_data).decode('utf-8')
-            
-            entry = {
-                "custom_id": str(index),
-                "body": {
-                    "document": {
-                        "type": "document_url",
-                        "document_url": f"data:application/pdf;base64,{base64_pdf}"
-                    },
-                    "table_format":"markdown",
-                    "include_image_base64": True
-                }
-            }
-            file.write(json.dumps(entry) + '\n')
-
-# Create batch file from your PDFs
-pdf_files = ["/home/nixos/Notes/Files/FingerTextExploringOptimizing_Lee_2021.pdf", "/home/nixos/Notes/Files/AllOneNeeds_Lee_2021.pdf"]
-create_batch_file(pdf_files, "batch_ocr.jsonl")
-#+end_src 
-
 
 #+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
 def create_batches_from_jsonl(jsonl_path, output_dir, batch_size=10):
@@ -95,29 +68,7 @@ output_dir = os.path.expanduser('~/Notes/batches')
 create_batches_from_jsonl(jsonl_path, output_dir)
 #+end_src
 
-#+RESULTS:
-
-#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
-batch_data = client.files.upload(
-    file={
-        "file_name": "/home/nixos/Notes/batches/batch_1.jsonl",
-        "content": open("/home/nixos/Notes/batches/batch_1.jsonl", "rb")
-    },
-    purpose="batch"
-)
-
-
-created_job = client.batch.jobs.create(
-    input_files=[batch_data.id],
-    model=ocr_model,
-    endpoint="/v1/ocr",
-    metadata={"job_type": "testing"}
-)
-
-print(f"Job ID: {created_job.id}")
-#+end_src
-
-
+* Uploading all batches
 #+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
 import csv
 import shutil
@@ -226,22 +177,7 @@ batch_8.jsonl -> Job ID: d5059918-5085-4688-a9b2-527ff990a1c0
 batch_9.jsonl -> Job ID: 5a742ab8-5143-47d5-93cc-120b83aee81a
 #+end_example
 
-#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
-while True:
-    retrieved_job = client.batch.jobs.get(job_id=created_job.id)
-    
-    print(f"Status: {retrieved_job.status}")
-    print(f"Total requests: {retrieved_job.total_requests}")
-    print(f"Successful: {retrieved_job.succeeded_requests}")
-    print(f"Failed: {retrieved_job.failed_requests}")
-    
-    if retrieved_job.status not in ["QUEUED", "RUNNING"]:
-        break
-    
-    time.sleep(5) 
-#+end_src
-
-
+* Monitor Batch Jobs
 #+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
 csv_path = Path("/home/nixos/Notes/batch_jobs.csv")
 
@@ -339,6 +275,7 @@ monitor_all_batch_jobs()
 #+caption: Batch Job Status
 :END:
 
+* Download converted files
 #+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t
 csv_path = Path("/home/nixos/Notes/batch_jobs.csv")
 output_path = Path("/home/nixos/Notes/batch_results.jsonl")
@@ -369,13 +306,12 @@ collect_all_batch_results()
 #+RESULTS:
 
 
-* Batch Results
+* Parse results and convert to .md
 
-
-#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t :results none
+#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t  
 input_path = "/home/nixos/Notes/batch_results.jsonl"
 entries_path = Path("/home/nixos/Notes/citar-entries.jsonl")
-out_root = Path("/home/nixos/Notes/markdown_docs")
+out_root = Path("/home/nixos/Notes/Papers/")
 out_root.mkdir(exist_ok=True)
 
 # --- Load citar entries once ---
@@ -386,6 +322,18 @@ with entries_path.open("r", encoding="utf-8") as f:
 citar_index = {e.get("citekey"): e for e in citar_entries}
 
 updated_keys = set()
+
+
+def extract_title(md_text: str) -> str | None:
+    """
+    Extract the first Markdown H1 heading as title.
+    """
+    for line in md_text.splitlines():
+        m = re.match(r"^#\s+(.+)", line.strip())
+        if m:
+            return m.group(1).strip()
+    return None
+
 
 with open(input_path, "r", encoding="utf-8") as f:
     for i, line in enumerate(f):
@@ -404,12 +352,12 @@ with open(input_path, "r", encoding="utf-8") as f:
         doc_name = custom_id if custom_id else f"doc_{i:04d}"
 
         doc_dir = out_root / doc_name
-        img_dir = doc_dir / "images"
+        img_dir = doc_dir  
         doc_dir.mkdir(parents=True, exist_ok=True)
         img_dir.mkdir(exist_ok=True)
 
         md_parts = []
-        img_counter = 1
+        img_counter = 0
 
         for page in pages:
             page_md = page.get("markdown", "") or ""
@@ -418,14 +366,12 @@ with open(input_path, "r", encoding="utf-8") as f:
             images = page.get("images", [])
             for img in images:
                 b64 = img.get("image_base64")
-                print(b64)
                 if not b64:
                     continue
 
                 # Choose an extension; if you know it's PNG/JPEG, adjust accordingly
-                img_filename = f"img-{img_counter}.jpg"
+                img_filename = f"img-{img_counter}.jpeg"
                 img_path = img_dir / img_filename
-
                 # Decode and save
                 try:
                     if b64.startswith("data:"):
@@ -437,7 +383,7 @@ with open(input_path, "r", encoding="utf-8") as f:
                     continue
 
                 # Optionally append a reference into the markdown
-                page_md += f"\n\n![image {img_counter}](images/{img_filename})"
+                #page_md += f"\n\n![image {img_counter}](images/{img_filename})"
                 img_counter += 1
 
             if page_md:
@@ -446,11 +392,35 @@ with open(input_path, "r", encoding="utf-8") as f:
         if not md_parts:
             continue
 
-        full_md = "\n\n---\n\n".join(md_parts)  # separator between pages
+        full_md_body = "\n\n---\n\n".join(md_parts)
+
+        # --- Metadata generation ---
+        doc_uuid = str(uuid.uuid4())
+        raw_title = extract_title(full_md_body)
+        title = f"(text) {raw_title}" if raw_title else "(text)"
+
+        yaml_metadata = (
+            "---\n"
+            f"title: {title}\n"
+            f"id: {doc_uuid}\n"
+            f"roam_refs: {custom_id if custom_id else ''}\n"
+            "---\n\n"
+        )
+
+        full_md = yaml_metadata + full_md_body
+
         (doc_dir / f"{doc_name}.md").write_text(full_md, encoding="utf-8")
+
         if custom_id in citar_index:
             citar_index[custom_id]["OCRconverted"] = True
             updated_keys.add(custom_id)
+
+
+        #full_md = "\n\n---\n\n".join(md_parts)  # separator between pages
+        #(doc_dir / f"{doc_name}.md").write_text(full_md, encoding="utf-8")
+        #if custom_id in citar_index:
+        #    citar_index[custom_id]["OCRconverted"] = True
+        #    updated_keys.add(custom_id)
 
 # --- Write updated citar-entries.jsonl back to disk ---
 tmp_path = entries_path.with_suffix(".jsonl.tmp")
@@ -459,5 +429,27 @@ with tmp_path.open("w", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 tmp_path.replace(entries_path)
+print("Done")
 #+end_src
+
+#+RESULTS:
+:RESULTS:
+# [goto error]
+#+begin_example
+[31m---------------------------------------------------------------------------[39m
+[31mNameError[39m                                 Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[4][39m[32m, line 76[39m
+[32m     74[39m [38;5;66;03m# --- Metadata generation ---[39;00m
+[32m     75[39m doc_uuid = [38;5;28mstr[39m(uuid.uuid4())
+[32m---> [39m[32m76[39m raw_title = [43mextract_title[49m(full_md_body)
+[32m     77[39m title = [33mf[39m[33m"[39m[33m(text) [39m[38;5;132;01m{[39;00mraw_title[38;5;132;01m}[39;00m[33m"[39m [38;5;28;01mif[39;00m raw_title [38;5;28;01melse[39;00m [33m"[39m[33m(text)[39m[33m"[39m
+[32m     79[39m yaml_metadata = (
+[32m     80[39m     [33m"[39m[33m---[39m[38;5;130;01m\n[39;00m[33m"[39m
+[32m     81[39m     [33mf[39m[33m"[39m[33mtitle: [39m[38;5;132;01m{[39;00mtitle[38;5;132;01m}[39;00m[38;5;130;01m\n[39;00m[33m"[39m
+[32m   (...)[39m[32m     84[39m     [33m"[39m[33m---[39m[38;5;130;01m\n[39;00m[38;5;130;01m\n[39;00m[33m"[39m
+[32m     85[39m )
+
+[31mNameError[39m: name 'extract_title' is not defined
+#+end_example
+:END:
 
