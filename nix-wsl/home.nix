@@ -132,15 +132,20 @@
     enable = true;
   };
 
-
+  gtk = {
+    enable = true;
+    theme = {
+      package = pkgs.orchis-theme;
+      name = "Orchis-Dark"; # or "Orchis-Dark", "Orchis-Purple", etc.
+    };
+  };
   home.sessionVariables = {
     EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
-    GTK_THEME = "Adwaita-dark";
+    GTK_THEME = "Orchis-Dark";
     # R_LIBS_SITE = builtins.concatStringsSep ":" (builtins.filterStrings (x: builtins.match ".*-r-.*" x != null) (builtins.attrValues pkgs));
   };
-
   home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
-
+  dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
 
   # Let Home Manager install and manage itself
   programs.home-manager.enable = true;
