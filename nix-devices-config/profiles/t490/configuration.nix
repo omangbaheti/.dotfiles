@@ -160,7 +160,9 @@
   protonvpn-gui
   localsend
   chromium
+  eza
   qbittorrent
+  hugo
   ];
 
   services.fprintd.enable = false;
