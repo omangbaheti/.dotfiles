@@ -7,7 +7,9 @@
   home.homeDirectory = "/home/nixos"; # Replace with your username
         
   home.packages = with pkgs; [
-    cmake
+          cmake
+	  glib
+	  dconf
   ];
    
   # Git configuration
@@ -139,6 +141,7 @@
       name = "Orchis-Dark"; # or "Orchis-Dark", "Orchis-Purple", etc.
     };
   };
+
   home.sessionVariables = {
     EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
     GTK_THEME = "Orchis-Dark";
