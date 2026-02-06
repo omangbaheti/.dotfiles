@@ -214,7 +214,7 @@
     "o" '(:ignore t :wk "More Org")
     
     "o j" '(consult-org-heading :wk "Org Jump")   
- 
+    
     "o t" '(:ignore t :wk "Transclusion")
     "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
     "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
@@ -251,14 +251,9 @@
     "o c" '(:ignore t :wk "Org Capture")
     "o c s" '(org-roam-capture :wk "Org Capture"))  
 
-  (leader-key
-    "'" '(vterm-toggle :wk "Toggle Vterm"))
   
   (leader-key
     "p" '(projectile-command-map :wk "Projectile"))
-  
-  (leader-key
-    "t n" '(neotree-toggle :wk "Toggle neotree file viewer")) 
   
   (leader-key
     "h" '(:ignore t :wk "Help")
@@ -270,9 +265,18 @@
     "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
 
   (leader-key
+    "j" '(:ignore t :wk "Jupyter / Org Babel")
+    "j c" '(org-ctrl-c-ctrl-c :wk "Execute Cell")
+    "j k" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
+    "j j" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
+    "j h" '(consult-org-heading :wk "Describe Key"))
+
+  (leader-key
     "t" '(:ignore t :wk "Toggle")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-    "t t" '(visual-line-mode :wk "Toggle truncated lines"))
+    "t t" '(visual-line-mode :wk "Toggle truncated lines")
+    "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
+    "t v" '(vterm-toggle :wk "Toggle Vterm"))
 
   (leader-key
     "w" '(:ignore t :wk "Windows")
@@ -300,6 +304,7 @@
     ;; New Window
     "w N" '(make-frame-command :wk "New Frame")
     )
+  (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
   )
 
 (use-package hydra
@@ -308,18 +313,38 @@
   :config
   (defhydra hydra-window-resize (:hint nil :timeout 5)
 "
-Resize window
+Resize window   
 _=_: grow horiz    _-_: shrink horiz
 _[_: grow vert     _]_: shrink vert
 _q_: quit
+
+Move window
+_h_: move left _j_: move down
+_k_: move up _l_:move right
+_q_: quit
 "
+
+    ("h" evil-window-left)
+    ("j" evil-window-down)
+    ("k" evil-window-up)
+    ("l" evil-window-right)
+    ("w" evil-window-next)
     ("=" enlarge-window-horizontally)
     ("-" shrink-window-horizontally)
     ("[" enlarge-window)
     ("]" shrink-window)
     ("q" nil "quit"))
 
-  (leader-key "W" '(hydra-window-resize/body :which-key "resize window")))
+  (defhydra hydra-org-babel/navigate (:hint nil :timeout 5)
+"
+Org Babel Naviagtionwindow
+_j_: next block    _k_: previous block 
+"
+    ("j" org-next-block)
+    ("k" org-previous-block)
+    ("q" nil "quit"))
+
+)
 
 (use-package pulsar
   :ensure t
@@ -457,6 +482,7 @@ one, an error is signaled."
 (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 
+(setq frame-title-format "%b")
 (scroll-bar-mode -1)               ; disable scrollbar
 (window-divider-mode 1)
 (custom-set-faces
@@ -1757,7 +1783,7 @@ tags from the candidate string presented to the completion framework."
 (use-package pdf-tools
   :ensure t
   :magic ("%PDF" . pdf-view-mode)
-  :config
+  :init
   (pdf-tools-install)
   (setq-default pdf-view-display-size 'fit-page)
   (setq pdf-annot-activate-created-annotations t)
