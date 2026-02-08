@@ -1,0 +1,476 @@
+#+TITLE: Nix Config
+#+DESCRIPTION: Personal Config
+#+STARTUP: showeverything
+#+OPTIONS: toc:3
+
+* Table of Contents :toc_4:
+- [[#flake-structure][Flake Structure]]
+  - [[#flake-inputs][Flake Inputs]]
+  - [[#flake-outputs][Flake Outputs]]
+- [[#common][Common]]
+  - [[#fonts][Fonts]]
+  - [[#software][Software]]
+- [[#wsl-config-files][WSL Config Files]]
+  - [[#configurationnix][Configuration.nix]]
+  - [[#homenix][Home.nix]]
+
+* Flake Structure
+#+begin_src nix :tangle flake.nix :noweb yes
+{
+description = "Unified Flake Config"
+<<flake-input>>
+<<flake-output>>
+}
+#+end_src
+
+** Flake Inputs 
+#+name: flake-input
+#+begin_src nix  
+inputs = 
+  {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixos-wsl = 
+      {
+        url = "github:nix-community/NixOS-WSL";
+        inputs.nixpkgs.follows = "nixpkgs";
+      };
+
+    home-manager = 
+      {
+        url = "github:nix-community/home-manager/release-25.05";
+        inputs.nixpkgs.follows = "nixpkgs";
+      };
+  };
+#+end_src 
+
+** Flake Outputs
+#+name: flake-output
+#+begin_src nix 
+outputs = { self, nixpkgs, nixpkgs-unstable, nixos-wsl, home-manager, ... }@inputs: 
+  let
+    pkgs    = nixpkgs.legacyPackages.${system};
+    unstable = nixpkgs-unstable.legacyPackages.${system};
+    commonSettings = 
+      {
+        system = "x86_64-linux";
+        dotfilesDir = "~/.dotfiles";
+        allowUnfree = true;
+        editor = "emacs";
+        browser = "firefox"
+      };
+    
+    #defining variables for each of my machines
+    machines = 
+    {
+        wsl = commonSettings //  # // is used to merge and pull in shared values
+              {
+                host = "nixos";
+                username = "nixos";
+              }; 
+        
+        fern = commonSettings // 
+               {
+                 host = "fern";
+                 username = "fern";
+               };
+        
+        sakura = (commonSettings // # overriding system when required
+                  {
+                    system = "aarch64-linux";
+                    host = "fern";
+                    username = "fern";
+                  };)
+    }
+      
+  in
+    {
+      #config for each host is declared as: nixosConfiguration.<host_name>
+      
+      #WSL Configuration 
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem
+        {
+          modules = 
+            [
+              nixos-wsl.nixosModules.wsl
+              home-manager.nixosModules.home-manager
+              ./${machines.wsl.}configuration.nix
+              extraSpecialArgs = 
+                {
+                  inherit unstable;
+                  inherit machines.wsl;
+                }
+            ]
+        };
+      #T490 Setup
+      nixosConfigurations.fern = nixpkgs.lib.nixosSystem
+        {
+
+        };
+    };
+#+end_src
+
+
+* Common 
+
+** Fonts
+Embedding this src block in each config instead of its own module. 
+
+#+name:fonts
+#+begin_src nix
+fonts.packages = with pkgs.nerd-fonts; 
+  [ 
+    jetbrains-mono
+    ubuntu
+    fira-code
+    fira-mono
+    dejavu-sans-mono
+    symbols-only
+  ];
+#+end_src
+
+** Software
+
+Stuff that i need on every device
+
+#+begin_src nix :tangle ./modules/common-packages.nix
+{ config, pkgs, unstable, ... }:
+{
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+  environment.systemPackages = with pkgs;
+    [
+      #cli tools
+      
+      git
+      git-lfs
+      lazygit
+      wiper
+      zoxide
+      fzf
+      vim 
+      zsh
+      oh-my-posh
+      tealdeer
+      btop
+      #nnn  
+      fd
+      eza
+      devenv
+      nix-direnv
+      yazi
+      diff-so-fancy
+      fastfetch
+      ripgrep
+      poetry
+      pandoc
+      
+      #LSPs / Compilers / Dev Envs
+      glib
+      gdb
+      clang
+      cmake
+      gcc
+      libvterm
+      libgcc
+      libtool
+      
+      pylint
+      basedpyright
+      unstable.pyrefly
+      
+      nodejs_24
+      
+      zulu8 #openjdk
+      
+      omnisharp-roslyn
+      
+      (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
+      proselint
+      harper
+      ltex-ls-plus
+      texlab
+      texliveFull
+      
+      nixfmt-rfc-style
+      statix
+      nil
+      
+      #misc    
+      home-manager
+      languagetool
+      #gtk4
+      firefox
+      coreutils
+      syncthing
+      hugo
+      mupdf
+    ];
+}
+#+end_src
+
+
+* WSL Config Files
+
+** Configuration.nix
+#+begin_src nix :tangle ./nix-wsl/configuration.nix :noweb yes
+# Edit this configuration file to define what should be installed on
+# your system. Help is available in the configuration.nix(5) man page, on
+# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
+
+# NixOS-WSL specific options are documented on the NixOS-WSL repository:
+# https://github.com/nix-community/NixOS-WSL
+
+{config, lib, pkgs, unstable, ... }:
+let
+  R-with-my-packages = unstable.rWrapper.override {
+    packages = with unstable.rPackages; [
+      IRkernel
+      ez
+      dplyr
+      effsize
+      tidyr
+      purrr
+      car
+      nlme
+      reshape2
+      rstatix
+      prettyR
+      afex
+      estimability
+      emmeans
+      ARTool
+      multcomp
+      digest
+    ];
+  };
+  python-with-packages = pkgs.python3.withPackages (ps: with ps; [
+    numpy
+    pandas
+    dill
+    requests
+    matplotlib
+    scipy
+    # Remove jupyter and jupyterlab - managed by services.jupyter
+    seaborn
+    xlib
+    epc
+    sexpdata
+    six
+    inflect
+    pyqt6
+    pyqt6-sip
+    pyqt6-webengine
+    qrcode
+    python-lsp-server
+    watchdog
+    ipykernel  # Keep this for the kernel
+  ]);
+in
+{
+
+  nix.settings.trusted-users = [ "root" "nixos" ];
+  wsl.enable = true;
+  wsl.defaultUser = "nixos";
+  <<fonts>>
+  imports = [ ../modules/common-packages.nix ];
+  
+  programs.zsh.enable = true;
+  users.defaultUserShell = pkgs.zsh;
+  nixpkgs.config.allowUnfree = true;
+
+  environment.systemPackages = with pkgs;
+    [
+      gtk4
+    ];
+
+  # This value determines the NixOS release from which the default
+  # settings for stateful data, like file locations and database versions
+  # on your system were taken. It's perfectly fine and recommended to leave
+  # this value at the release version of the first install of this system.
+  # Before changing this value read the documentation for this option
+  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  system.stateVersion = "24.11"; # Did you read the comment?
+}
+
+#+end_src
+
+
+** Home.nix
+#+begin_src nix :tangle ./nix-wsl/home.nix :noweb yes   
+{ config, pkgs, unstable, ... }:
+
+{
+  # Home Manager needs a bit of information about you and the
+  # paths it should manage.
+  home.username = "nixos"; # Replace with your username
+  home.homeDirectory = "/home/nixos"; # Replace with your username
+        
+  home.packages = with pkgs; [
+          cmake
+	  glib
+	  dconf
+  ];
+   
+  # Git configuration
+  programs.git = {
+    enable = true;
+    userName = "Omang Baheti";
+    userEmail = "omangbaheti@gmail.com";
+    extraConfig = {
+      init.defaultBranch = "main";
+      push.default = "simple";
+    };
+  };
+
+  # Zsh configuration
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    autosuggestion.enable = true;
+    syntaxHighlighting.enable = true;
+
+    shellAliases = {
+      ll = "eza -l";
+      la = "eza -la";
+      ls = "eza";
+      grep = "rg";
+      find = "fd";
+      e="emacsclient -c";
+      update-config = "sudo nixos-rebuild switch --flake .#nixos";
+      exp="/mnt/c/WINDOWS/explorer.exe .";
+    };
+
+    oh-my-zsh = {
+      enable = true;
+      plugins = [ "git" "sudo" ];
+      theme = "robbyrussell";
+    };
+
+    initContent = ''
+   #DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
+   #LIBGL_ALWAYS_INDIRECT=1  
+   eval "$(direnv hook zsh)"
+   export R_LIBS_SITE=$(ls -d /nix/store/*-r-*/library | tr '\n' ':')
+
+   PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
+     eval "$(zoxide init zsh)"
+     eval "$(oh-my-posh init zsh)"
+
+     function isWinDir 
+     {
+        case "$PWD/" in
+        /mnt/*) return 0 ;;
+        *) return 1 ;;
+        esac
+     }
+
+     function lazygit 
+     {
+        if isWinDir; then
+     #  Use Windows `lazygit.exe` in Windows-mounted dirs
+            command lazygit.exe "$@"
+        else
+     #  Use native Linux `lazygit` in native dirs
+            command lazygit "$@"
+        fi 
+     }
+    '';
+  };
+
+  services.ssh-agent.enable = true;
+  
+  programs.ssh = {
+    enable = true;
+    addKeysToAgent = "yes";       # Automatically adds keys to the agent
+    forwardAgent = true;         # Optional: disables forwarding
+    extraConfig = ''
+    Host github.com
+      IdentityFile ~/.ssh/id_ed25519
+  '';
+  };
+  
+  programs.keychain = {
+    enable = true;
+    keys = [ "id_ed25519" ];  # Replace with your SSH key filename
+    agents = [ "ssh" ];
+    enableZshIntegration = true;
+  };
+  # Direnv for automatic environment loading
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    nix-direnv.enable = true;
+    
+    config = {
+      global = {
+        log_format = "-";
+        log_filter = "^$";
+        hide_env_diff = true;
+      };
+    };
+  };
+
+  services.emacs = {
+    enable = true;
+  };
+
+  programs.emacs = {
+    enable = true;
+    package = pkgs.emacs-pgtk;
+    extraPackages = (
+      epkgs: with unstable.emacsPackages;   
+        [ 
+          vterm 
+          zmq 
+          treesit-auto
+          treesit-grammars.with-all-grammars
+          pdf-tools
+          (melpaBuild {
+            ename = "reader";
+            pname = "emacs-reader";
+            version = "20250630";
+            src = pkgs.fetchFromGitea {
+              domain = "codeberg.org";
+              owner = "divyaranjan";
+              repo = "emacs-reader";
+              rev = "0.3.2"; # replace with 'tag' for stable
+              hash = "sha256-BpuWWGt46BVgQZPHzeLEbzT+ooR4v29R+1Lv0K55kK8=";
+            };
+            files = ''(:defaults "render-core.so")'';
+            nativeBuildInputs = [ pkgs.pkg-config ];
+            buildInputs = [ pkgs.gcc unstable.mupdf pkgs.gnumake pkgs.pkg-config ];
+            preBuild = "make clean all";
+          })
+
+        ]
+    );
+  };
+
+  services.syncthing = {
+    enable = true;
+  };
+
+  gtk = {
+    enable = true;
+    theme = {
+      package = pkgs.orchis-theme;
+      name = "Orchis-Dark"; # or "Orchis-Dark", "Orchis-Purple", etc.
+    };
+  };
+
+  home.sessionVariables = {
+    EMACSLOADINIT = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+    GTK_THEME = "Orchis-Dark";
+    # R_LIBS_SITE = builtins.concatStringsSep ":" (builtins.filterStrings (x: builtins.match ".*-r-.*" x != null) (builtins.attrValues pkgs));
+  };
+  home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+  dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
+
+  # Let Home Manager install and manage itself
+  programs.home-manager.enable = true;
+
+  # This value determines the Home Manager release that your
+  # configuration is compatible with.
+  home.stateVersion = "24.11"; # Don't change this
+}
+#+end_src
