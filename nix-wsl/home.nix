@@ -126,6 +126,23 @@
           treesit-auto
           treesit-grammars.with-all-grammars
           pdf-tools
+          (melpaBuild {
+            ename = "reader";
+            pname = "emacs-reader";
+            version = "20250630";
+            src = pkgs.fetchFromGitea {
+              domain = "codeberg.org";
+              owner = "divyaranjan";
+              repo = "emacs-reader";
+              rev = "0.3.2"; # replace with 'tag' for stable
+              hash = "sha256-BpuWWGt46BVgQZPHzeLEbzT+ooR4v29R+1Lv0K55kK8=";
+            };
+            files = ''(:defaults "render-core.so")'';
+            nativeBuildInputs = [ pkgs.pkg-config ];
+            buildInputs = [ pkgs.gcc unstable.mupdf pkgs.gnumake pkgs.pkg-config ];
+            preBuild = "make clean all";
+          })
+
         ]
     );
   };
