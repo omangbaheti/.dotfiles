@@ -1,4 +1,4 @@
-{ config, pkgs, unstable, ... }:
+{ config, pkgs, stable, ... }:
 {
   nix.settings.experimental-features = ["nix-command" "flakes"];
   environment.systemPackages = with pkgs;
@@ -29,6 +29,7 @@
       pandoc
       
       #LSPs / Compilers / Dev Envs
+      #C/C++
       glib
       gdb
       clang
@@ -37,24 +38,30 @@
       libvterm
       libgcc
       libtool
-      
+     
+      #python 
       pylint
       basedpyright
       unstable.pyrefly
-      
+     
+      #node 
       nodejs_24
       
-      zulu8 #openjdk
+      #openjdk
+      zulu8 
       
+      # C#
       omnisharp-roslyn
       
+      #Latex LSP and grammar checking
       (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
       proselint
       harper
       ltex-ls-plus
       texlab
       texliveFull
-      
+     
+      #Nix 
       nixfmt-rfc-style
       statix
       nil
@@ -62,6 +69,8 @@
       #misc    
       home-manager
       languagetool
+      
+      #misc     
       firefox
       coreutils
       syncthing

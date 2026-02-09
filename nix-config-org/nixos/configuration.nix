@@ -5,7 +5,7 @@
 # NixOS-WSL specific options are documented on the NixOS-WSL repository:
 # https://github.com/nix-community/NixOS-WSL
 
-{config, lib, pkgs, unstable, machine ... }:
+{config, lib, pkgs, stable, machine ... }:
 let
   userName = machine.username;
   allowUnfree = machine.allowUnfree;

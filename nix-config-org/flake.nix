@@ -1,9 +1,9 @@
 {
-description = "Unified Flake Config"
+description = "Unified Flake Config";
 inputs = 
   {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05";
     nixos-wsl = 
       {
         url = "github:nix-community/NixOS-WSL";
@@ -16,65 +16,115 @@ inputs =
         inputs.nixpkgs.follows = "nixpkgs";
       };
   };
-outputs = { self, nixpkgs, nixpkgs-unstable, nixos-wsl, home-manager, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs: 
   let
-    pkgs    = nixpkgs.legacyPackages.${system};
-    unstable = nixpkgs-unstable.legacyPackages.${system};
+    stableFor = system:
+      nixpkgs-stable.legacyPackages.${system};
     commonSettings = 
       {
-        system = "x86_64-linux";
         dotfilesDir = "~/.dotfiles";
         allowUnfree = true;
         editor = "emacs";
-        browser = "firefox"
+        browser = "firefox";
       };
     
     #defining variables for each of my machines
     machines = 
-    {
+      {
         wsl = commonSettings //  # // is used to merge and pull in shared values
               {
+                system = "x86_64-linux";
                 host = "nixos";
                 username = "nixos";
+                systemType = "wsl";
               }; 
-        
+
         fern = commonSettings // 
                {
+                 system = "x86_64-linux";
                  host = "fern";
                  username = "fern";
+                 systemType = "native";
                };
-        
+
+        nyx = commonSettings // 
+              {
+                system = "x86_64-linux";
+                host = "nyx";
+                username = "nyx";
+                systemType = "native";
+              };
+
         sakura = (commonSettings // # overriding system when required
                   {
                     system = "aarch64-linux";
                     host = "fern";
                     username = "fern";
-                  };)
-    }
-      
+                    systemType = "native_pi";
+                  });
+      };
+    mkSystem = machine:
+      let
+        pkgs = nixpkgs.legacyPackages.${machine.system};
+        isWSL = machine.systemType == "wsl";
+      in
+        nixpkgs.lib.nixosSystem 
+          {
+            system = machine.system;
+            modules = 
+              [
+                (if isWSL then nixos-wsl.nixosModules.wsl else {})
+                home-manager.nixosModules.home-manager
+                ./${machine.host}/configuration.nix
+              ];
+    
+            specialArgs = {
+              machines = machines;
+              stable = stableFor machine.system;
+              host = machine.host;
+              username =  machine.username;
+              systemType = machine.systemType;
+            };
+          }; 
+    
+    mkHome = machine:
+      home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.${machine.system};
+    
+        extraSpecialArgs = 
+          {
+            machines = machines;
+            stable = stableFor machine.system;
+            host = machine.host;
+            username = machine.username;
+            systemType = machine.systemType;
+          };
+    
+        modules = [
+          ({ ... }: {
+            home.username = machine.username;
+            home.homeDirectory = "/home/${machine.username}";
+          })
+    
+          # Put your actual HM module(s) here
+          ./${machine.host}/home.nix
+        ];
+      };
   in
     {
-      #config for each host is declared as: nixosConfiguration.<host_name>
-      
-      #WSL Configuration 
-      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem
+      nixosConfigurations = 
         {
-          modules = 
-            [
-              nixos-wsl.nixosModules.wsl
-              home-manager.nixosModules.home-manager
-              ./${machines.wsl.}configuration.nix
-              extraSpecialArgs = 
-                {
-                  inherit unstable;
-                  inherit machines.wsl;
-                }
-            ]
+          nix-wsl= mkSystem machines.wsl;
+          fern   = mkSystem machines.fern;
+          nyx    = mkSystem machines.nyx;
+          sakura = mkSystem machines.sakura;
         };
-      #T490 Setup
-      nixosConfigurations.fern = nixpkgs.lib.nixosSystem
+      homeConfigurations = 
         {
-
+          "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
+          "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
+          "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
+          "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
         };
     };
 }

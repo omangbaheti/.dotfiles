@@ -1,4 +1,4 @@
-{ config, pkgs, unstable, machine ... }:
+{ config, pkgs, stable, machine ... }:
 {
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
