@@ -239,6 +239,7 @@
     
     "o s" '(:ignore t :wk "Insert Source Block Templates")
     "o s r" '(tempo-template-jupyter-R :wk "Insert Jupyter R block")
+    "o s n" '(tempo-template-nix :wk "Insert Nix block")
     "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
     "o s p" '(tempo-template-python :wk "Insert Python block")
     "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
@@ -612,6 +613,14 @@ one, an error is signaled."
                          "#+end_src")
                        "<el"
                        "Insert Emacs Lisp block"
+                       'org-tempo-tags)
+
+(tempo-define-template "nix"
+                       '("#+begin_src nix"
+                         n p n
+                         "#+end_src")
+                       "<n"
+                       "Insert Nix block"
                        'org-tempo-tags)
 
 (use-package org-modern
@@ -1403,7 +1412,7 @@ tags from the candidate string presented to the completion framework."
 ;; Whether display the indentation information.
 (setq doom-modeline-indent-info nil)
 
-;; Whether display the total line number。
+;; Whether display the total line number
 (setq doom-modeline-total-line-number nil)
 
 ;; Whether display the icon of vcs segment. It respects option `doom-modeline-icon'."
@@ -1662,7 +1671,9 @@ tags from the candidate string presented to the completion framework."
 ;;org-babel support
 (with-eval-after-load 'org
   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
-  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode)))
+  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode))
+  (add-to-list 'org-src-lang-modes '("nix" . nix))
+)
 
 (use-package ess
   :ensure t

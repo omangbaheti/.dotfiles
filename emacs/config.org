@@ -83,6 +83,7 @@
 - [[#nano-calendar][NANO CALENDAR]]
 - [[#direnv-mode][DIRENV MODE]]
 - [[#convert-pdfs][CONVERT PDFS]]
+- [[#emacs-reader][Emacs reader]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 
@@ -358,6 +359,7 @@
     
     "o s" '(:ignore t :wk "Insert Source Block Templates")
     "o s r" '(tempo-template-jupyter-R :wk "Insert Jupyter R block")
+    "o s n" '(tempo-template-nix :wk "Insert Nix block")
     "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
     "o s p" '(tempo-template-python :wk "Insert Python block")
     "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
@@ -429,7 +431,7 @@
 #+END_SRC
 
 #+RESULTS:
-: [nil 27010 33352 452887 nil elpaca-process-queues nil nil 113000 nil]
+: [nil 27015 24160 708312 nil elpaca-process-queues nil nil 252000 nil]
 
 ** HYDRA
 #+begin_src emacs-lisp
@@ -848,7 +850,19 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
                        "<el"
                        "Insert Emacs Lisp block"
                        'org-tempo-tags)
+
+(tempo-define-template "nix"
+                       '("#+begin_src nix"
+                         n p n
+                         "#+end_src")
+                       "<n"
+                       "Insert Nix block"
+                       'org-tempo-tags)
+
 #+end_src
+
+#+RESULTS:
+: tempo-template-nix
 
 ** MODERN ORG
 #+begin_src emacs-lisp
@@ -1791,7 +1805,7 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 ;; Whether display the indentation information.
 (setq doom-modeline-indent-info nil)
 
-;; Whether display the total line number。
+;; Whether display the total line number
 (setq doom-modeline-total-line-number nil)
 
 ;; Whether display the icon of vcs segment. It respects option `doom-modeline-icon'."
@@ -2087,8 +2101,13 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ;;org-babel support
 (with-eval-after-load 'org
   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
-  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode)))
+  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode))
+  (add-to-list 'org-src-lang-modes '("nix" . nix))
+)
 #+end_src
+
+#+RESULTS:
+: ((nix . nix) (nix . nix-mode) (beamer . LaTeX) (latex . LaTeX) (jupyter-R . ess-r-mode) (jupyter-python . python) (C . c) (C++ . c++) (asymptote . asy) (beamer . latex) (calc . fundamental) (cpp . c++) (ditaa . artist) (desktop . conf-desktop) (dot . fundamental) (elisp . emacs-lisp) (ocaml . tuareg) (screen . shell-script) (sqlite . sql) (toml . conf-toml) (shell . sh) (ash . sh) (sh . sh) (bash . sh) (jsh . sh) (bash2 . sh) (dash . sh) (dtksh . sh) (ksh . sh) (es . sh) (rc . sh) (itcsh . sh) (tcsh . sh) (jcsh . sh) (csh . sh) (ksh88 . sh) (oash . sh) (pdksh . sh) (mksh . sh) (posix . sh) (wksh . sh) (wsh . sh) (zsh . sh) (rpm . sh))
 
 
 #+begin_src emacs-lisp
@@ -2695,3 +2714,23 @@ Preserves existing entries to avoid overwriting."
              (hash-table-count all-entries) output-file)))
 
 #+end_src
+
+* Emacs reader
+# #+begin_src emacs-lisp
+# (use-package reader
+# :defer t
+# :init
+# (add-hook 'reader-mode-hook
+#             (lambda ()
+#               (evil-define-key 'normal (current-local-map)
+#                 (kbd "j") #'reader-scroll-down
+#                 (kbd "k") #'reader-scroll-up
+#                 (kbd "h") #'reader-prev-page
+#                 (kbd "l") #'reader-next-page
+#                 (kbd "q") #'quit-window)
+# )))
+# #+end_src
+
+# #+RESULTS:
+# | #[nil ((add-hook 'post-command-hook #'doom-modeline-update-reader-pages nil t)) (cl-struct-doom-modeline--hud-cache-tags xah-fly-insert-state-p winum-auto-setup-mode-line visual-replace--match-ovs visual-replace--calling-buffer tracking-buffers symbol-overlay-temp-symbol symbol-overlay-keywords-alist rcirc-activity reader-current-doc-pagecount reader-current-doc-pagenumber projectile-mode-map phi-search-mode-line-format phi-search--selection phi-search--overlays phi-replace--mode-line-format persp-nil-name objed-modeline-setup-func objed--object objed--obj-state mu4e-modeline-mode mu4e-alert-modeline-formatter mu4e-alert-mode-line mu4e--modeline-item mlscroll-right-align minions-mode-line-minor-modes-map minions-mode-line-lighter meow--current-state meow--indicator kele-menu-map iedit-occurrences-overlays helm--mode-line-display-prefarg grip--process gnus-newsrc-hashtb gnus-newsrc-alist flymake-menu flymake--state flymake--mode-line-format flycheck-mode-menu-map flycheck-current-errors flycheck--automatically-enabled-checkers evil-mc-frozen erc-modified-channels-alist eglot-server-menu eglot-menu-string eglot-menu eglot--managed-mode edebug-execution-mode display-time-string boon-special-state boon-off-state boon-insert-state boon-command-state battery-status-function battery-update-functions battery-mode-line-limit battery-mode-line-format battery-load-critical battery-echo-area-format aw-keys anzu-cons-mode-line-p anzu--total-matched anzu--state anzu--overflow-p anzu--current-position anzu--cached-count t)] | #[nil ((evil-define-key 'normal (current-local-map) (kbd j) #'reader-scroll-down (kbd k) #'reader-scroll-up (kbd h) #'reader-prev-page (kbd l) #'reader-next-page (kbd q) #'quit-window)) nil] |
+
