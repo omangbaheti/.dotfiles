@@ -11,78 +11,83 @@
       glib
       dconf
     ];
+      programs.home-manager.enable = true;
   
-  # Let Home Manager install and manage itself
-  programs.home-manager.enable = true;
-  
-  # Git configuration
-  programs.git = {
-    enable = true;
-    settings = {
-      user.name = "Omang Baheti";
-      user.email = "omangbaheti@gmail.com";
-      init.defaultBranch = "main";
-      push.default = "simple";
-    };
-  };
-
-  # Zsh configuration
-  programs.zsh = 
-    {
+      programs.zoxide.enable = true;
+      programs.git = {
       enable = true;
-      enableCompletion = true;
-      autosuggestion.enable = true;
-      syntaxHighlighting.enable = true;
-
-      shellAliases = 
-        {
-          ll = "eza -l";
-          la = "eza -la";
-          ls = "eza";
-          grep = "rg";
-          find = "fd";
-          e="emacsclient -c";
-          update-config = "sudo nixos-rebuild switch --flake .#nixos";
-          exp="/mnt/c/WINDOWS/explorer.exe .";
-        };
-
-      oh-my-zsh = 
-        {
+      settings = {
+          user.name = "Omang Baheti";
+          user.email = "omangbaheti@gmail.com";
+          init.defaultBranch = "main";
+          push.default = "simple";
+      };
+      };
+  
+      programs.zsh = 
+      {
           enable = true;
-          plugins = [ "git" "sudo" ];
-          theme = "robbyrussell";
-        };
-
-      initContent = ''
-   #DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
-   #LIBGL_ALWAYS_INDIRECT=1  
-   eval "$(direnv hook zsh)"
-   export R_LIBS_SITE=$(ls -d /nix/store/*-r-*/library | tr '\n' ':')
-
-   PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
-     eval "$(zoxide init zsh)"
-     eval "$(oh-my-posh init zsh)"
-
-     function isWinDir 
-     {
-        case "$PWD/" in
-        /mnt/*) return 0 ;;
-        *) return 1 ;;
-        esac
-     }
-
-     function lazygit 
-     {
-        if isWinDir; then
-     #  Use Windows `lazygit.exe` in Windows-mounted dirs
-            command lazygit.exe "$@"
-        else
-     #  Use native Linux `lazygit` in native dirs
-            command lazygit "$@"
-        fi 
-     }
-    '';
-    };
+          enableCompletion = true;
+          autosuggestion.enable = true;
+          syntaxHighlighting.enable = true;
+  
+          shellAliases = 
+          {
+              ll = "eza -l";
+              la = "eza -lah --tree";
+              ls = "eza -h --git --icons --color=auto --group-directories-first -s extension";
+              tree = "eza --tree --icons";
+              grep = "rg";
+              find = "fd";
+              e="emacsclient -c";
+              emd = "emacs --daemon";
+              rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config-org#${machine.systemType}";
+              rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config-org#${machine.username}@${machine.host}";
+              exp="/mnt/c/WINDOWS/explorer.exe .";
+          };
+  
+          oh-my-zsh = 
+          {
+              enable = true;
+              plugins = [ "git" "sudo" ];
+              theme = "robbyrussell";
+          };
+      };
+  
+      services.syncthing = 
+      {
+          enable = true;
+      };  
+  programs.zsh.initContent = 
+    ''
+ #DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
+ #LIBGL_ALWAYS_INDIRECT=1  
+ eval "$(direnv hook zsh)"
+ eval "$(zoxide init zsh)"
+ eval "$(oh-my-posh init zsh)"
+ export R_LIBS_SITE=$(ls -d /nix/store/*-r-*/library | tr '\n' ':')
+ 
+ PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
+ 
+ function isWinDir 
+ {
+     case "$PWD/" in
+         /mnt/*) return 0 ;;
+         *) return 1 ;;
+     esac
+ }
+ 
+ function lazygit 
+ {
+     if isWinDir; then
+ 	#  Use Windows `lazygit.exe` in Windows-mounted dirs
+         command lazygit.exe "$@"
+     else
+ 	#  Use native Linux `lazygit` in native dirs
+         command lazygit "$@"
+     fi 
+ }
+'';
 
   services.ssh-agent.enable = true;
   
@@ -96,17 +101,6 @@
     };
   };
 
-  # programs.ssh = 
-  #   {
-  #     enable = true;
-  #     addKeysToAgent = "yes";       # Automatically adds keys to the agent
-  #     forwardAgent = true;         # Optional: disables forwarding
-  #     extraConfig = ''
-  #   Host github.com
-  #     IdentityFile ~/.ssh/id_ed25519
-  # '';
-  #   };
-  
   programs.keychain = 
     {
       enable = true;
@@ -130,7 +124,6 @@
       };
     };
 
-
     services.emacs = {
       enable = true;
     };
@@ -146,32 +139,9 @@
             treesit-auto
             treesit-grammars.with-all-grammars
             pdf-tools
-            # (melpaBuild {
-            #   ename = "reader";
-            #   pname = "emacs-reader";
-            #   version = "20250630";
-            #   src = pkgs.fetchFromGitea {
-            #     domain = "codeberg.org";
-            #     owner = "divyaranjan";
-            #     repo = "emacs-reader";
-            #     rev = "0.3.2"; # replace with 'tag' for stable
-            #     hash = "sha256-BpuWWGt46BVgQZPHzeLEbzT+ooR4v29R+1Lv0K55kK8=";
-            #   };
-            #   files = ''(:defaults "render-core.so")'';
-            #   nativeBuildInputs = [ pkgs.pkg-config ];
-            #   buildInputs = [ pkgs.gcc pkgs.mupdf pkgs.gnumake pkgs.pkg-config ];
-            #   preBuild = "make clean all";
-            # })
-  
           ]
       );
     };
-
-  services.syncthing = 
-    {
-      enable = true;
-    };
-
   gtk = 
     {
       enable = true;
