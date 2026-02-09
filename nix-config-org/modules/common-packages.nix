@@ -42,7 +42,7 @@
       #python 
       pylint
       basedpyright
-      unstable.pyrefly
+      pyrefly
      
       #node 
       nodejs_24

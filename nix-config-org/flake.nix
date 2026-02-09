@@ -12,7 +12,7 @@ inputs =
 
     home-manager = 
       {
-        url = "github:nix-community/home-manager/release-25.05";
+        url = "github:nix-community/home-manager/master";
         inputs.nixpkgs.follows = "nixpkgs";
       };
   };
@@ -22,7 +22,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
       nixpkgs-stable.legacyPackages.${system};
     commonSettings = 
       {
-        dotfilesDir = "~/.dotfiles";
+        dotfilesDir = ".dotfiles";
         allowUnfree = true;
         editor = "emacs";
         browser = "firefox";
@@ -75,11 +75,26 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
               [
                 (if isWSL then nixos-wsl.nixosModules.wsl else {})
                 home-manager.nixosModules.home-manager
+                
+                # Forward args into HM modules here:
+                ({ ... }: {
+                  home-manager.extraSpecialArgs = {
+                    inherit machine;
+                    stable = stableFor machine.system;
+                    host = machine.host;
+                    username = machine.username;
+                    systemType = machine.systemType;
+                    machines = machines;
+                  };
+    
+                  home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
+                })
+    
                 ./${machine.host}/configuration.nix
               ];
     
             specialArgs = {
-              machines = machines;
+              machine = machine;
               stable = stableFor machine.system;
               host = machine.host;
               username =  machine.username;
@@ -93,7 +108,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
     
         extraSpecialArgs = 
           {
-            machines = machines;
+            machine = machine;
             stable = stableFor machine.system;
             host = machine.host;
             username = machine.username;
@@ -122,9 +137,9 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
       homeConfigurations = 
         {
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
-          "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
-          "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
-          "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
+          #"${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
+          #"${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
+          #"${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
         };
     };
 }

@@ -1,9 +1,9 @@
-{ config, pkgs, stable, machine ... }:
+{ config, pkgs, stable, machine, ... }:
 {
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
-  home.username = machine.username; 
-  home.homeDirectory = /home/${machine.username}; # Replace with your username
+  # home.username = machine.username; 
+  # home.homeDirectory = /home/${machine.username}; # Replace with your username
   
   home.packages = with pkgs; 
     [
@@ -18,9 +18,9 @@
   # Git configuration
   programs.git = {
     enable = true;
-    userName = "Omang Baheti";
-    userEmail = "omangbaheti@gmail.com";
-    extraConfig = {
+    settings = {
+      user.name = "Omang Baheti";
+      user.email = "omangbaheti@gmail.com";
       init.defaultBranch = "main";
       push.default = "simple";
     };
@@ -86,22 +86,31 @@
 
   services.ssh-agent.enable = true;
   
-  programs.ssh = 
-    {
-      enable = true;
-      addKeysToAgent = "yes";       # Automatically adds keys to the agent
-      forwardAgent = true;         # Optional: disables forwarding
-      extraConfig = ''
-    Host github.com
-      IdentityFile ~/.ssh/id_ed25519
-  '';
+  programs.ssh = {
+    enable = true;
+
+    matchBlocks."github.com" = {
+      identityFile = "~/.ssh/id_ed25519";
+      addKeysToAgent = "yes";
+      forwardAgent = true;
     };
+  };
+
+  # programs.ssh = 
+  #   {
+  #     enable = true;
+  #     addKeysToAgent = "yes";       # Automatically adds keys to the agent
+  #     forwardAgent = true;         # Optional: disables forwarding
+  #     extraConfig = ''
+  #   Host github.com
+  #     IdentityFile ~/.ssh/id_ed25519
+  # '';
+  #   };
   
   programs.keychain = 
     {
       enable = true;
       keys = [ "id_ed25519" ];  # Replace with your SSH key filename
-      agents = [ "ssh" ];
       enableZshIntegration = true;
     };
   
@@ -130,29 +139,29 @@
       enable = true;
       package = pkgs.emacs-pgtk;
       extraPackages = (
-        epkgs: with unstable.emacsPackages;   
+        epkgs: with pkgs.emacsPackages;   
           [ 
             vterm 
             zmq 
             treesit-auto
             treesit-grammars.with-all-grammars
             pdf-tools
-            (melpaBuild {
-              ename = "reader";
-              pname = "emacs-reader";
-              version = "20250630";
-              src = pkgs.fetchFromGitea {
-                domain = "codeberg.org";
-                owner = "divyaranjan";
-                repo = "emacs-reader";
-                rev = "0.3.2"; # replace with 'tag' for stable
-                hash = "sha256-BpuWWGt46BVgQZPHzeLEbzT+ooR4v29R+1Lv0K55kK8=";
-              };
-              files = ''(:defaults "render-core.so")'';
-              nativeBuildInputs = [ pkgs.pkg-config ];
-              buildInputs = [ pkgs.gcc unstable.mupdf pkgs.gnumake pkgs.pkg-config ];
-              preBuild = "make clean all";
-            })
+            # (melpaBuild {
+            #   ename = "reader";
+            #   pname = "emacs-reader";
+            #   version = "20250630";
+            #   src = pkgs.fetchFromGitea {
+            #     domain = "codeberg.org";
+            #     owner = "divyaranjan";
+            #     repo = "emacs-reader";
+            #     rev = "0.3.2"; # replace with 'tag' for stable
+            #     hash = "sha256-BpuWWGt46BVgQZPHzeLEbzT+ooR4v29R+1Lv0K55kK8=";
+            #   };
+            #   files = ''(:defaults "render-core.so")'';
+            #   nativeBuildInputs = [ pkgs.pkg-config ];
+            #   buildInputs = [ pkgs.gcc pkgs.mupdf pkgs.gnumake pkgs.pkg-config ];
+            #   preBuild = "make clean all";
+            # })
   
           ]
       );
@@ -175,11 +184,12 @@
 
   home.sessionVariables = 
     {
-      EMACSLOADINIT = "${homeDirectory}/${machine.dotfilesDir}/emacs/init.el";
+      EMACSLOADINIT = "${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el";
       GTK_THEME = "Orchis-Dark";
     };
   
-  #home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+  home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
+  # home.file.".emacs.d/init.el".source = ../emacs/init.el;
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
 
   # This value determines the Home Manager release that your

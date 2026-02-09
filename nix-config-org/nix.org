@@ -42,7 +42,7 @@ inputs =
 
     home-manager = 
       {
-        url = "github:nix-community/home-manager/release-25.05";
+        url = "github:nix-community/home-manager/master";
         inputs.nixpkgs.follows = "nixpkgs";
       };
   };
@@ -57,7 +57,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
       nixpkgs-stable.legacyPackages.${system};
     commonSettings = 
       {
-        dotfilesDir = "~/.dotfiles";
+        dotfilesDir = ".dotfiles";
         allowUnfree = true;
         editor = "emacs";
         browser = "firefox";
@@ -113,9 +113,9 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
       homeConfigurations = 
         {
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
-          "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
-          "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
-          "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
+          #"${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
+          #"${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
+          #"${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
         };
     };
 #+end_src
@@ -135,11 +135,26 @@ mkSystem = machine:
           [
             (if isWSL then nixos-wsl.nixosModules.wsl else {})
             home-manager.nixosModules.home-manager
+            
+            # Forward args into HM modules here:
+            ({ ... }: {
+              home-manager.extraSpecialArgs = {
+                inherit machine;
+                stable = stableFor machine.system;
+                host = machine.host;
+                username = machine.username;
+                systemType = machine.systemType;
+                machines = machines;
+              };
+
+              home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
+            })
+
             ./${machine.host}/configuration.nix
           ];
 
         specialArgs = {
-          machines = machines;
+          machine = machine;
           stable = stableFor machine.system;
           host = machine.host;
           username =  machine.username;
@@ -156,7 +171,7 @@ mkHome = machine:
 
     extraSpecialArgs = 
       {
-        machines = machines;
+        machine = machine;
         stable = stableFor machine.system;
         host = machine.host;
         username = machine.username;
@@ -240,7 +255,7 @@ Stuff that i need on every device
       #python 
       pylint
       basedpyright
-      unstable.pyrefly
+      pyrefly
      
       #node 
       nodejs_24
@@ -289,29 +304,29 @@ Stuff that i need on every device
     enable = true;
     package = pkgs.emacs-pgtk;
     extraPackages = (
-      epkgs: with unstable.emacsPackages;   
+      epkgs: with pkgs.emacsPackages;   
         [ 
           vterm 
           zmq 
           treesit-auto
           treesit-grammars.with-all-grammars
           pdf-tools
-          (melpaBuild {
-            ename = "reader";
-            pname = "emacs-reader";
-            version = "20250630";
-            src = pkgs.fetchFromGitea {
-              domain = "codeberg.org";
-              owner = "divyaranjan";
-              repo = "emacs-reader";
-              rev = "0.3.2"; # replace with 'tag' for stable
-              hash = "sha256-BpuWWGt46BVgQZPHzeLEbzT+ooR4v29R+1Lv0K55kK8=";
-            };
-            files = ''(:defaults "render-core.so")'';
-            nativeBuildInputs = [ pkgs.pkg-config ];
-            buildInputs = [ pkgs.gcc unstable.mupdf pkgs.gnumake pkgs.pkg-config ];
-            preBuild = "make clean all";
-          })
+          # (melpaBuild {
+          #   ename = "reader";
+          #   pname = "emacs-reader";
+          #   version = "20250630";
+          #   src = pkgs.fetchFromGitea {
+          #     domain = "codeberg.org";
+          #     owner = "divyaranjan";
+          #     repo = "emacs-reader";
+          #     rev = "0.3.2"; # replace with 'tag' for stable
+          #     hash = "sha256-BpuWWGt46BVgQZPHzeLEbzT+ooR4v29R+1Lv0K55kK8=";
+          #   };
+          #   files = ''(:defaults "render-core.so")'';
+          #   nativeBuildInputs = [ pkgs.pkg-config ];
+          #   buildInputs = [ pkgs.gcc pkgs.mupdf pkgs.gnumake pkgs.pkg-config ];
+          #   preBuild = "make clean all";
+          # })
 
         ]
     );
@@ -329,7 +344,7 @@ Stuff that i need on every device
 # NixOS-WSL specific options are documented on the NixOS-WSL repository:
 # https://github.com/nix-community/NixOS-WSL
 
-{config, lib, pkgs, stable, machine ... }:
+{config, lib, pkgs, stable, machine, ... }:
 let
   userName = machine.username;
   allowUnfree = machine.allowUnfree;
@@ -370,12 +385,12 @@ in
 
 ** Home.nix
 #+begin_src nix :tangle ./nixos/home.nix :noweb yes   
-{ config, pkgs, stable, machine ... }:
+{ config, pkgs, stable, machine, ... }:
 {
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
-  home.username = machine.username; 
-  home.homeDirectory = /home/${machine.username}; # Replace with your username
+  # home.username = machine.username; 
+  # home.homeDirectory = /home/${machine.username}; # Replace with your username
   
   home.packages = with pkgs; 
     [
@@ -390,9 +405,9 @@ in
   # Git configuration
   programs.git = {
     enable = true;
-    userName = "Omang Baheti";
-    userEmail = "omangbaheti@gmail.com";
-    extraConfig = {
+    settings = {
+      user.name = "Omang Baheti";
+      user.email = "omangbaheti@gmail.com";
       init.defaultBranch = "main";
       push.default = "simple";
     };
@@ -432,22 +447,31 @@ in
 
   services.ssh-agent.enable = true;
   
-  programs.ssh = 
-    {
-      enable = true;
-      addKeysToAgent = "yes";       # Automatically adds keys to the agent
-      forwardAgent = true;         # Optional: disables forwarding
-      extraConfig = ''
-    Host github.com
-      IdentityFile ~/.ssh/id_ed25519
-  '';
+  programs.ssh = {
+    enable = true;
+
+    matchBlocks."github.com" = {
+      identityFile = "~/.ssh/id_ed25519";
+      addKeysToAgent = "yes";
+      forwardAgent = true;
     };
+  };
+
+  # programs.ssh = 
+  #   {
+  #     enable = true;
+  #     addKeysToAgent = "yes";       # Automatically adds keys to the agent
+  #     forwardAgent = true;         # Optional: disables forwarding
+  #     extraConfig = ''
+  #   Host github.com
+  #     IdentityFile ~/.ssh/id_ed25519
+  # '';
+  #   };
   
   programs.keychain = 
     {
       enable = true;
       keys = [ "id_ed25519" ];  # Replace with your SSH key filename
-      agents = [ "ssh" ];
       enableZshIntegration = true;
     };
   
@@ -487,11 +511,12 @@ in
 
   home.sessionVariables = 
     {
-      EMACSLOADINIT = "${homeDirectory}/${machine.dotfilesDir}/emacs/init.el";
+      EMACSLOADINIT = "${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el";
       GTK_THEME = "Orchis-Dark";
     };
   
-  #home.file.".emacs.d/init.el".source = "${config.home.homeDirectory}/.dotfiles/emacs/init.el";
+  home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
+  # home.file.".emacs.d/init.el".source = ../emacs/init.el;
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
 
   # This value determines the Home Manager release that your
