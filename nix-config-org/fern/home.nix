@@ -93,13 +93,12 @@
 
   #   };
 
-
   home.sessionVariables = 
     {
       EMACSLOADINIT = "~/.dotfiles/emacs/init.el";
-      # EDITOR = userSettings.editor;
+      EDITOR = machine.editor;
+      BROWSER = machine.browser;
       # SPAWNEDITOR = userSettings.spawnEditor;
-      # BROWSER = userSettings.browser;
     };
   home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
 }

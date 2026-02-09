@@ -9,6 +9,7 @@ let
   allowUnfree = machine.allowUnfree;
 in
 {
+  nix.settings.experimental-features = ["nix-command" "flakes"];
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
@@ -31,7 +32,6 @@ in
   # networking.useDHCP = false;
   # networking.interfaces.eno1.useDHCP = true;
 
-  nix.settings.experimental-features = ["nix-command" "flakes"];
 
   nixpkgs.config.allowUnfree = machine.allowUnfree;
 
@@ -39,7 +39,7 @@ in
   # time.timeZone = systemSettings.timezone;
 
   # Select internationalisation properties.
-  i18n.defaultLocale = systemSettings.defaultLocale;
+  # i18n.defaultLocale = systemSettings.defaultLocale;
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -87,9 +87,6 @@ in
       extraGroups = [ "networkmanager" "wheel" ];
       packages = [];
     };
-
-  # Install firefox.
-  programs.firefox.enable = true;
 
   <<fonts>>
   

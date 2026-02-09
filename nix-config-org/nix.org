@@ -543,6 +543,7 @@ let
   allowUnfree = machine.allowUnfree;
 in
 {
+  nix.settings.experimental-features = ["nix-command" "flakes"];
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
@@ -565,7 +566,6 @@ in
   # networking.useDHCP = false;
   # networking.interfaces.eno1.useDHCP = true;
 
-  nix.settings.experimental-features = ["nix-command" "flakes"];
 
   nixpkgs.config.allowUnfree = machine.allowUnfree;
 
@@ -573,7 +573,7 @@ in
   # time.timeZone = systemSettings.timezone;
 
   # Select internationalisation properties.
-  i18n.defaultLocale = systemSettings.defaultLocale;
+  # i18n.defaultLocale = systemSettings.defaultLocale;
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -621,9 +621,6 @@ in
       extraGroups = [ "networkmanager" "wheel" ];
       packages = [];
     };
-
-  # Install firefox.
-  programs.firefox.enable = true;
 
   <<fonts>>
   
@@ -769,17 +766,17 @@ in
 
   #   };
 
-
   home.sessionVariables = 
     {
       EMACSLOADINIT = "~/.dotfiles/emacs/init.el";
-      # EDITOR = userSettings.editor;
+      EDITOR = machine.editor;
+      BROWSER = machine.browser;
       # SPAWNEDITOR = userSettings.spawnEditor;
-      # BROWSER = userSettings.browser;
     };
   home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
 }
 #+end_src
+
 * ZSH Config
 ** WSL Config
 #+name: zshConfigWsl
