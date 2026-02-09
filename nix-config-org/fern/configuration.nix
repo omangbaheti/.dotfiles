@@ -33,7 +33,7 @@ in
   # networking.interfaces.eno1.useDHCP = true;
 
 
-  nixpkgs.config.allowUnfree = machine.allowUnfree;
+  nixpkgs.config.allowUnfree = true;
 
   # Set your time zone.
   # time.timeZone = systemSettings.timezone;
@@ -88,7 +88,15 @@ in
       packages = [];
     };
 
-  <<fonts>>
+  fonts.packages = with pkgs.nerd-fonts; 
+    [ 
+      jetbrains-mono
+      ubuntu
+      fira-code
+      fira-mono
+      dejavu-sans-mono
+      symbols-only
+    ];
   
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;

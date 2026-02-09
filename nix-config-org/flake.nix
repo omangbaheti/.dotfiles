@@ -18,8 +18,13 @@ inputs =
   };
 outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs: 
   let
+    # stableFor = system:
+    #   nixpkgs-stable.legacyPackages.${system};
     stableFor = system:
-      nixpkgs-stable.legacyPackages.${system};
+      import nixpkgs-stable {
+        inherit system;
+        config.allowUnfree = true;
+      };
     commonSettings = 
       {
         dotfilesDir = ".dotfiles";
@@ -105,7 +110,8 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
     mkHome = machine:
       home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${machine.system};
-    
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
         extraSpecialArgs = 
           {
             machine = machine;

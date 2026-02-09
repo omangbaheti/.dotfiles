@@ -59,8 +59,13 @@ inputs =
 #+begin_src nix :noweb yes 
 outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs: 
   let
+    # stableFor = system:
+    #   nixpkgs-stable.legacyPackages.${system};
     stableFor = system:
-      nixpkgs-stable.legacyPackages.${system};
+      import nixpkgs-stable {
+        inherit system;
+        config.allowUnfree = true;
+      };
     commonSettings = 
       {
         dotfilesDir = ".dotfiles";
@@ -174,7 +179,8 @@ mkSystem = machine:
 mkHome = machine:
   home-manager.lib.homeManagerConfiguration {
     pkgs = nixpkgs.legacyPackages.${machine.system};
-
+    home-manager.useGlobalPkgs = true;
+    home-manager.useUserPackages = true;
     extraSpecialArgs = 
       {
         machine = machine;
@@ -304,7 +310,7 @@ in
       texliveFull
       
       #Nix 
-      nixfmt-rfc-style
+      nixfmt
       statix
       nil
       
@@ -531,7 +537,7 @@ in
 
 ** Fern - T490
 *** Configuration.nix
-#+begin_src nix :tangle ~/.dotfiles/nix-config-org/fern/configuration.nix
+#+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config-org/fern/configuration.nix
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
@@ -567,7 +573,7 @@ in
   # networking.interfaces.eno1.useDHCP = true;
 
 
-  nixpkgs.config.allowUnfree = machine.allowUnfree;
+  nixpkgs.config.allowUnfree = true;
 
   # Set your time zone.
   # time.timeZone = systemSettings.timezone;
@@ -670,18 +676,19 @@ in
 #+end_src
 
 *** Home.nix
-#+begin_src nix :tangle ./fern/home.nix
+#+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config-org/fern/home.nix
 { config, pkgs, stable, machine, ... }:
 {
   # home.username = userSettings.name;
   # home.homeDirectory = "/home/" + userSettings.name;
-  # home.stateVersion = "25.05";
+  home.stateVersion = "25.05";
  <<common-home-config>>
   programs.zsh.initContent = 
     ''
 <<zshConfigFern>>
     '';
   
+  nixpkgs.config.allowUnfree = true;
   home.packages = (with pkgs;
     [
       #Dev-Tools
@@ -712,7 +719,7 @@ in
       
       #Communication
       discord
-      whatsapp-for-linux
+      wasistlos
       telegram-desktop
       slack 
       zoom-us
