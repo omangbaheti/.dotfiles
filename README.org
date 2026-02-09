@@ -1,0 +1,28 @@
+* Some config inspirations
+#+begin_example
+https://github.com/idlip/d-nix 
+https://github.com/mitchellh/nixos-config
+https://github.com/CoultonF/dotfiles
+https://github.com/librephoenix/nixos-config
+#+end_example
+
+* Commands and Troubleshooting
+** Cloning the first time
+#+begin_src sh
+cd ~
+git clone git@github.com:omangbaheti/.dotfiles.git .dotfiles
+#+end_src
+
+** Rebuild Configuration
+#+begin_src sh 
+sudo nixos-rebuild switch --flake .#<hostname> --impure
+#+end_src
+
+** Rebuild Homemanager
+#+begin_src sh
+home-manager switch --flake  ~/.dotfiles/nix-config-org#$<username>@$<hostname>
+#+end_src
+
+** Flakes not enables
+- Open /etc/configuration.nix
+- add "nix.settings.experimental-features = ["nix-command" "flakes"];"

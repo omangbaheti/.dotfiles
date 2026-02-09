@@ -12,11 +12,17 @@
   - [[#fonts][Fonts]]
   - [[#software][Software]]
   - [[#emacs-configuration][Emacs Configuration]]
-- [[#wsl-config-files][WSL Config Files]]
-  - [[#configurationnix][Configuration.nix]]
-  - [[#homenix][Home.nix]]
+  - [[#common-home-manager-configuration][Common Home Manager Configuration]]
+- [[#individual-configurations][Individual Configurations]]
+  - [[#wsl-config-files][WSL Config Files]]
+    - [[#configurationnix][Configuration.nix]]
+    - [[#homenix][Home.nix]]
+  - [[#fern---t490][Fern - T490]]
+    - [[#configurationnix-1][Configuration.nix]]
+    - [[#homenix-1][Home.nix]]
 - [[#zsh-config][ZSH Config]]
   - [[#wsl-config][WSL Config]]
+  - [[#fern-config][Fern Config]]
 
 * Flake Structure
 #+begin_src nix :tangle flake.nix :noweb yes
@@ -71,7 +77,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 system = "x86_64-linux";
                 host = "nixos";
                 username = "nixos";
-                systemType = "wsl";
+                systemType = "nix-wsl"; #TODO: change host-name to nix-wsl and remove redundant use of systemType
               }; 
 
         fern = commonSettings // 
@@ -79,7 +85,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                  system = "x86_64-linux";
                  host = "fern";
                  username = "fern";
-                 systemType = "native";
+                 systemType = "fern";
                };
 
         nyx = commonSettings // 
@@ -87,15 +93,15 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 system = "x86_64-linux";
                 host = "nyx";
                 username = "nyx";
-                systemType = "native";
+                systemType = "nyx";
               };
 
         sakura = (commonSettings // # overriding system when required
                   {
                     system = "aarch64-linux";
-                    host = "fern";
-                    username = "fern";
-                    systemType = "native_pi";
+                    host = "sakura";
+                    username = "sakura";
+                    systemType = "pi";
                   });
       };
     <<makeSystem>> 
@@ -113,9 +119,9 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
       homeConfigurations = 
         {
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
-          #"${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
-          #"${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
-          #"${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
+          "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
+          "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
+          "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
         };
     };
 #+end_src
@@ -126,7 +132,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
 mkSystem = machine:
   let
     pkgs = nixpkgs.legacyPackages.${machine.system};
-    isWSL = machine.systemType == "wsl";
+    isWSL = machine.systemType == "nix-wsl";
   in
     nixpkgs.lib.nixosSystem 
       {
@@ -190,9 +196,9 @@ mkHome = machine:
   };
 #+end_src 
 
+
 * Common Configuration 
 ** Fonts
-Embedding this src block in each config instead of its own module. 
 
 #+name:fonts
 #+begin_src nix
@@ -209,15 +215,37 @@ fonts.packages = with pkgs.nerd-fonts;
 
 ** Software
 Stuff that i need on every device
-
 #+begin_src nix :tangle ./modules/common-packages.nix
 { config, pkgs, stable, ... }:
+let
+  python-with-packages = pkgs.python3.withPackages (ps: with ps; [
+    numpy
+    pandas
+    dill
+    requests
+    matplotlib
+    scipy
+    # Remove jupyter and jupyterlab - managed by services.jupyter
+    seaborn
+    xlib
+    epc
+    sexpdata
+    six
+    inflect
+    pyqt6
+    pyqt6-sip
+    pyqt6-webengine
+    qrcode
+    python-lsp-server
+    watchdog
+    ipykernel  # Keep this for the kernel
+  ]);
+in
 {
   nix.settings.experimental-features = ["nix-command" "flakes"];
   environment.systemPackages = with pkgs;
     [
       #cli tools
-      
       git
       git-lfs
       lazygit
@@ -251,12 +279,13 @@ Stuff that i need on every device
       libvterm
       libgcc
       libtool
-     
+      
       #python 
       pylint
       basedpyright
       pyrefly
-     
+      python-with-packages
+      
       #node 
       nodejs_24
       
@@ -273,7 +302,7 @@ Stuff that i need on every device
       ltex-ls-plus
       texlab
       texliveFull
-     
+      
       #Nix 
       nixfmt-rfc-style
       statix
@@ -311,31 +340,66 @@ Stuff that i need on every device
           treesit-auto
           treesit-grammars.with-all-grammars
           pdf-tools
-          # (melpaBuild {
-          #   ename = "reader";
-          #   pname = "emacs-reader";
-          #   version = "20250630";
-          #   src = pkgs.fetchFromGitea {
-          #     domain = "codeberg.org";
-          #     owner = "divyaranjan";
-          #     repo = "emacs-reader";
-          #     rev = "0.3.2"; # replace with 'tag' for stable
-          #     hash = "sha256-BpuWWGt46BVgQZPHzeLEbzT+ooR4v29R+1Lv0K55kK8=";
-          #   };
-          #   files = ''(:defaults "render-core.so")'';
-          #   nativeBuildInputs = [ pkgs.pkg-config ];
-          #   buildInputs = [ pkgs.gcc pkgs.mupdf pkgs.gnumake pkgs.pkg-config ];
-          #   preBuild = "make clean all";
-          # })
-
         ]
     );
   };
 #+end_src
 
-* WSL Config Files
+** Common Home Manager Configuration
+#+name:common-home-config
+#+begin_src nix
+    programs.home-manager.enable = true;
 
-** Configuration.nix
+    programs.zoxide.enable = true;
+    programs.git = {
+    enable = true;
+    settings = {
+        user.name = "Omang Baheti";
+        user.email = "omangbaheti@gmail.com";
+        init.defaultBranch = "main";
+        push.default = "simple";
+    };
+    };
+
+    programs.zsh = 
+    {
+        enable = true;
+        enableCompletion = true;
+        autosuggestion.enable = true;
+        syntaxHighlighting.enable = true;
+
+        shellAliases = 
+        {
+            ll = "eza -l";
+            la = "eza -lah --tree";
+            ls = "eza -h --git --icons --color=auto --group-directories-first -s extension";
+            tree = "eza --tree --icons";
+            grep = "rg";
+            find = "fd";
+            e="emacsclient -c";
+            emd = "emacs --daemon";
+            rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config-org#${machine.systemType}";
+            rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config-org#${machine.username}@${machine.host}";
+            exp="/mnt/c/WINDOWS/explorer.exe .";
+        };
+
+        oh-my-zsh = 
+        {
+            enable = true;
+            plugins = [ "git" "sudo" ];
+            theme = "robbyrussell";
+        };
+    };
+
+    services.syncthing = 
+    {
+        enable = true;
+    };
+#+end_src
+
+* Individual Configurations
+** WSL Config Files
+*** Configuration.nix
 #+begin_src nix :tangle ./nixos/configuration.nix :noweb yes
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
@@ -382,8 +446,7 @@ in
 
 #+end_src
 
-
-** Home.nix
+*** Home.nix
 #+begin_src nix :tangle ./nixos/home.nix :noweb yes   
 { config, pkgs, stable, machine, ... }:
 {
@@ -398,52 +461,11 @@ in
       glib
       dconf
     ];
-  
-  # Let Home Manager install and manage itself
-  programs.home-manager.enable = true;
-  
-  # Git configuration
-  programs.git = {
-    enable = true;
-    settings = {
-      user.name = "Omang Baheti";
-      user.email = "omangbaheti@gmail.com";
-      init.defaultBranch = "main";
-      push.default = "simple";
-    };
-  };
-
-  # Zsh configuration
-  programs.zsh = 
-    {
-      enable = true;
-      enableCompletion = true;
-      autosuggestion.enable = true;
-      syntaxHighlighting.enable = true;
-
-      shellAliases = 
-        {
-          ll = "eza -l";
-          la = "eza -la";
-          ls = "eza";
-          grep = "rg";
-          find = "fd";
-          e="emacsclient -c";
-          update-config = "sudo nixos-rebuild switch --flake .#nixos";
-          exp="/mnt/c/WINDOWS/explorer.exe .";
-        };
-
-      oh-my-zsh = 
-        {
-          enable = true;
-          plugins = [ "git" "sudo" ];
-          theme = "robbyrussell";
-        };
-
-      initContent = ''
-<<zshConfigWsl>>
-    '';
-    };
+  <<common-home-config>>  
+  programs.zsh.initContent = 
+    ''
+ <<zshConfigWsl>>
+'';
 
   services.ssh-agent.enable = true;
   
@@ -457,17 +479,6 @@ in
     };
   };
 
-  # programs.ssh = 
-  #   {
-  #     enable = true;
-  #     addKeysToAgent = "yes";       # Automatically adds keys to the agent
-  #     forwardAgent = true;         # Optional: disables forwarding
-  #     extraConfig = ''
-  #   Host github.com
-  #     IdentityFile ~/.ssh/id_ed25519
-  # '';
-  #   };
-  
   programs.keychain = 
     {
       enable = true;
@@ -491,14 +502,7 @@ in
       };
     };
 
-
   <<emacs-config-wayland>>
-
-  services.syncthing = 
-    {
-      enable = true;
-    };
-
   gtk = 
     {
       enable = true;
@@ -525,36 +529,294 @@ in
 }
 #+end_src
 
+** Fern - T490
+*** Configuration.nix
+#+begin_src nix :tangle ~/.dotfiles/nix-config-org/fern/configuration.nix
+# Edit this configuration file to define what should be installed on
+# your system.  Help is available in the configuration.nix(5) man page
+# and in the NixOS manual (accessible by running ‘nixos-help’).
+
+{ config, pkgs, stable, machine, ... }:
+let
+  hostname = machine.host;
+  username = machine.username;
+  allowUnfree = machine.allowUnfree;
+in
+{
+  imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+      ../modules/common-packages.nix 
+    ];
+
+  # Bootloader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelPackages = pkgs.linuxPackages;
+  networking.hostName = hostname; # Define your hostname.
+  #networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  # Configure network proxy if necessary
+  # networking.proxy.default = "http://user:password@proxy:port/";
+  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+  
+  # Enable networking
+  networking.networkmanager.enable = true;
+  # networking.useDHCP = false;
+  # networking.interfaces.eno1.useDHCP = true;
+
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+
+  nixpkgs.config.allowUnfree = machine.allowUnfree;
+
+  # Set your time zone.
+  # time.timeZone = systemSettings.timezone;
+
+  # Select internationalisation properties.
+  i18n.defaultLocale = systemSettings.defaultLocale;
+
+  # Enable the X11 windowing system.
+  services.xserver.enable = true;
+
+  # Enable the GNOME Desktop Environment.
+  services.xserver.displayManager.gdm.enable = true;
+  services.xserver.desktopManager.gnome.enable = true;
+
+  # Configure keymap in X11
+  services.xserver = 
+    {
+      xkb.layout = "us";
+      xkb.variant = "";
+    };
+
+  # Enable CUPS to print documents.
+  services.printing.enable = true;
+
+  # Enable sound with pipewire.
+  services.pulseaudio.enable = false;
+  security.rtkit.enable = true;
+  services.power-profiles-daemon.enable = true;
+  services.pipewire = 
+    {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      # If you want to use JACK applications, uncomment this
+      jack.enable = true;
+
+      # use the example session manager (no others are packaged yet so this is enabled by default,
+      # no need to redefine it in your config for now)
+      #media-session.enable = true;
+    };
+
+  # Enable touchpad support (enabled default in most desktopManager).
+  # services.xserver.libinput.enable = true;
+
+  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.users.fern = 
+    {
+      isNormalUser = true;
+      description = "Fern";
+      extraGroups = [ "networkmanager" "wheel" ];
+      packages = [];
+    };
+
+  # Install firefox.
+  programs.firefox.enable = true;
+
+  <<fonts>>
+  
+  programs.zsh.enable = true;
+  users.defaultUserShell = pkgs.zsh;
+  
+  # List packages installed in system profile. To search, run:
+  # $ nix search wget
+  environment.systemPackages = with pkgs; 
+    [
+      gitkraken
+      vscode
+      nodejs_24
+      alacritty
+      chromium
+      qbittorrent
+    ];
+
+  services.fprintd.enable = false;
+  # Some programs need SUID wrappers, can be configured further or are
+  # started in user sessions.
+  # programs.mtr.enable = true;
+  # programs.gnupg.agent = {
+  #   enable = true;
+  #   enableSSHSupport = true;
+  # };
+
+  # List services that you want to enable:
+
+  # Enable the OpenSSH daemon.
+  services.openssh.enable = true;
+
+  # Open ports in the firewall.
+  # networking.firewall.allowedTCPPorts = [ ... ];
+  # networking.firewall.allowedUDPPorts = [ ... ];
+  # Or disable the firewall altogether.
+  # networking.firewall.enable = false;
+
+  # This value determines the NixOS release from which the default
+  # settings for stateful data, like file locations and database versions
+  # on your system were taken. It‘s perfectly fine and recommended to leave
+  # this value at the release version of the first install of this system.
+  # Before changing this value read the documentation for this option
+  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  system.stateVersion = "24.11"; # Did you read the comment?
+}
+#+end_src
+
+*** Home.nix
+#+begin_src nix :tangle ./fern/home.nix
+{ config, pkgs, stable, machine, ... }:
+{
+  # home.username = userSettings.name;
+  # home.homeDirectory = "/home/" + userSettings.name;
+  # home.stateVersion = "25.05";
+ <<common-home-config>>
+  programs.zsh.initContent = 
+    ''
+<<zshConfigFern>>
+    '';
+  
+  home.packages = (with pkgs;
+    [
+      #Dev-Tools
+      jetbrains.rider
+      unityhub
+      #ventoy
+      bitwarden-desktop
+      blender
+      rclone
+      
+      protonvpn-gui
+      localsend
+      #Tools
+      libreoffice
+      gimp
+      aseprite
+      zotero
+      obsidian
+      stable.android-studio
+      audacity
+
+      #Media
+      vlc
+      obs-studio
+      ffmpeg
+      spotify
+      parsec-bin
+      
+      #Communication
+      discord
+      whatsapp-for-linux
+      telegram-desktop
+      slack 
+      zoom-us
+      #Games
+      steam
+      lutris-unwrapped
+      
+      # Virtual Machines and wine
+      libvirt
+      wine
+      virt-manager
+      qemu
+      uefi-run
+      lxc
+      swtpm
+      bottles
+      fprintd
+    ]);
+
+  <<emacs-config-wayland>>
+
+  #   programs.zsh = {
+  #     enable = true;
+  #     enableCompletion = true;
+  #     autosuggestion.enable = true;
+  #     syntaxHighlighting.enable = true;
+
+  #     shellAliases = {
+  #       ll = "eza -l";
+  #       la = "eza -la";
+  #       ls = "eza";
+  #       grep = "rg";
+  #       find = "fd";
+  #       e="emacsclient -c";
+  #       update-config = "sudo nixos-rebuild switch --flake .#nixos";
+  #       exp="/mnt/c/WINDOWS/explorer.exe .";
+  #     };
+
+  #     oh-my-zsh = {
+  #       enable = true;
+  #       plugins = [ "git" "sudo" ];
+  #       theme = "robbyrussell";
+  #     };
+  
+  #     initContent = ''
+  # alias edituserconfig="code ~/.dotfiles/nix-devices-config/t490/home.nix"
+  # alias editsystemconfig="code ~/.dotfiles/profiles/t490/configuration.nix"
+  # alias updatesystemconfig="sudo nixos-rebuild switch --flake ~/.dotfiles/nix-devices-config"
+  # alias updateuserconfig="home-manager switch --flake ~/.dotfiles/nix-devices-config#user" 
+  # '';
+
+  #   };
+
+
+  home.sessionVariables = 
+    {
+      EMACSLOADINIT = "~/.dotfiles/emacs/init.el";
+      # EDITOR = userSettings.editor;
+      # SPAWNEDITOR = userSettings.spawnEditor;
+      # BROWSER = userSettings.browser;
+    };
+  home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
+}
+#+end_src
 * ZSH Config
 ** WSL Config
 #+name: zshConfigWsl
 #+begin_src bash
-   #DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
-   #LIBGL_ALWAYS_INDIRECT=1  
-   eval "$(direnv hook zsh)"
-   export R_LIBS_SITE=$(ls -d /nix/store/*-r-*/library | tr '\n' ':')
+#DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
+#LIBGL_ALWAYS_INDIRECT=1  
+eval "$(direnv hook zsh)"
+eval "$(zoxide init zsh)"
+eval "$(oh-my-posh init zsh)"
+export R_LIBS_SITE=$(ls -d /nix/store/*-r-*/library | tr '\n' ':')
 
-   PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
-     eval "$(zoxide init zsh)"
-     eval "$(oh-my-posh init zsh)"
+PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
 
-     function isWinDir 
-     {
-        case "$PWD/" in
+function isWinDir 
+{
+    case "$PWD/" in
         /mnt/*) return 0 ;;
         ,*) return 1 ;;
-        esac
-     }
+    esac
+}
 
-     function lazygit 
-     {
-        if isWinDir; then
-     #  Use Windows `lazygit.exe` in Windows-mounted dirs
-            command lazygit.exe "$@"
-        else
-     #  Use native Linux `lazygit` in native dirs
-            command lazygit "$@"
-        fi 
-     }
+function lazygit 
+{
+    if isWinDir; then
+	#  Use Windows `lazygit.exe` in Windows-mounted dirs
+        command lazygit.exe "$@"
+    else
+	#  Use native Linux `lazygit` in native dirs
+        command lazygit "$@"
+    fi 
+}
 #+end_src
 
+
+** Fern Config
+#+name:zshConfigFern
+#+begin_src bash
+eval "$(zoxide init zsh)"
+eval "$(oh-my-posh init zsh)"
+#+end_src 

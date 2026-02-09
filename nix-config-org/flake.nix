@@ -36,7 +36,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 system = "x86_64-linux";
                 host = "nixos";
                 username = "nixos";
-                systemType = "wsl";
+                systemType = "nix-wsl"; #TODO: change host-name to nix-wsl and remove redundant use of systemType
               }; 
 
         fern = commonSettings // 
@@ -44,7 +44,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                  system = "x86_64-linux";
                  host = "fern";
                  username = "fern";
-                 systemType = "native";
+                 systemType = "fern";
                };
 
         nyx = commonSettings // 
@@ -52,21 +52,21 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 system = "x86_64-linux";
                 host = "nyx";
                 username = "nyx";
-                systemType = "native";
+                systemType = "nyx";
               };
 
         sakura = (commonSettings // # overriding system when required
                   {
                     system = "aarch64-linux";
-                    host = "fern";
-                    username = "fern";
-                    systemType = "native_pi";
+                    host = "sakura";
+                    username = "sakura";
+                    systemType = "pi";
                   });
       };
     mkSystem = machine:
       let
         pkgs = nixpkgs.legacyPackages.${machine.system};
-        isWSL = machine.systemType == "wsl";
+        isWSL = machine.systemType == "nix-wsl";
       in
         nixpkgs.lib.nixosSystem 
           {
@@ -137,9 +137,9 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
       homeConfigurations = 
         {
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
-          #"${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
-          #"${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
-          #"${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
+          "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
+          "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
+          "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
         };
     };
 }
