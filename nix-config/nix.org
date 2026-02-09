@@ -384,8 +384,8 @@ in
             find = "fd";
             e="emacsclient -c";
             emd = "emacs --daemon";
-            rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config-org#${machine.systemType}";
-            rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config-org#${machine.username}@${machine.host}";
+            rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config#${machine.systemType}";
+            rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config#${machine.username}@${machine.host}";
             exp="/mnt/c/WINDOWS/explorer.exe .";
         };
 
@@ -537,7 +537,7 @@ in
 
 ** Fern - T490
 *** Configuration.nix
-#+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config-org/fern/configuration.nix
+#+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/fern/configuration.nix
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
@@ -585,8 +585,8 @@ in
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
   services.xserver = 
@@ -676,7 +676,7 @@ in
 #+end_src
 
 *** Home.nix
-#+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config-org/fern/home.nix
+#+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/fern/home.nix
 { config, pkgs, stable, machine, ... }:
 {
   # home.username = userSettings.name;

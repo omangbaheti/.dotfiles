@@ -33,8 +33,8 @@
              find = "fd";
              e="emacsclient -c";
              emd = "emacs --daemon";
-             rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config-org#${machine.systemType}";
-             rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config-org#${machine.username}@${machine.host}";
+             rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config#${machine.systemType}";
+             rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config#${machine.username}@${machine.host}";
              exp="/mnt/c/WINDOWS/explorer.exe .";
          };
  

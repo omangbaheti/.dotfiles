@@ -86,7 +86,7 @@ in
       texliveFull
       
       #Nix 
-      nixfmt-rfc-style
+      nixfmt
       statix
       nil
       
