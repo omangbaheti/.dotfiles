@@ -1,10 +1,33 @@
 { config, pkgs, stable, ... }:
+let
+  python-with-packages = pkgs.python3.withPackages (ps: with ps; [
+    numpy
+    pandas
+    dill
+    requests
+    matplotlib
+    scipy
+    # Remove jupyter and jupyterlab - managed by services.jupyter
+    seaborn
+    xlib
+    epc
+    sexpdata
+    six
+    inflect
+    pyqt6
+    pyqt6-sip
+    pyqt6-webengine
+    qrcode
+    python-lsp-server
+    watchdog
+    ipykernel  # Keep this for the kernel
+  ]);
+in
 {
   nix.settings.experimental-features = ["nix-command" "flakes"];
   environment.systemPackages = with pkgs;
     [
       #cli tools
-      
       git
       git-lfs
       lazygit
@@ -38,12 +61,13 @@
       libvterm
       libgcc
       libtool
-     
+      
       #python 
       pylint
       basedpyright
       pyrefly
-     
+      python-with-packages
+      
       #node 
       nodejs_24
       
@@ -60,7 +84,7 @@
       ltex-ls-plus
       texlab
       texliveFull
-     
+      
       #Nix 
       nixfmt-rfc-style
       statix
