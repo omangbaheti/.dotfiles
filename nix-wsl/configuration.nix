@@ -57,8 +57,6 @@ in
   wsl.enable = true;
   wsl.defaultUser = "nixos";
   programs.zsh.enable = true;
-  
-
   users.defaultUserShell = pkgs.zsh;
   fonts.packages = with pkgs.nerd-fonts; 
     [ 
@@ -105,7 +103,7 @@ in
   environment.systemPackages = with pkgs;
     [
       home-manager
-      vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+      vim 
       btop
       wiper
       git
@@ -158,6 +156,7 @@ in
       devenv
       nix-direnv
       basedpyright
+      mupdf
     ];
 
   # This value determines the NixOS release from which the default
