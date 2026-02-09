@@ -1,10 +1,33 @@
-{ config, pkgs, unstable, ... }:
+{ config, pkgs, stable, ... }:
+let
+  python-with-packages = pkgs.python3.withPackages (ps: with ps; [
+    numpy
+    pandas
+    dill
+    requests
+    matplotlib
+    scipy
+    # Remove jupyter and jupyterlab - managed by services.jupyter
+    seaborn
+    xlib
+    epc
+    sexpdata
+    six
+    inflect
+    pyqt6
+    pyqt6-sip
+    pyqt6-webengine
+    qrcode
+    python-lsp-server
+    watchdog
+    ipykernel  # Keep this for the kernel
+  ]);
+in
 {
   nix.settings.experimental-features = ["nix-command" "flakes"];
   environment.systemPackages = with pkgs;
     [
       #cli tools
-      
       git
       git-lfs
       lazygit
@@ -29,6 +52,7 @@
       pandoc
       
       #LSPs / Compilers / Dev Envs
+      #C/C++
       glib
       gdb
       clang
@@ -38,16 +62,22 @@
       libgcc
       libtool
       
+      #python 
       pylint
       basedpyright
-      unstable.pyrefly
+      pyrefly
+      python-with-packages
       
+      #node 
       nodejs_24
       
-      zulu8 #openjdk
+      #openjdk
+      zulu8 
       
+      # C#
       omnisharp-roslyn
       
+      #Latex LSP and grammar checking
       (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
       proselint
       harper
@@ -55,13 +85,16 @@
       texlab
       texliveFull
       
-      nixfmt-rfc-style
+      #Nix 
+      nixfmt
       statix
       nil
       
       #misc    
       home-manager
       languagetool
+      
+      #misc     
       firefox
       coreutils
       syncthing

@@ -5,57 +5,23 @@
 # NixOS-WSL specific options are documented on the NixOS-WSL repository:
 # https://github.com/nix-community/NixOS-WSL
 
-{config, lib, pkgs, unstable, ... }:
+{config, lib, pkgs, stable, machine, ... }:
 let
-  R-with-my-packages = unstable.rWrapper.override {
-    packages = with unstable.rPackages; [
-      IRkernel
-      ez
-      dplyr
-      effsize
-      tidyr
-      purrr
-      car
-      nlme
-      reshape2
-      rstatix
-      prettyR
-      afex
-      estimability
-      emmeans
-      ARTool
-      multcomp
-      digest
-    ];
-  };
-  python-with-packages = pkgs.python3.withPackages (ps: with ps; [
-    numpy
-    pandas
-    dill
-    requests
-    matplotlib
-    scipy
-    # Remove jupyter and jupyterlab - managed by services.jupyter
-    seaborn
-    xlib
-    epc
-    sexpdata
-    six
-    inflect
-    pyqt6
-    pyqt6-sip
-    pyqt6-webengine
-    qrcode
-    python-lsp-server
-    watchdog
-    ipykernel  # Keep this for the kernel
-  ]);
+  userName = machine.username;
+  allowUnfree = machine.allowUnfree;
 in
 {
-
-  nix.settings.trusted-users = [ "root" "nixos" ];
+  nix.settings.trusted-users = [ "root" userName];
+  nixpkgs.config.allowUnfree = allowUnfree;
+  
   wsl.enable = true;
-  wsl.defaultUser = "nixos";
+  wsl.defaultUser = userName;
+  
+  imports = 
+    [
+      ../modules/common-packages.nix 
+    ];
+  
   fonts.packages = with pkgs.nerd-fonts; 
     [ 
       jetbrains-mono
@@ -65,11 +31,9 @@ in
       dejavu-sans-mono
       symbols-only
     ];
-  imports = [ ../modules/common-packages.nix ];
   
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
-  nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs;
     [

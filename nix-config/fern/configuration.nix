@@ -2,19 +2,25 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, systemSettings, userSettings, ... }:
-
+{ config, pkgs, stable, machine, ... }:
+let
+  hostname = machine.host;
+  username = machine.username;
+  allowUnfree = machine.allowUnfree;
+in
 {
+  nix.settings.experimental-features = ["nix-command" "flakes"];
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ../modules/common-packages.nix 
     ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages;
-  networking.hostName = systemSettings.hostname; # Define your hostname.
+  networking.hostName = hostname; # Define your hostname.
   #networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -26,29 +32,28 @@
   # networking.useDHCP = false;
   # networking.interfaces.eno1.useDHCP = true;
 
-  nix.settings.experimental-features = ["nix-command" "flakes"];
 
-  nixpkgs.config.allowUnfree = systemSettings.allowUnfree;
+  nixpkgs.config.allowUnfree = true;
 
   # Set your time zone.
   # time.timeZone = systemSettings.timezone;
 
   # Select internationalisation properties.
-  i18n.defaultLocale = systemSettings.defaultLocale;
+  # i18n.defaultLocale = systemSettings.defaultLocale;
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
   services.xserver = 
-  {
-    xkb.layout = "us";
-    xkb.variant = "";
-  };
+    {
+      xkb.layout = "us";
+      xkb.variant = "";
+    };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -58,34 +63,30 @@
   security.rtkit.enable = true;
   services.power-profiles-daemon.enable = true;
   services.pipewire = 
-  {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    jack.enable = true;
+    {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      # If you want to use JACK applications, uncomment this
+      jack.enable = true;
 
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
+      # use the example session manager (no others are packaged yet so this is enabled by default,
+      # no need to redefine it in your config for now)
+      #media-session.enable = true;
+    };
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.fern = 
-  {
-    isNormalUser = true;
-    description = "Fern";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = [];
-  };
-
-  # Install firefox.
-  programs.firefox.enable = true;
-
+    {
+      isNormalUser = true;
+      description = "Fern";
+      extraGroups = [ "networkmanager" "wheel" ];
+      packages = [];
+    };
 
   fonts.packages = with pkgs.nerd-fonts; 
     [ 
@@ -96,74 +97,21 @@
       dejavu-sans-mono
       symbols-only
     ];
-
-
-  # Allow unfree packages
   
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
+  
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; 
-  [
-  home-manager
-  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  git
-  git-lfs
-  gitkraken
-  zoxide
-  zsh
-  oh-my-posh
-  fzf
-  emacs
-  ripgrep
-  coreutils
-  fd
-  clang
-  yazi
-  lazygit
-  vscode
-  nodejs_24
-  (python3.withPackages (ps: with ps; [
-    numpy
-    pandas
-    dill
-    requests
-    matplotlib
-    scipy
-    jupyter
-    jupyterlab
-    seaborn
-    xlib
-    epc
-    sexpdata
-    six
-    inflect
-    pyqt6
-    pyqt6-sip
-    pyqt6-webengine
-    qrcode
-    python-lsp-server
-  ]))
-  libgcc
-  syncthing
-  fastfetch
-  alacritty
-  texliveFull
-  texlivePackages.chktex
-  nil
-  masterpdfeditor
-  ltex-ls-plus
-  texlab
-  jre
-  languagetool
-  protonvpn-gui
-  localsend
-  chromium
-  eza
-  qbittorrent
-  hugo
-  ];
+    [
+      gitkraken
+      vscode
+      nodejs_24
+      alacritty
+      chromium
+      qbittorrent
+    ];
 
   services.fprintd.enable = false;
   # Some programs need SUID wrappers, can be configured further or are
@@ -192,5 +140,4 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.11"; # Did you read the comment?
-
 }

@@ -1,0 +1,47 @@
+* Some config inspirations
+#+begin_example
+https://github.com/idlip/d-nix 
+https://github.com/mitchellh/nixos-config
+https://github.com/CoultonF/dotfiles
+https://github.com/librephoenix/nixos-config
+#+end_example
+
+* Commands and Troubleshooting
+** Cloning the first time
+#+begin_src bash
+cd ~
+git clone git@github.com:omangbaheti/.dotfiles.git .dotfiles
+#+end_src
+
+** Rebuild Configuration
+#+begin_src bash 
+sudo nixos-rebuild switch --flake .#<hostname> --impure
+#+end_src
+
+** Rebuild Homemanager
+#+begin_src sh
+home-manager switch --flake  ~/.dotfiles/nix-config-org#$<username>@$<hostname>
+#+end_src
+
+** Flakes not enabled
+- Open /etc/configuration.nix
+- add "nix.settings.experimental-features = ["nix-command" "flakes"];"
+ 
+* Creating Custom Dev Environments
+
+#+begin_src bash
+devenv init
+direnv allow #to allow automatically switching to the env
+#+end_src
+
+** Refresh shell
+#+begin_src bash
+direnv reload
+#+end_src
+
+** Update libraries
+Updates the lock file
+#+begin_src bash
+devenv update
+#+end_src
+
