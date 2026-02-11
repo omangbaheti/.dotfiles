@@ -17,7 +17,7 @@
   - [[#setting-the-font-face][Setting the Font Face]]
   - [[#zooming-inout][Zooming In/Out]]
 - [[#emacs-sane-defaults][EMACS SANE DEFAULTS]]
-  - [[#disable-menubar][Disable Menubar,]]
+  - [[#disable-menubar][Disable Menubar]]
   - [[#display-line-numbers-and-truncated-lines][Display Line Numbers and Truncated Lines]]
   - [[#backups][Backups]]
   - [[#minibuffer-escape][Minibuffer escape]]
@@ -84,6 +84,7 @@
 - [[#direnv-mode][DIRENV MODE]]
 - [[#convert-pdfs][CONVERT PDFS]]
 - [[#emacs-reader][Emacs reader]]
+- [[#hololayer][Hololayer]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 
@@ -231,6 +232,25 @@
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 #+end_src
 
+*** Code Folding
+#+begin_src emacs-lisp
+(use-package outline-indent
+  :ensure t
+  :commands outline-indent-minor-mode
+  :hook 
+  ((python-mode . outline-indent-minor-mode)
+   (python-ts-mode . outline-indent-minor-mode)
+   (yaml-mode . outline-indent-minor-mode)
+   (yaml-ts-mode . outline-indent-minor-mode) 
+   (nix-mode . outline-indent-minor-mode)
+   (emacs-lisp-mode . outline-indent-minor-mode))
+  :custom
+  (outline-indent-ellipsis " ..."))
+#+end_src
+
+#+RESULTS:
+: [nil 27018 36511 571225 nil elpaca-process-queues nil nil 884000 nil]
+
 
 ** TODO CASUAL
 
@@ -265,7 +285,8 @@
   (leader-key
     "SPC" '(consult-find-home :wk "Consult Find")
     "." '(find-file :wk "Find file")
-    "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
+    "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit Emacs Config")
+    "f n" '((lambda () (interactive) (find-file "~/.dotfiles/nix-config/nix.org")) :wk "Edit Nix Config")
     "f r" '(consult-recent-file :wk "Find Recent Files")
     "f /" '(consult-line :wk "Find Line")
     "TAB TAB" '(comment-line :wk "Comment lines"))
@@ -394,6 +415,7 @@
 
   (leader-key
     "t" '(:ignore t :wk "Toggle")
+    "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t t" '(visual-line-mode :wk "Toggle truncated lines")
     "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
@@ -430,8 +452,6 @@
 
 #+END_SRC
 
-#+RESULTS:
-: [nil 27015 24160 708312 nil elpaca-process-queues nil nil 252000 nil]
 
 ** HYDRA
 #+begin_src emacs-lisp
@@ -656,7 +676,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 * EMACS SANE DEFAULTS
 
-** Disable Menubar, 
+** Disable Menubar 
 
 #+begin_src emacs-lisp
 (setq frame-title-format "%b")
@@ -675,6 +695,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
+
 ;; WHy am i havin to do this
 (setq enable-local-variables t)
 #+end_src
@@ -726,15 +747,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 
 #+begin_src emacs-lisp
 (use-package helpful
-  :ensure t              ;; install from MELPA if not present
-  :bind
-  ;; Replace default help bindings with helpful equivalents
-  (("C-h f" . helpful-function)
-   ("C-h v" . helpful-variable)
-   ("C-h k" . helpful-key)
-   ("C-h x" . helpful-command)
-   ;; optional: help at point
-   ("C-c C-d" . helpful-at-point)))
+  :ensure t)
 #+end_src
 
 #+RESULTS:
@@ -761,11 +774,14 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   ;; ;; Stealth fontification kicks in quickly
   ;; (jit-lock-stealth-time 0.2)
   ;; (jit-lock-stealth-nice 0.1)
-  ;;(jit-lock-stealth-load 200)
+  ;; (jit-lock-stealth-load 200)
   ;; ;; Ensure maximum chunks get refontified eagerly
   ;; (jit-lock-chunk-size 5000)
   )      
 #+end_src
+
+#+RESULTS:
+: t
 
 
 
@@ -2558,10 +2574,11 @@ https://github.com/rougier/notebook-mode
 
 #+begin_src emacs-lisp
 (use-package direnv
-  :ensure t
- :config
- (direnv-mode))
+  :ensure t)
 #+end_src
+
+#+RESULTS:
+: [nil 27018 36288 403563 nil elpaca-process-queues nil nil 136000 nil]
 
 * CONVERT PDFS
 
@@ -2734,3 +2751,21 @@ Preserves existing entries to avoid overwriting."
 # #+RESULTS:
 # | #[nil ((add-hook 'post-command-hook #'doom-modeline-update-reader-pages nil t)) (cl-struct-doom-modeline--hud-cache-tags xah-fly-insert-state-p winum-auto-setup-mode-line visual-replace--match-ovs visual-replace--calling-buffer tracking-buffers symbol-overlay-temp-symbol symbol-overlay-keywords-alist rcirc-activity reader-current-doc-pagecount reader-current-doc-pagenumber projectile-mode-map phi-search-mode-line-format phi-search--selection phi-search--overlays phi-replace--mode-line-format persp-nil-name objed-modeline-setup-func objed--object objed--obj-state mu4e-modeline-mode mu4e-alert-modeline-formatter mu4e-alert-mode-line mu4e--modeline-item mlscroll-right-align minions-mode-line-minor-modes-map minions-mode-line-lighter meow--current-state meow--indicator kele-menu-map iedit-occurrences-overlays helm--mode-line-display-prefarg grip--process gnus-newsrc-hashtb gnus-newsrc-alist flymake-menu flymake--state flymake--mode-line-format flycheck-mode-menu-map flycheck-current-errors flycheck--automatically-enabled-checkers evil-mc-frozen erc-modified-channels-alist eglot-server-menu eglot-menu-string eglot-menu eglot--managed-mode edebug-execution-mode display-time-string boon-special-state boon-off-state boon-insert-state boon-command-state battery-status-function battery-update-functions battery-mode-line-limit battery-mode-line-format battery-load-critical battery-echo-area-format aw-keys anzu-cons-mode-line-p anzu--total-matched anzu--state anzu--overflow-p anzu--current-position anzu--cached-count t)] | #[nil ((evil-define-key 'normal (current-local-map) (kbd j) #'reader-scroll-down (kbd k) #'reader-scroll-up (kbd h) #'reader-prev-page (kbd l) #'reader-next-page (kbd q) #'quit-window)) nil] |
 
+* Hololayer
+#+begin_src emacs-lisp
+(use-package holo-layer
+  :ensure (:host github
+           :repo "manateelazycat/holo-layer" 
+           :files ("*")
+)
+  :init
+  (setq holo-layer-enable-cursor-animation t)
+  (setq holo-layer-enable-indent-rainbow t)
+)
+#+end_src
+
+#+RESULTS:
+: [nil 27020 19978 566701 nil elpaca-process-queues nil nil 906000 nil]
+#+begin_src emacs-lisp
+
+#+end_src
