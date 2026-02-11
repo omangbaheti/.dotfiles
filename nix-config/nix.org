@@ -793,7 +793,6 @@ in
 eval "$(direnv hook zsh)"
 eval "$(zoxide init zsh)"
 eval "$(oh-my-posh init zsh)"
-export R_LIBS_SITE=$(ls -d /nix/store/*-r-*/library | tr '\n' ':')
 
 PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
 
