@@ -110,8 +110,6 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
     mkHome = machine:
       home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${machine.system};
-        home-manager.useGlobalPkgs = true;
-        home-manager.useUserPackages = true;
         extraSpecialArgs = 
           {
             machine = machine;
@@ -125,6 +123,8 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           ({ ... }: {
             home.username = machine.username;
             home.homeDirectory = "/home/${machine.username}";
+            # home-manager.useGlobalPkgs = true;
+            # home-manager.useUserPackages = true;
           })
     
           # Put your actual HM module(s) here

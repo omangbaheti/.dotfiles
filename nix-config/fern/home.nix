@@ -26,9 +26,9 @@
          shellAliases = 
          {
              ll = "eza -l";
-             la = "eza -lah --tree";
+             la = "eza -lah --tree --ignore-glob='.git|.venv|node_modules'";
              ls = "eza -h --git --icons --color=auto --group-directories-first -s extension";
-             tree = "eza --tree --icons";
+             tree = "eza --tree --icons --ignore-glob='.git|.venv|node_modules'";
              grep = "rg";
              find = "fd";
              e="emacsclient -c";
