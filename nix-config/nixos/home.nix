@@ -71,14 +71,7 @@
   };  
   programs.zsh.initContent = 
     ''
- #DISPLAY=$(ip route | grep default | awk '{print $3}'):0.0
- #LIBGL_ALWAYS_INDIRECT=1  
- eval "$(direnv hook zsh)"
- eval "$(zoxide init zsh)"
- eval "$(oh-my-posh init zsh)"
- eval "$(tirith init --shell zsh)"
  PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
- 
  function isWinDir 
  {
      case "$PWD/" in
@@ -97,6 +90,11 @@
          command lazygit "$@"
      fi 
  }
+ 
+ eval "$(zoxide init zsh)"
+ eval "$(oh-my-posh init zsh)"
+ eval "$(tirith init --shell zsh)"
+ eval "$(direnv hook zsh)"
 '';
 
   services.ssh-agent.enable = true;

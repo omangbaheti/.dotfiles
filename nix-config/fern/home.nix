@@ -66,6 +66,7 @@
 eval "$(zoxide init zsh)"
 eval "$(oh-my-posh init zsh)"
 eval "$(tirith init --shell zsh)"
+eval "$(direnv hook zsh)"
     '';
   
   nixpkgs.config.allowUnfree = true;
@@ -74,8 +75,9 @@ eval "$(tirith init --shell zsh)"
       #Dev-Tools
       jetbrains.rider
       unityhub
+      
       #ventoy
-      bitwarden-desktop
+      #bitwarden-desktop
       blender
       rclone
       
@@ -137,38 +139,6 @@ eval "$(tirith init --shell zsh)"
           ]
       );
     };
-
-  #   programs.zsh = {
-  #     enable = true;
-  #     enableCompletion = true;
-  #     autosuggestion.enable = true;
-  #     syntaxHighlighting.enable = true;
-
-  #     shellAliases = {
-  #       ll = "eza -l";
-  #       la = "eza -la";
-  #       ls = "eza";
-  #       grep = "rg";
-  #       find = "fd";
-  #       e="emacsclient -c";
-  #       update-config = "sudo nixos-rebuild switch --flake .#nixos";
-  #       exp="/mnt/c/WINDOWS/explorer.exe .";
-  #     };
-
-  #     oh-my-zsh = {
-  #       enable = true;
-  #       plugins = [ "git" "sudo" ];
-  #       theme = "robbyrussell";
-  #     };
-  
-  #     initContent = ''
-  # alias edituserconfig="code ~/.dotfiles/nix-devices-config/t490/home.nix"
-  # alias editsystemconfig="code ~/.dotfiles/profiles/t490/configuration.nix"
-  # alias updatesystemconfig="sudo nixos-rebuild switch --flake ~/.dotfiles/nix-devices-config"
-  # alias updateuserconfig="home-manager switch --flake ~/.dotfiles/nix-devices-config#user" 
-  # '';
-
-  #   };
 
   home.sessionVariables = 
     {

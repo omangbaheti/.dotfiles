@@ -9,6 +9,12 @@ inputs =
         url = "github:nix-community/NixOS-WSL";
         inputs.nixpkgs.follows = "nixpkgs";
       };
+    
+    nix-on-droid = 
+      {
+        url = "github:nix-community/nix-on-droid/release-24.05";
+        inputs.nixpkgs.follows = "nixpkgs";
+      };
 
     home-manager = 
       {
@@ -16,7 +22,7 @@ inputs =
         inputs.nixpkgs.follows = "nixpkgs";
       };
   };
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager, ... }@inputs: 
   let
     # stableFor = system:
     #   nixpkgs-stable.legacyPackages.${system};
@@ -59,6 +65,13 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 username = "nyx";
                 systemType = "nyx";
               };
+        annie = commonSettings //
+                {
+                  system = "aarch64-linux";
+                  host = "nix-on-droid";
+                  username = "annie";
+                  systemType = "nix-on-droid";
+                };
 
         sakura = (commonSettings // # overriding system when required
                   {
@@ -140,12 +153,18 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           nyx    = mkSystem machines.nyx;
           sakura = mkSystem machines.sakura;
         };
+      
+      nixOnDroidConfigurations.default = {
+        mkDroidSystem machines.annie;
+      };
+
       homeConfigurations = 
         {
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
           "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
+          "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
         };
     };
 }
