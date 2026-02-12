@@ -12,7 +12,8 @@ dependencies = [
     "mistralai (>=1.10.0,<2.0.0)",
     "pandas (>=2.3.3,<3.0.0)",
     "matplotlib (>=3.10.8,<4.0.0)",
-    "jupyter (>=1.1.1,<2.0.0)"
+    "jupyter (>=1.1.1,<2.0.0)",
+    "experiment-server (>=0.3.6,<0.4.0)"
 ]
 
 
