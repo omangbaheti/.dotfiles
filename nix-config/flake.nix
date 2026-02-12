@@ -68,7 +68,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
         annie = commonSettings //
                 {
                   system = "aarch64-linux";
-                  host = "nix-on-droid";
+                  host = "annie";
                   username = "annie";
                   systemType = "nix-on-droid";
                 };
@@ -130,6 +130,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
         in 
            nix-on-droid.lib.nixOnDroidConfiguration 
             {
+               inherit pkgs;
                modules = 
                  [
                    
@@ -184,9 +185,9 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
           sakura = mkSystem machines.sakura;
         };
       
-      nixOnDroidConfigurations.default = 
+      nixOnDroidConfigurations = 
         {
-          mkDroidSystem machines.annie;
+          annie = mkDroidSystem machines.annie;
         };
 
       homeConfigurations = 
