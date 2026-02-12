@@ -120,7 +120,6 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
             };
           }; 
     mkDroidSystem = machine: 
-      {
         let pkgs = import nixpkgs 
           {
             system = "aarch64-linux";
@@ -129,30 +128,28 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
             ];
           };
         in 
-          {
-          nixOnDroidConfigurations.default = nix-on-droid.lib.nixOnDroidConfiguration 
+           nix-on-droid.lib.nixOnDroidConfiguration 
             {
                modules = 
                  [
                    
-                ({ ... }: {
-                  home-manager.extraSpecialArgs = {
+                ({ ... }: 
+                  {
+                  home-manager.extraSpecialArgs = 
+                    {
                     inherit machine;
                     stable = stableFor machine.system;
                     host = machine.host;
                     username = machine.username;
                     systemType = machine.systemType;
                     machines = machines;
-                  };
-    
+                    };
                   home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
-                })
+                  })
     
                 ./${machine.host}/configuration.nix
-                 ]
+                 ];
             };
-          };
-    };
     mkHome = machine:
       home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${machine.system};

@@ -229,7 +229,6 @@ mkHome = machine:
 #+name:makeDroid
 #+begin_src nix
 mkDroidSystem = machine: 
-  {
     let pkgs = import nixpkgs 
       {
         system = "aarch64-linux";
@@ -238,30 +237,28 @@ mkDroidSystem = machine:
         ];
       };
     in 
-      {
-      nixOnDroidConfigurations.default = nix-on-droid.lib.nixOnDroidConfiguration 
+       nix-on-droid.lib.nixOnDroidConfiguration 
         {
            modules = 
              [
                
-            ({ ... }: {
-              home-manager.extraSpecialArgs = {
+            ({ ... }: 
+              {
+              home-manager.extraSpecialArgs = 
+                {
                 inherit machine;
                 stable = stableFor machine.system;
                 host = machine.host;
                 username = machine.username;
                 systemType = machine.systemType;
                 machines = machines;
-              };
-
+                };
               home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
-            })
+              })
 
             ./${machine.host}/configuration.nix
-             ]
+             ];
         };
-      };
-};
 #+end_src
 
 * Common Configuration 
