@@ -100,5 +100,8 @@ in
       syncthing
       hugo
       mupdf
+      tirith
+      scrcpy
+      android-tools
     ];
 }
