@@ -119,7 +119,40 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
               systemType = machine.systemType;
             };
           }; 
+    mkDroidSystem = machine: 
+      {
+        let pkgs = import nixpkgs 
+          {
+            system = "aarch64-linux";
+            overlays = [
+              nix-on-droid.overlays.default
+            ];
+          };
+        in 
+          {
+          nixOnDroidConfigurations.default = nix-on-droid.lib.nixOnDroidConfiguration 
+            {
+               modules = 
+                 [
+                   
+                ({ ... }: {
+                  home-manager.extraSpecialArgs = {
+                    inherit machine;
+                    stable = stableFor machine.system;
+                    host = machine.host;
+                    username = machine.username;
+                    systemType = machine.systemType;
+                    machines = machines;
+                  };
     
+                  home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
+                })
+    
+                ./${machine.host}/configuration.nix
+                 ]
+            };
+          };
+    };
     mkHome = machine:
       home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${machine.system};
@@ -154,9 +187,10 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
           sakura = mkSystem machines.sakura;
         };
       
-      nixOnDroidConfigurations.default = {
-        mkDroidSystem machines.annie;
-      };
+      nixOnDroidConfigurations.default = 
+        {
+          mkDroidSystem machines.annie;
+        };
 
       homeConfigurations = 
         {

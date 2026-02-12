@@ -26,6 +26,7 @@
 - [[#zsh-config][ZSH Config]]
   - [[#wsl-config][WSL Config]]
   - [[#fern-config][Fern Config]]
+  - [[#annie-config][Annie Config]]
 
 * Flake Structure
 #+begin_src nix :tangle flake.nix :noweb yes
@@ -126,7 +127,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
                   });
       };
     <<makeSystem>> 
-    
+    <<makeDroid>>
     <<makeHome>>
   in
     {
@@ -138,9 +139,10 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
           sakura = mkSystem machines.sakura;
         };
       
-      nixOnDroidConfigurations.default = {
-        mkDroidSystem machines.annie;
-      };
+      nixOnDroidConfigurations.default = 
+        {
+          mkDroidSystem machines.annie;
+        };
 
       homeConfigurations = 
         {
@@ -235,7 +237,8 @@ mkDroidSystem = machine:
           nix-on-droid.overlays.default
         ];
       };
-    in
+    in 
+      {
       nixOnDroidConfigurations.default = nix-on-droid.lib.nixOnDroidConfiguration 
         {
            modules = 
@@ -256,8 +259,9 @@ mkDroidSystem = machine:
 
             ./${machine.host}/configuration.nix
              ]
-        }
-  }
+        };
+      };
+};
 #+end_src
 
 * Common Configuration 
@@ -907,3 +911,5 @@ function lazygit
 #+begin_src bash :noweb yes
 <<commonZshConfig>>
 #+end_src 
+
+** Annie Config

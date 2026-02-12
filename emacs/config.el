@@ -118,6 +118,19 @@
    '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 
+(use-package outline-indent
+  :ensure t
+  :commands outline-indent-minor-mode
+  :hook 
+  ((python-mode . outline-indent-minor-mode)
+   (python-ts-mode . outline-indent-minor-mode)
+   (yaml-mode . outline-indent-minor-mode)
+   (yaml-ts-mode . outline-indent-minor-mode) 
+   (nix-mode . outline-indent-minor-mode)
+   (emacs-lisp-mode . outline-indent-minor-mode))
+  :custom
+  (outline-indent-ellipsis " ..."))
+
 ;; (use-package casual
 ;;   :ensure t
 ;;   :config)
@@ -145,7 +158,8 @@
   (leader-key
     "SPC" '(consult-find-home :wk "Consult Find")
     "." '(find-file :wk "Find file")
-    "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit emacs config")
+    "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit Emacs Config")
+    "f n" '((lambda () (interactive) (find-file "~/.dotfiles/nix-config/nix.org")) :wk "Edit Nix Config")
     "f r" '(consult-recent-file :wk "Find Recent Files")
     "f /" '(consult-line :wk "Find Line")
     "TAB TAB" '(comment-line :wk "Comment lines"))
@@ -274,6 +288,7 @@
 
   (leader-key
     "t" '(:ignore t :wk "Toggle")
+    "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
     "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
     "t t" '(visual-line-mode :wk "Toggle truncated lines")
     "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
@@ -499,6 +514,7 @@ one, an error is signaled."
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
+
 ;; WHy am i havin to do this
 (setq enable-local-variables t)
 
@@ -510,6 +526,18 @@ one, an error is signaled."
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 
 (global-set-key [escape] 'keyboard-escape-quit)
+
+(require 'epg)
+;; (setq epa-pinentry-mode 'loopback)
+(use-package pinentry
+  :ensure t
+  :init
+  (setq epg-pinentry-mode 'loopback)
+  (setq epa-pinentry-mode 'loopback) ; alias on many Emacs versions
+  :config
+  (pinentry-start))
+;; (require 'pinentry)
+;; (pinentry-start)
 
 (delete-selection-mode 1)
 (electric-indent-mode -1)
@@ -527,15 +555,7 @@ one, an error is signaled."
 )
 
 (use-package helpful
-  :ensure t              ;; install from MELPA if not present
-  :bind
-  ;; Replace default help bindings with helpful equivalents
-  (("C-h f" . helpful-function)
-   ("C-h v" . helpful-variable)
-   ("C-h k" . helpful-key)
-   ("C-h x" . helpful-command)
-   ;; optional: help at point
-   ("C-c C-d" . helpful-at-point)))
+  :ensure t)
 
 (setq font-lock-multiline t)
 ;; (setq jit-lock-defer-time 0) ; Immediate fontification
@@ -555,7 +575,7 @@ one, an error is signaled."
   ;; ;; Stealth fontification kicks in quickly
   ;; (jit-lock-stealth-time 0.2)
   ;; (jit-lock-stealth-nice 0.1)
-  ;;(jit-lock-stealth-load 200)
+  ;; (jit-lock-stealth-load 200)
   ;; ;; Ensure maximum chunks get refontified eagerly
   ;; (jit-lock-chunk-size 5000)
   )
@@ -2011,9 +2031,7 @@ tags from the candidate string presented to the completion framework."
                             :padding 0)))))))
 
 (use-package direnv
-  :ensure t
- :config
- (direnv-mode))
+  :ensure t)
 
 (defun my-get-citar-resources (citekey)
   "Get all resources associated with CITEKEY.
@@ -2155,3 +2173,28 @@ Preserves existing entries to avoid overwriting."
     
     (message "Exported %d citar entries to %s" 
              (hash-table-count all-entries) output-file)))
+
+;; (use-package reader
+;; :defer t
+;; :init
+;; (add-hook 'reader-mode-hook
+;;             (lambda ()
+;;               (evil-define-key 'normal (current-local-map)
+;;                 (kbd "j") #'reader-scroll-down
+;;                 (kbd "k") #'reader-scroll-up
+;;                 (kbd "h") #'reader-prev-page
+;;                 (kbd "l") #'reader-next-page
+;;                 (kbd "q") #'quit-window)
+;; )))
+
+;; (use-package smudge
+;;   :ensure t
+;;   :bind-keymap ("C-c ." . smudge-command-map)
+;;   :custom
+;;   (smudge-oauth2-client-secret "30d23b9081314d30a278f958e235de47")
+;;   (smudge-oauth2-client-id "2bb0d14b78a34f7a90ffdf7107656d8e")
+;;   ;; optional: enable transient map for frequent commands
+;;   (smudge-player-use-transient-map t)
+;;   :config
+;;   ;; optional: display current song in mode line
+;;   (global-smudge-remote-mode))
