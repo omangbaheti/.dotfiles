@@ -84,7 +84,7 @@
 - [[#direnv-mode][DIRENV MODE]]
 - [[#convert-pdfs][CONVERT PDFS]]
 - [[#emacs-reader][Emacs reader]]
-- [[#hololayer][Hololayer]]
+- [[#smudge][SMUDGE]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 
@@ -2733,39 +2733,22 @@ Preserves existing entries to avoid overwriting."
 #+end_src
 
 * Emacs reader
-# #+begin_src emacs-lisp
-# (use-package reader
-# :defer t
-# :init
-# (add-hook 'reader-mode-hook
-#             (lambda ()
-#               (evil-define-key 'normal (current-local-map)
-#                 (kbd "j") #'reader-scroll-down
-#                 (kbd "k") #'reader-scroll-up
-#                 (kbd "h") #'reader-prev-page
-#                 (kbd "l") #'reader-next-page
-#                 (kbd "q") #'quit-window)
-# )))
-# #+end_src
-
-# #+RESULTS:
-# | #[nil ((add-hook 'post-command-hook #'doom-modeline-update-reader-pages nil t)) (cl-struct-doom-modeline--hud-cache-tags xah-fly-insert-state-p winum-auto-setup-mode-line visual-replace--match-ovs visual-replace--calling-buffer tracking-buffers symbol-overlay-temp-symbol symbol-overlay-keywords-alist rcirc-activity reader-current-doc-pagecount reader-current-doc-pagenumber projectile-mode-map phi-search-mode-line-format phi-search--selection phi-search--overlays phi-replace--mode-line-format persp-nil-name objed-modeline-setup-func objed--object objed--obj-state mu4e-modeline-mode mu4e-alert-modeline-formatter mu4e-alert-mode-line mu4e--modeline-item mlscroll-right-align minions-mode-line-minor-modes-map minions-mode-line-lighter meow--current-state meow--indicator kele-menu-map iedit-occurrences-overlays helm--mode-line-display-prefarg grip--process gnus-newsrc-hashtb gnus-newsrc-alist flymake-menu flymake--state flymake--mode-line-format flycheck-mode-menu-map flycheck-current-errors flycheck--automatically-enabled-checkers evil-mc-frozen erc-modified-channels-alist eglot-server-menu eglot-menu-string eglot-menu eglot--managed-mode edebug-execution-mode display-time-string boon-special-state boon-off-state boon-insert-state boon-command-state battery-status-function battery-update-functions battery-mode-line-limit battery-mode-line-format battery-load-critical battery-echo-area-format aw-keys anzu-cons-mode-line-p anzu--total-matched anzu--state anzu--overflow-p anzu--current-position anzu--cached-count t)] | #[nil ((evil-define-key 'normal (current-local-map) (kbd j) #'reader-scroll-down (kbd k) #'reader-scroll-up (kbd h) #'reader-prev-page (kbd l) #'reader-next-page (kbd q) #'quit-window)) nil] |
-
-* Hololayer
 #+begin_src emacs-lisp
-(use-package holo-layer
-  :ensure (:host github
-           :repo "manateelazycat/holo-layer" 
-           :files ("*")
-)
-  :init
-  (setq holo-layer-enable-cursor-animation t)
-  (setq holo-layer-enable-indent-rainbow t)
-)
+;; (use-package reader
+;; :defer t
+;; :init
+;; (add-hook 'reader-mode-hook
+;;             (lambda ()
+;;               (evil-define-key 'normal (current-local-map)
+;;                 (kbd "j") #'reader-scroll-down
+;;                 (kbd "k") #'reader-scroll-up
+;;                 (kbd "h") #'reader-prev-page
+;;                 (kbd "l") #'reader-next-page
+;;                 (kbd "q") #'quit-window)
+;; )))
 #+end_src
 
-#+RESULTS:
-: [nil 27020 19978 566701 nil elpaca-process-queues nil nil 906000 nil]
+* SMUDGE
 #+begin_src emacs-lisp
 
 #+end_src
