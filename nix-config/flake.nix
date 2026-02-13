@@ -120,7 +120,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
             };
           }; 
     mkDroidSystem = machine: 
-        let pkgs = import nixpkgs 
+        let pkgs = import nixpkgs-stable 
           {
             system = "aarch64-linux";
             overlays = [

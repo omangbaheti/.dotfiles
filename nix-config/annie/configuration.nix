@@ -11,6 +11,7 @@
       git
       git-lfs
       lazygit
+      pinentry-curses
       wiper
       zoxide
       fzf

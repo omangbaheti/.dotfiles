@@ -229,7 +229,7 @@ mkHome = machine:
 #+name:makeDroid
 #+begin_src nix
 mkDroidSystem = machine: 
-    let pkgs = import nixpkgs 
+    let pkgs = import nixpkgs-stable 
       {
         system = "aarch64-linux";
         overlays = [
@@ -842,6 +842,7 @@ in
       git
       git-lfs
       lazygit
+      pinentry-curses
       wiper
       zoxide
       fzf
