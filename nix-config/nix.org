@@ -254,7 +254,7 @@ mkDroidSystem = machine:
                 systemType = machine.systemType;
                 machines = machines;
                 };
-              home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
+              home-manager.config = import ./${machine.host}/home.nix;
               })
 
             ./${machine.host}/configuration.nix
@@ -829,17 +829,39 @@ in
 ** Annie - Nix-OnDroid 
 *** Configuration.nix
 #+begin_src nix :tangle ~/.dotfiles/nix-config/annie/configuration.nix
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, machine, ... }:
 
 {
   
-  imports =
-    [ # Include the results of the hardware scan.
-      ../modules/common-packages.nix 
-    ];
+  # imports =
+  #   [ # Include the results of the hardware scan.
+  #     # ../modules/common-packages.nix 
+  #   ];
   
-  # environment.packages = with pkgs; [
-  # ];
+  environment.packages = with pkgs; [
+      git
+      git-lfs
+      lazygit
+      wiper
+      zoxide
+      fzf
+      vim 
+      zsh
+      oh-my-posh
+      tealdeer
+      btop
+      #nnn  
+      fd
+      eza
+      devenv
+      nix-direnv
+      yazi
+      diff-so-fancy
+      fastfetch
+      ripgrep
+      poetry
+      pandoc
+  ];
 
   # Backup etc files instead of failing to activate generation if a file already exists in /etc
   environment.etcBackupExtension = ".bak";
@@ -859,12 +881,45 @@ in
 
 *** Home.nix
 #+begin_src nix  :tangle ./annie/home.nix :noweb yes
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, machine, ... }:
 
 {
   # Read the changelog before changing this value
   home.stateVersion = "24.05";
-  <<common-home-config>>
+  
+  programs.zsh = 
+    {
+      enable = true;
+      enableCompletion = true;
+      enableAutosuggestions  = true;
+      syntaxHighlighting.enable = true;
+
+      shellAliases = 
+        {
+          ll = "eza -l";
+          la = "eza -lah --tree --ignore-glob='.git|.venv|node_modules'";
+          ls = "eza -h --git --icons --color=auto --group-directories-first -s extension";
+          tree = "eza --tree --icons --ignore-glob='.git|.venv|node_modules'";
+          grep = "rg";
+          find = "fd";
+          e="emacsclient -c";
+          emd = "emacs --daemon";
+          rebuild-config = "nix-on-droid switch --flake ~/.dotfiles/nix-config#${machine.systemType}";
+          rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config#${machine.username}@${machine.host}";
+        };
+
+      oh-my-zsh = 
+        {
+          enable = true;
+          plugins = [ "git" "sudo" ];
+          theme = "robbyrussell";
+        };
+    };
+  
+  programs.zsh.initExtra = 
+    ''
+<<commonZshConfig>>
+    '';
   # insert home-manager config
 }
 #+end_src

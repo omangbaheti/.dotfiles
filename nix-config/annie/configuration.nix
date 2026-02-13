@@ -1,14 +1,36 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, machine, ... }:
 
 {
   
-  imports =
-    [ # Include the results of the hardware scan.
-      ../modules/common-packages.nix 
-    ];
+  # imports =
+  #   [ # Include the results of the hardware scan.
+  #     # ../modules/common-packages.nix 
+  #   ];
   
-  # environment.packages = with pkgs; [
-  # ];
+  environment.packages = with pkgs; [
+      git
+      git-lfs
+      lazygit
+      wiper
+      zoxide
+      fzf
+      vim 
+      zsh
+      oh-my-posh
+      tealdeer
+      btop
+      #nnn  
+      fd
+      eza
+      devenv
+      nix-direnv
+      yazi
+      diff-so-fancy
+      fastfetch
+      ripgrep
+      poetry
+      pandoc
+  ];
 
   # Backup etc files instead of failing to activate generation if a file already exists in /etc
   environment.etcBackupExtension = ".bak";

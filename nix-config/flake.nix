@@ -145,7 +145,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
                     systemType = machine.systemType;
                     machines = machines;
                     };
-                  home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
+                  home-manager.config = import ./${machine.host}/home.nix;
                   })
     
                 ./${machine.host}/configuration.nix

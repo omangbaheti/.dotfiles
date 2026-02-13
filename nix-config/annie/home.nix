@@ -1,28 +1,16 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, machine, ... }:
 
 {
   # Read the changelog before changing this value
   home.stateVersion = "24.05";
-  programs.home-manager.enable = true;
-  
-  programs.zoxide.enable = true;
-  programs.git = {
-    enable = true;
-    settings = {
-      user.name = "Omang Baheti";
-      user.email = "omangbaheti@gmail.com";
-      init.defaultBranch = "main";
-      push.default = "simple";
-    };
-  };
   
   programs.zsh = 
     {
       enable = true;
       enableCompletion = true;
-      autosuggestion.enable = true;
+      enableAutosuggestions  = true;
       syntaxHighlighting.enable = true;
-  
+
       shellAliases = 
         {
           ll = "eza -l";
@@ -33,11 +21,10 @@
           find = "fd";
           e="emacsclient -c";
           emd = "emacs --daemon";
-          rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config#${machine.systemType}";
+          rebuild-config = "nix-on-droid switch --flake ~/.dotfiles/nix-config#${machine.systemType}";
           rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config#${machine.username}@${machine.host}";
-          exp="/mnt/c/WINDOWS/explorer.exe .";
         };
-  
+
       oh-my-zsh = 
         {
           enable = true;
@@ -46,20 +33,12 @@
         };
     };
   
-  services.syncthing = 
-    {
-      enable = true;
-    };
-  
-  programs.gpg.enable = true;
-  
-  services.gpg-agent = {
-    enable = true;
-    pinentry.package = pkgs.pinentry-qt; # or pkgs.pinentry-gtk2 / pkgs.pinentry-curses
-    extraConfig = ''
-        allow-emacs-pinentry
-        allow-loopback-pinentry
-      '';
-  };
+  programs.zsh.initExtra = 
+    ''
+eval "$(zoxide init zsh)"
+eval "$(oh-my-posh init zsh)"
+eval "$(tirith init --shell zsh)"
+eval "$(direnv hook zsh)"
+    '';
   # insert home-manager config
 }
