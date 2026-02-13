@@ -10,19 +10,13 @@ inputs =
         inputs.nixpkgs.follows = "nixpkgs";
       };
     
-    nix-on-droid = 
-      {
-        url = "github:nix-community/nix-on-droid/release-24.05";
-        inputs.nixpkgs.follows = "nixpkgs";
-      };
-
     home-manager = 
       {
         url = "github:nix-community/home-manager/master";
         inputs.nixpkgs.follows = "nixpkgs";
       };
   };
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs: 
   let
     # stableFor = system:
     #   nixpkgs-stable.legacyPackages.${system};
@@ -119,38 +113,6 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
               systemType = machine.systemType;
             };
           }; 
-    mkDroidSystem = machine: 
-        let pkgs = import nixpkgs-stable 
-          {
-            system = "aarch64-linux";
-            overlays = [
-              nix-on-droid.overlays.default
-            ];
-          };
-        in 
-           nix-on-droid.lib.nixOnDroidConfiguration 
-            {
-               inherit pkgs;
-               modules = 
-                 [
-                   
-                ({ ... }: 
-                  {
-                  home-manager.extraSpecialArgs = 
-                    {
-                    inherit machine;
-                    stable = stableFor machine.system;
-                    host = machine.host;
-                    username = machine.username;
-                    systemType = machine.systemType;
-                    machines = machines;
-                    };
-                  home-manager.config = import ./${machine.host}/home.nix;
-                  })
-    
-                ./${machine.host}/configuration.nix
-                 ];
-            };
     mkHome = machine:
       home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${machine.system};
@@ -185,11 +147,6 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
           sakura = mkSystem machines.sakura;
         };
       
-      nixOnDroidConfigurations = 
-        {
-          annie = mkDroidSystem machines.annie;
-        };
-
       homeConfigurations = 
         {
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;

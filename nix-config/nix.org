@@ -20,9 +20,6 @@
   - [[#fern---t490][Fern - T490]]
     - [[#configurationnix-1][Configuration.nix]]
     - [[#homenix-1][Home.nix]]
-  - [[#annie---nix-ondroid][Annie - Nix-OnDroid]]
-    - [[#configurationnix-2][Configuration.nix]]
-    - [[#homenix-2][Home.nix]]
 - [[#zsh-config][ZSH Config]]
   - [[#wsl-config][WSL Config]]
   - [[#fern-config][Fern Config]]
@@ -50,12 +47,6 @@ inputs =
         inputs.nixpkgs.follows = "nixpkgs";
       };
     
-    nix-on-droid = 
-      {
-        url = "github:nix-community/nix-on-droid/release-24.05";
-        inputs.nixpkgs.follows = "nixpkgs";
-      };
-
     home-manager = 
       {
         url = "github:nix-community/home-manager/master";
@@ -67,7 +58,7 @@ inputs =
 ** Flake Outputs
 #+name: flake-output
 #+begin_src nix :noweb yes 
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs: 
   let
     # stableFor = system:
     #   nixpkgs-stable.legacyPackages.${system};
@@ -127,7 +118,6 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
                   });
       };
     <<makeSystem>> 
-    <<makeDroid>>
     <<makeHome>>
   in
     {
@@ -139,11 +129,6 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, nix-on-droid, home-manager
           sakura = mkSystem machines.sakura;
         };
       
-      nixOnDroidConfigurations = 
-        {
-          annie = mkDroidSystem machines.annie;
-        };
-
       homeConfigurations = 
         {
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
@@ -225,42 +210,6 @@ mkHome = machine:
     ];
   };
 #+end_src 
-
-#+name:makeDroid
-#+begin_src nix
-mkDroidSystem = machine: 
-    let pkgs = import nixpkgs-stable 
-      {
-        system = "aarch64-linux";
-        overlays = [
-          nix-on-droid.overlays.default
-        ];
-      };
-    in 
-       nix-on-droid.lib.nixOnDroidConfiguration 
-        {
-           inherit pkgs;
-           modules = 
-             [
-               
-            ({ ... }: 
-              {
-              home-manager.extraSpecialArgs = 
-                {
-                inherit machine;
-                stable = stableFor machine.system;
-                host = machine.host;
-                username = machine.username;
-                systemType = machine.systemType;
-                machines = machines;
-                };
-              home-manager.config = import ./${machine.host}/home.nix;
-              })
-
-            ./${machine.host}/configuration.nix
-             ];
-        };
-#+end_src
 
 * Common Configuration 
 ** Fonts
@@ -823,105 +772,6 @@ in
       # SPAWNEDITOR = userSettings.spawnEditor;
     };
   home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
-}
-#+end_src
-
-** Annie - Nix-OnDroid 
-*** Configuration.nix
-#+begin_src nix :tangle ~/.dotfiles/nix-config/annie/configuration.nix
-{ config, lib, pkgs, machine, ... }:
-
-{
-  
-  # imports =
-  #   [ # Include the results of the hardware scan.
-  #     # ../modules/common-packages.nix 
-  #   ];
-  
-  environment.packages = with pkgs; [
-      git
-      git-lfs
-      lazygit
-      pinentry-curses
-      wiper
-      zoxide
-      fzf
-      vim 
-      zsh
-      oh-my-posh
-      tealdeer
-      btop
-      #nnn  
-      fd
-      eza
-      devenv
-      nix-direnv
-      yazi
-      diff-so-fancy
-      fastfetch
-      ripgrep
-      poetry
-      pandoc
-  ];
-
-  # Backup etc files instead of failing to activate generation if a file already exists in /etc
-  environment.etcBackupExtension = ".bak";
-
-  # Read the changelog before changing this value
-  system.stateVersion = "24.05";
-
-  # Set up nix for flakes
-  nix.extraOptions = ''
-    experimental-features = nix-command flakes
-  '';
-
-  # Set your time zone
-  #time.timeZone = "Europe/Berlin";
-}
-#+end_src
-
-*** Home.nix
-#+begin_src nix  :tangle ./annie/home.nix :noweb yes
-{ config, lib, pkgs, machine, ... }:
-
-{
-  # Read the changelog before changing this value
-  home.stateVersion = "24.05";
-  
-  programs.zsh = 
-    {
-      enable = true;
-      enableCompletion = true;
-      enableAutosuggestions  = true;
-      syntaxHighlighting.enable = true;
-
-      shellAliases = 
-        {
-          ll = "eza -l";
-          la = "eza -lah --tree --ignore-glob='.git|.venv|node_modules'";
-          ls = "eza -h --git --icons --color=auto --group-directories-first -s extension";
-          tree = "eza --tree --icons --ignore-glob='.git|.venv|node_modules'";
-          grep = "rg";
-          find = "fd";
-          e="emacsclient -c";
-          emd = "emacs --daemon";
-          rebuild-config = "nix-on-droid switch --flake ~/.dotfiles/nix-config#${machine.systemType}";
-          rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config#${machine.username}@${machine.host}";
-        };
-
-      oh-my-zsh = 
-        {
-          enable = true;
-          plugins = [ "git" "sudo" ];
-          theme = "robbyrussell";
-        };
-    };
-  
-  programs.zsh.initExtra = 
-    ''
-<<commonZshConfig>>
-    '';
-  # insert home-manager config
 }
 #+end_src
 
