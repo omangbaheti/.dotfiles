@@ -135,233 +135,6 @@
 ;;   :ensure t
 ;;   :config)
 
-(use-package general
-  :ensure t
-  :after evil
-  :config
-  (general-evil-setup)
-  ;; set up 'SPC' as the global leader key
-  (general-create-definer leader-key
-    :states '(normal insert visual emacs)
-    :keymaps 'override
-    :prefix "SPC" ;; set leader
-    :global-prefix "M-SPC") ;; access leader in insert mode
-
-  (setq evil-want-keybinding nil)
-  
-  (general-define-key
-   :states 'normal
-   :keymaps 'override
-   "<escape>" (lambda ()
-                (interactive)
-                (evil-ex-nohighlight)))
-  (leader-key
-    "SPC" '(consult-find-home :wk "Consult Find")
-    "." '(find-file :wk "Find file")
-    "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit Emacs Config")
-    "f n" '((lambda () (interactive) (find-file "~/.dotfiles/nix-config/nix.org")) :wk "Edit Nix Config")
-    "f r" '(consult-recent-file :wk "Find Recent Files")
-    "f /" '(consult-line :wk "Find Line")
-    "TAB TAB" '(comment-line :wk "Comment lines"))
-
-  (leader-key
-    "a" '(:ignore t :wk "Agenda")
-    "a o" '(nano-agenda :wk "Open Agenda")
-    "a p" '(nano-agenda-popup :wk "Open Agenda popup")
-    )
-
-  (leader-key
-    "b" '(:ignore t :wk "buffer")
-    "b b" '(consult-buffer :wk "Switch buffer")
-    "b i" '(ibuffer :wk "Ibuffer")
-    "b k" '(kill-buffer :wk "Kill buffer")
-    "b n" '(next-buffer :wk "Next buffer")
-    "b p" '(previous-buffer :wk "Previous buffer")
-    "b r" '(revert-buffer :wk "Reload buffer")
-    )
-
-  (leader-key
-    "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring")
-    )
-
-  (leader-key
-    "e" '(:ignore t :wk "Evaluate")
-    "e b" '(eval-buffer :wk "Evaluate the elisp in buffer")
-    "e d" '(eval-defun :wk "Evaluate defun containing or after point")
-    "e e" '(eval-expression :wk "Evaluate elisp expression")
-    "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
-    "e r" '(eval-region :wk "Evaluate elisp in region")
-    "e s" '(eshell :which-key "Eshell")
-    )
-  
-  (leader-key
-    "m" '(:ignore t :wk "Org")
-    "m e" '(org-export-dispatch :wk "Org export dispatch")
-    "m i" '(org-toggle-item :wk "Org toggle item")
-    "m t" '(org-todo :wk "Org todo")
-    "m B" '(org-babel-tangle :wk "Org babel tangle")
-    "m T" '(org-todo-list :wk "Org todo list")
-    )
-
-  (leader-key
-    :states '(normal)
-    "m n" '(org-babel-next-src-block :wk "Next src block")
-    "m p" '(org-babel-previous-src-block :wk "Previous src block")
-    )
-
-  (leader-key
-    "m b" '(:ignore t :wk "Tables")
-    "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
-
-  (leader-key
-    "m d" '(:ignore t :wk "Date/deadline")
-    "m d t" '(org-time-stamp :wk "Org time stamp")
-    )
-  
-  (leader-key
-    "m c" '(:ignore t :wk "Org Capture")
-    "m c s" '(org-roam-capture :wk "Org Capture")
-    )
-  
-  (leader-key
-    :states '(normal visual)
-    "o" '(:ignore t :wk "More Org")
-    
-    "o j" '(consult-org-heading :wk "Org Jump")   
-    
-    "o t" '(:ignore t :wk "Transclusion")
-    "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
-    "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
-    "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
-    "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
-
-    "o r" '(:ignore t :wk "Org Roam")
-    "o r i" '(org-roam-node-insert :wk "Link Node")
-    "o r f" '(consult-org-roam-find-by-title :wk "Find Node")
-    "o r s" '(org-roam-buffer-toggle-and-focus :wk "Show Backlink")
-    "o r t" '(org-roam-tag-node-insert :wk "Roam Tag")
-    "o r b" '(consult-org-roam-backlinks :wk "Backlinks")
-    "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
-    "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
-    
-    "o n" '(:ignore t :wk "Research Note")
-    "o n n" '(citar-create-note :wk "New Research Note")
-    "o n o" '(citar-open-note :wk "Open Note")
-    "o n s" '(citar-org-noter-open :wk "Noter Session")
-    "o n i" '(org-noter :wk "Noter Session Immediate")
-    "o n f" '(citar-org-roam-open-current-refs :wk "Open Paper")
-    
-    "o s" '(:ignore t :wk "Insert Source Block Templates")
-    "o s r" '(tempo-template-jupyter-R :wk "Insert Jupyter R block")
-    "o s n" '(tempo-template-nix :wk "Insert Nix block")
-    "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
-    "o s p" '(tempo-template-python :wk "Insert Python block")
-    "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
-
-    "o o" '(:ignore t :wk "Insert Source Block Templates")
-    "o o e" '(olivetti-expand :wk "Expand")
-    "o o s" '(olivetti-shrink :wk "Shrink")
-    "o o o" '(olivetti-mode :wk "Toggle Olivetti")
-
-    "o c" '(:ignore t :wk "Org Capture")
-    "o c s" '(org-roam-capture :wk "Org Capture"))  
-
-  
-  (leader-key
-    "p" '(projectile-command-map :wk "Projectile"))
-  
-  (leader-key
-    "h" '(:ignore t :wk "Help")
-    "h p" '(describe-package :wk "Describe Package")
-    "h f" '(helpful-function :wk "Describe function")
-    "h v" '(helpful-variable :wk "Describe Variable")
-    "h k" '(helpful-key :wk "Describe Key")
-    "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
-    "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
-
-  (leader-key
-    "j" '(:ignore t :wk "Jupyter / Org Babel")
-    "j c" '(org-ctrl-c-ctrl-c :wk "Execute Cell")
-    "j k" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
-    "j j" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
-    "j h" '(consult-org-heading :wk "Describe Key"))
-
-  (leader-key
-    "t" '(:ignore t :wk "Toggle")
-    "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
-    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-    "t t" '(visual-line-mode :wk "Toggle truncated lines")
-    "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
-    "t v" '(vterm-toggle :wk "Toggle Vterm"))
-
-  (leader-key
-    "w" '(:ignore t :wk "Windows")
-    ;; Window splits
-    "w c" '(evil-window-delete :wk "Close window")
-    "w n" '(evil-window-new :wk "New window")
-    "w s" '(evil-window-split :wk "Horizontal split window")
-    "w v" '(evil-window-vsplit :wk "Vertical split window")
-    ;; Window motions
-    "w h" '(evil-window-left :wk "Window Left")
-    "w j" '(evil-window-down :wk "Window Down")
-    "w k" '(evil-window-up :wk "Window Up")
-    "w l" '(evil-window-right :wk "Window Right")
-    "w w" '(evil-window-next :wk "Goto Next Window")
-    ;;alternate bindings
-    "<left>" '(evil-window-left :wk "Window Left")
-    "<down>" '(evil-window-down :wk "Window Down")
-    "<up>" '(evil-window-up :wk "Window Up")
-    "<right>" '(evil-window-right :wk "Window Right")
-    ;; Move Windows
-    "w H" '(buf-move-left :wk "Buffer Move Left")
-    "w J" '(buf-move-down :wk "Buffer Move Down")
-    "w K" '(buf-move-up :wk "Buffer Move Up")
-    "w L" '(buf-move-right :wk "Buffer Move Right")
-    ;; New Window
-    "w N" '(make-frame-command :wk "New Frame")
-    )
-  (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
-  )
-
-(use-package hydra
-  :ensure t
-  :after general
-  :config
-  (defhydra hydra-window-resize (:hint nil :timeout 5)
-"
-Resize window   
-_=_: grow horiz    _-_: shrink horiz
-_[_: grow vert     _]_: shrink vert
-_q_: quit
-
-Move window
-_h_: move left _j_: move down
-_k_: move up _l_:move right
-_q_: quit
-"
-
-    ("h" evil-window-left)
-    ("j" evil-window-down)
-    ("k" evil-window-up)
-    ("l" evil-window-right)
-    ("w" evil-window-next)
-    ("=" enlarge-window-horizontally)
-    ("-" shrink-window-horizontally)
-    ("[" enlarge-window)
-    ("]" shrink-window)
-    ("q" nil "quit"))
-
-  (defhydra hydra-org-babel/navigate (:hint nil :timeout 5)
-"
-Org Babel Naviagtionwindow
-_j_: next block    _k_: previous block 
-"
-    ("j" org-next-block)
-    ("k" org-previous-block)
-    ("q" nil "quit"))
-
-)
-
 (use-package pulsar
   :ensure t
   :hook
@@ -527,17 +300,20 @@ one, an error is signaled."
 
 (global-set-key [escape] 'keyboard-escape-quit)
 
+;;this is going to bite me in the ass someday isnt it
+(load "~/.secrets/authinfo.el")
+
 (require 'epg)
-;; (setq epa-pinentry-mode 'loopback)
+(setq epg-debug t)
+(setq plstore-encrypt-to "omangbaheti@pm.me")
 (use-package pinentry
   :ensure t
   :init
   (setq epg-pinentry-mode 'loopback)
-  (setq epa-pinentry-mode 'loopback) ; alias on many Emacs versions
   :config
   (pinentry-start))
-;; (require 'pinentry)
-;; (pinentry-start)
+(setq plstore-passphrase-function
+      (lambda () plstore-passphrase))
 
 (delete-selection-mode 1)
 (electric-indent-mode -1)
@@ -1075,13 +851,6 @@ tags from the candidate string presented to the completion framework."
         which-key-max-description-length 25
         which-key-allow-imprecise-window-fit nil 
         which-key-separator " → " ))
-
-(use-package sudo-edit
-  :ensure t
-  :config 
-  (leader-key
-    "fu" '(sudo-edit-find-file :wk "Sudo find file")
-    "fU" '(sudo-edit :wk "Sudo Edit File")))
 
 (use-package nerd-icons
   :ensure t)
@@ -2187,14 +1956,250 @@ Preserves existing entries to avoid overwriting."
 ;;                 (kbd "q") #'quit-window)
 ;; )))
 
-;; (use-package smudge
-;;   :ensure t
-;;   :bind-keymap ("C-c ." . smudge-command-map)
-;;   :custom
-;;   (smudge-oauth2-client-secret "30d23b9081314d30a278f958e235de47")
-;;   (smudge-oauth2-client-id "2bb0d14b78a34f7a90ffdf7107656d8e")
-;;   ;; optional: enable transient map for frequent commands
-;;   (smudge-player-use-transient-map t)
-;;   :config
-;;   ;; optional: display current song in mode line
-;;   (global-smudge-remote-mode))
+(use-package smudge
+  :ensure t
+  :config
+  (global-smudge-remote-mode)
+  :init
+  (setq smudge-player-status-truncate-length 50)
+  :custom
+  (smudge-oauth2-client-secret spotify_client_secret)
+  (smudge-oauth2-client-id spotify_client_id)
+  (smudge-player-status-format "%t - %a")
+  (smudge-status-location 'title-bar)
+  (smudge-title-bar-separator " | ")
+  ;; optional: enable transient map for frequent commands
+  (smudge-player-use-transient-map t)
+  )
+
+(use-package general
+    :ensure t
+    :after evil
+    :config
+    (general-evil-setup)
+    ;; set up 'SPC' as the global leader key
+    (general-create-definer leader-key
+      :states '(normal insert visual emacs)
+      :keymaps 'override
+      :prefix "SPC" ;; set leader
+      :global-prefix "M-SPC") ;; access leader in insert mode
+
+    (setq evil-want-keybinding nil)
+    
+    (general-define-key
+     :states 'normal
+     :keymaps 'override
+     "<escape>" (lambda ()
+                  (interactive)
+                  (evil-ex-nohighlight)))
+    (leader-key
+      "SPC" '(consult-find-home :wk "Consult Find")
+      "." '(find-file :wk "Find file")
+      "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit Emacs Config")
+      "f n" '((lambda () (interactive) (find-file "~/.dotfiles/nix-config/nix.org")) :wk "Edit Nix Config")
+      "f r" '(consult-recent-file :wk "Find Recent Files")
+      "f /" '(consult-line :wk "Find Line")
+      "TAB TAB" '(comment-line :wk "Comment lines"))
+
+    (leader-key
+      "a" '(:ignore t :wk "Agenda")
+      "a o" '(nano-agenda :wk "Open Agenda")
+      "a p" '(nano-agenda-popup :wk "Open Agenda popup")
+      )
+
+    (leader-key
+      "b" '(:ignore t :wk "buffer")
+      "b b" '(consult-buffer :wk "Switch buffer")
+      "b i" '(ibuffer :wk "Ibuffer")
+      "b k" '(kill-buffer :wk "Kill buffer")
+      "b n" '(next-buffer :wk "Next buffer")
+      "b p" '(previous-buffer :wk "Previous buffer")
+      "b r" '(revert-buffer :wk "Reload buffer")
+      )
+
+    (leader-key
+      "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring")
+      )
+
+    (leader-key
+      "e" '(:ignore t :wk "Evaluate")
+      "e b" '(eval-buffer :wk "Evaluate the elisp in buffer")
+      "e d" '(eval-defun :wk "Evaluate defun containing or after point")
+      "e e" '(eval-expression :wk "Evaluate elisp expression")
+      "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
+      "e r" '(eval-region :wk "Evaluate elisp in region")
+      "e s" '(eshell :which-key "Eshell")
+      )
+    
+    (leader-key
+      "m" '(:ignore t :wk "Org")
+      "m e" '(org-export-dispatch :wk "Org export dispatch")
+      "m i" '(org-toggle-item :wk "Org toggle item")
+      "m t" '(org-todo :wk "Org todo")
+      "m B" '(org-babel-tangle :wk "Org babel tangle")
+      "m T" '(org-todo-list :wk "Org todo list")
+      )
+
+    (leader-key
+      :states '(normal)
+      "m n" '(org-babel-next-src-block :wk "Next src block")
+      "m p" '(org-babel-previous-src-block :wk "Previous src block")
+      )
+
+    (leader-key
+      "m b" '(:ignore t :wk "Tables")
+      "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
+
+    (leader-key
+      "m d" '(:ignore t :wk "Date/deadline")
+      "m d t" '(org-time-stamp :wk "Org time stamp")
+      )
+    
+    (leader-key
+      "m c" '(:ignore t :wk "Org Capture")
+      "m c s" '(org-roam-capture :wk "Org Capture")
+      )
+    
+    (leader-key
+      :states '(normal visual)
+      "o" '(:ignore t :wk "More Org")
+      
+      "o j" '(consult-org-heading :wk "Org Jump")   
+      
+      "o t" '(:ignore t :wk "Transclusion")
+      "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
+      "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
+      "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
+      "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
+
+      "o r" '(:ignore t :wk "Org Roam")
+      "o r i" '(org-roam-node-insert :wk "Link Node")
+      "o r f" '(consult-org-roam-find-by-title :wk "Find Node")
+      "o r s" '(org-roam-buffer-toggle-and-focus :wk "Show Backlink")
+      "o r t" '(org-roam-tag-node-insert :wk "Roam Tag")
+      "o r b" '(consult-org-roam-backlinks :wk "Backlinks")
+      "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
+      "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
+      
+      "o n" '(:ignore t :wk "Research Note")
+      "o n n" '(citar-create-note :wk "New Research Note")
+      "o n o" '(citar-open-note :wk "Open Note")
+      "o n s" '(citar-org-noter-open :wk "Noter Session")
+      "o n i" '(org-noter :wk "Noter Session Immediate")
+      "o n f" '(citar-org-roam-open-current-refs :wk "Open Paper")
+      
+      "o s" '(:ignore t :wk "Insert Source Block Templates")
+      "o s r" '(tempo-template-jupyter-R :wk "Insert Jupyter R block")
+      "o s n" '(tempo-template-nix :wk "Insert Nix block")
+      "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
+      "o s p" '(tempo-template-python :wk "Insert Python block")
+      "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
+
+      "o o" '(:ignore t :wk "Insert Source Block Templates")
+      "o o e" '(olivetti-expand :wk "Expand")
+      "o o s" '(olivetti-shrink :wk "Shrink")
+      "o o o" '(olivetti-mode :wk "Toggle Olivetti")
+
+      "o c" '(:ignore t :wk "Org Capture")
+      "o c s" '(org-roam-capture :wk "Org Capture"))  
+(leader-key
+    "fu" '(sudo-edit-find-file :wk "Sudo find file")
+    "fU" '(sudo-edit :wk "Sudo Edit File"))
+    
+    (leader-key
+      "p" '(projectile-command-map :wk "Projectile"))
+    
+    (leader-key
+      "h" '(:ignore t :wk "Help")
+      "h p" '(describe-package :wk "Describe Package")
+      "h f" '(helpful-function :wk "Describe function")
+      "h v" '(helpful-variable :wk "Describe Variable")
+      "h k" '(helpful-key :wk "Describe Key")
+      "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
+      "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
+
+    (leader-key
+      "j" '(:ignore t :wk "Jupyter / Org Babel")
+      "j c" '(org-ctrl-c-ctrl-c :wk "Execute Cell")
+      "j k" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
+      "j j" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
+      "j h" '(consult-org-heading :wk "Describe Key"))
+
+    (leader-key
+      "t" '(:ignore t :wk "Toggle")
+      "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
+      "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+      "t t" '(visual-line-mode :wk "Toggle truncated lines")
+      "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
+      "t v" '(vterm-toggle :wk "Toggle Vterm"))
+
+    (leader-key
+      "w" '(:ignore t :wk "Windows")
+      ;; Window splits
+      "w c" '(evil-window-delete :wk "Close window")
+      "w n" '(evil-window-new :wk "New window")
+      "w s" '(evil-window-split :wk "Horizontal split window")
+      "w v" '(evil-window-vsplit :wk "Vertical split window")
+      ;; Window motions
+      "w h" '(evil-window-left :wk "Window Left")
+      "w j" '(evil-window-down :wk "Window Down")
+      "w k" '(evil-window-up :wk "Window Up")
+      "w l" '(evil-window-right :wk "Window Right")
+      "w w" '(evil-window-next :wk "Goto Next Window")
+      ;;alternate bindings
+      "<left>" '(evil-window-left :wk "Window Left")
+      "<down>" '(evil-window-down :wk "Window Down")
+      "<up>" '(evil-window-up :wk "Window Up")
+      "<right>" '(evil-window-right :wk "Window Right")
+      ;; Move Windows
+      "w H" '(buf-move-left :wk "Buffer Move Left")
+      "w J" '(buf-move-down :wk "Buffer Move Down")
+      "w K" '(buf-move-up :wk "Buffer Move Up")
+      "w L" '(buf-move-right :wk "Buffer Move Right")
+      ;; New Window
+      "w N" '(make-frame-command :wk "New Frame")
+      )
+    (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
+    
+    (leader-key
+      "s" '(:keymap smudge-command-map :wk "Spotify"))
+    )
+
+(use-package hydra
+  :ensure t
+  :after general
+  :config
+  (defhydra hydra-window-resize (:hint nil :timeout 5)
+"
+Resize window   
+_=_: grow horiz    _-_: shrink horiz
+_[_: grow vert     _]_: shrink vert
+_q_: quit
+
+Move window
+_h_: move left _j_: move down
+_k_: move up _l_:move right
+_q_: quit
+"
+
+    ("h" evil-window-left)
+    ("j" evil-window-down)
+    ("k" evil-window-up)
+    ("l" evil-window-right)
+    ("w" evil-window-next)
+    ("=" enlarge-window-horizontally)
+    ("-" shrink-window-horizontally)
+    ("[" enlarge-window)
+    ("]" shrink-window)
+    ("q" nil "quit"))
+
+  (defhydra hydra-org-babel/navigate (:hint nil :timeout 5)
+"
+Org Babel Naviagtionwindow
+_j_: next block    _k_: previous block 
+"
+    ("j" org-next-block)
+    ("k" org-previous-block)
+    ("q" nil "quit"))
+
+)
