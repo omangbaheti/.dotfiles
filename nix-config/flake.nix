@@ -153,7 +153,6 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
           "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
-          "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
         };
     };
 }

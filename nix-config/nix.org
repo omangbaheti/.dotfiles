@@ -135,7 +135,6 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
           "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
-          "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
         };
     };
 #+end_src
@@ -335,6 +334,7 @@ in
       tirith
       scrcpy
       android-tools
+      pinentry-curses
     ];
 }
 #+end_src
@@ -415,14 +415,14 @@ services.syncthing =
 
 programs.gpg.enable = true;
 
-services.gpg-agent = {
-  enable = true;
-  pinentry.package = pkgs.pinentry-qt; # or pkgs.pinentry-gtk2 / pkgs.pinentry-curses
-  extraConfig = ''
-      allow-emacs-pinentry
+services.gpg-agent = 
+  {
+    enable = true;
+    pinentry.package = pkgs.pinentry-curses; 
+    extraConfig = ''
       allow-loopback-pinentry
     '';
-};
+  };
 #+end_src
 
 * Individual Configurations

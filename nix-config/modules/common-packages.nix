@@ -103,5 +103,6 @@ in
       tirith
       scrcpy
       android-tools
+      pinentry-curses
     ];
 }

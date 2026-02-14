@@ -53,14 +53,14 @@
  
  programs.gpg.enable = true;
  
- services.gpg-agent = {
-   enable = true;
-   pinentry.package = pkgs.pinentry-qt; # or pkgs.pinentry-gtk2 / pkgs.pinentry-curses
-   extraConfig = ''
-       allow-emacs-pinentry
+ services.gpg-agent = 
+   {
+     enable = true;
+     pinentry.package = pkgs.pinentry-curses; 
+     extraConfig = ''
        allow-loopback-pinentry
      '';
- };
+   };
   programs.zsh.initContent = 
     ''
 eval "$(zoxide init zsh)"

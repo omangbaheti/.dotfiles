@@ -61,14 +61,14 @@
   
   programs.gpg.enable = true;
   
-  services.gpg-agent = {
-    enable = true;
-    pinentry.package = pkgs.pinentry-qt; # or pkgs.pinentry-gtk2 / pkgs.pinentry-curses
-    extraConfig = ''
-        allow-emacs-pinentry
+  services.gpg-agent = 
+    {
+      enable = true;
+      pinentry.package = pkgs.pinentry-curses; 
+      extraConfig = ''
         allow-loopback-pinentry
       '';
-  };  
+    };  
   programs.zsh.initContent = 
     ''
  PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
