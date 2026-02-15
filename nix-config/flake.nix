@@ -59,20 +59,14 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 username = "nyx";
                 systemType = "nyx";
               };
-        annie = commonSettings //
-                {
-                  system = "aarch64-linux";
-                  host = "annie";
-                  username = "nix";
-                  systemType = "nix-on-droid";
-                };
+        
         
         annie = commonSettings //
                 {
                   system = "aarch64-linux";
                   host = "annie";
                   username = "annie";
-                  systemType = "nix-on-droid";
+                  systemType = "annie";
                 };
         
         sakura = (commonSettings // # overriding system when required

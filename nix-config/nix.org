@@ -104,20 +104,14 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 username = "nyx";
                 systemType = "nyx";
               };
-        annie = commonSettings //
-                {
-                  system = "aarch64-linux";
-                  host = "annie";
-                  username = "nix";
-                  systemType = "nix-on-droid";
-                };
+        
         
         annie = commonSettings //
                 {
                   system = "aarch64-linux";
                   host = "annie";
                   username = "annie";
-                  systemType = "nix-on-droid";
+                  systemType = "annie";
                 };
         
         sakura = (commonSettings // # overriding system when required
@@ -584,8 +578,17 @@ in
     [ 
       <nixos-avf/avf>
     ];
-
+  users.users.${userName} = 
+    {
+      isNormalUser = true;
+      home = "/home/${userName}";
+      description = "Annie User";
+      extraGroups = [ "wheel" "networkmanager" ];
+      # Add any other user configuration
+    };
+  nix.settings.trusted-users = [ "root" userName];
   nix.settings.experimental-features = ["nix-command" "flakes"];
+  services.getty.autologinUser = "${userName}";
   environment.systemPackages = with pkgs;
     [
       git
@@ -607,11 +610,17 @@ in
       nix-direnv
       yazi
       fastfetch
+      home-manager
       ripgrep
       poetry
       pandoc
       syncthing
     ];
+  
+  <<fonts>>
+  
+  programs.zsh.enable = true;
+  users.defaultUserShell = pkgs.zsh;
   system.stateVersion = "26.05"; # Did you read the comment?
 }
 #+end_src
@@ -621,6 +630,7 @@ in
 { config, pkgs, stable, machine, ... }:
 {
 
+  home.stateVersion = "26.05";
   <<common-home-config>>  
   programs.zsh.initContent = 
     ''
@@ -846,6 +856,7 @@ in
   home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
 }
 #+end_src
+
 
 * ZSH Config
 #+name:commonZshConfig

@@ -1,6 +1,7 @@
 { config, pkgs, stable, machine, ... }:
 {
 
+  home.stateVersion = "26.05";
   programs.home-manager.enable = true;
   
   programs.zoxide.enable = true;
