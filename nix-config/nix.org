@@ -588,7 +588,14 @@ in
     };
   nix.settings.trusted-users = [ "root" userName];
   nix.settings.experimental-features = ["nix-command" "flakes"];
-  services.getty.autologinUser = "${userName}";
+  #forcing autologin?
+  systemd.services."getty@tty1".serviceConfig = {
+    ExecStart = [
+      ""
+      "${pkgs.util-linux}/sbin/agetty --autologin ${userName} --noclear %I $TERM"
+    ];
+  };
+  systemd.services."autovt@tty1".enable = false;
   environment.systemPackages = with pkgs;
     [
       git
