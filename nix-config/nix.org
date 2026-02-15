@@ -17,9 +17,12 @@
   - [[#wsl-config-files][WSL Config Files]]
     - [[#configurationnix][Configuration.nix]]
     - [[#homenix][Home.nix]]
-  - [[#fern---t490][Fern - T490]]
+  - [[#annie---pixel][Annie - Pixel]]
     - [[#configurationnix-1][Configuration.nix]]
     - [[#homenix-1][Home.nix]]
+  - [[#fern---t490][Fern - T490]]
+    - [[#configurationnix-2][Configuration.nix]]
+    - [[#homenix-2][Home.nix]]
 - [[#zsh-config][ZSH Config]]
   - [[#wsl-config][WSL Config]]
   - [[#fern-config][Fern Config]]
@@ -105,10 +108,18 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 {
                   system = "aarch64-linux";
                   host = "annie";
+                  username = "nix";
+                  systemType = "nix-on-droid";
+                };
+        
+        annie = commonSettings //
+                {
+                  system = "aarch64-linux";
+                  host = "annie";
                   username = "annie";
                   systemType = "nix-on-droid";
                 };
-
+        
         sakura = (commonSettings // # overriding system when required
                   {
                     system = "aarch64-linux";
@@ -127,6 +138,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           fern   = mkSystem machines.fern;
           nyx    = mkSystem machines.nyx;
           sakura = mkSystem machines.sakura;
+          annie = mkSystem machines.annie;
         };
       
       homeConfigurations = 
@@ -134,6 +146,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
+          "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
           "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
         };
     };
@@ -557,6 +570,65 @@ in
 }
 #+end_src
 
+
+** Annie - Pixel 
+*** Configuration.nix
+#+begin_src nix :noweb yes :tangle ./annie/configuration.nix
+{config, lib, pkgs, stable, machine, ... }:
+let
+  userName = machine.username;
+  allowUnfree = machine.allowUnfree;
+in
+{
+  imports = 
+    [ 
+      <nixos-avf/avf>
+    ];
+
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+  environment.systemPackages = with pkgs;
+    [
+      git
+      git-lfs
+      lazygit
+      neovim
+      wiper
+      zoxide
+      fzf
+      vim 
+      zsh
+      oh-my-posh
+      tealdeer
+      btop
+      #nnn  
+      fd
+      eza
+      devenv
+      nix-direnv
+      yazi
+      fastfetch
+      ripgrep
+      poetry
+      pandoc
+      syncthing
+    ];
+  system.stateVersion = "26.05"; # Did you read the comment?
+}
+#+end_src
+
+*** Home.nix
+#+begin_src nix :noweb yes :tangle ./annie/home.nix
+{ config, pkgs, stable, machine, ... }:
+{
+
+  <<common-home-config>>  
+  programs.zsh.initContent = 
+    ''
+ <<commonZshConfig>>
+    '';
+}
+#+end_src
+
 ** Fern - T490
 *** Configuration.nix
 #+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/fern/configuration.nix
@@ -809,7 +881,6 @@ function lazygit
 
 <<commonZshConfig>>
 #+end_src
-
 
 ** Fern Config
 #+name:zshConfigFern

@@ -63,10 +63,18 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 {
                   system = "aarch64-linux";
                   host = "annie";
+                  username = "nix";
+                  systemType = "nix-on-droid";
+                };
+        
+        annie = commonSettings //
+                {
+                  system = "aarch64-linux";
+                  host = "annie";
                   username = "annie";
                   systemType = "nix-on-droid";
                 };
-
+        
         sakura = (commonSettings // # overriding system when required
                   {
                     system = "aarch64-linux";
@@ -145,6 +153,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           fern   = mkSystem machines.fern;
           nyx    = mkSystem machines.nyx;
           sakura = mkSystem machines.sakura;
+          annie = mkSystem machines.annie;
         };
       
       homeConfigurations = 
@@ -152,6 +161,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
+          "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
           "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
         };
     };

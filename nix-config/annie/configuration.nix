@@ -1,17 +1,21 @@
-{ config, lib, pkgs, machine, ... }:
-
+{config, lib, pkgs, stable, machine, ... }:
+let
+  userName = machine.username;
+  allowUnfree = machine.allowUnfree;
+in
 {
-  
-  # imports =
-  #   [ # Include the results of the hardware scan.
-  #     # ../modules/common-packages.nix 
-  #   ];
-  
-  environment.packages = with pkgs; [
+  imports = 
+    [ 
+      <nixos-avf/avf>
+    ];
+
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+  environment.systemPackages = with pkgs;
+    [
       git
       git-lfs
       lazygit
-      pinentry-curses
+      neovim
       wiper
       zoxide
       fzf
@@ -26,24 +30,11 @@
       devenv
       nix-direnv
       yazi
-      diff-so-fancy
       fastfetch
       ripgrep
       poetry
       pandoc
-  ];
-
-  # Backup etc files instead of failing to activate generation if a file already exists in /etc
-  environment.etcBackupExtension = ".bak";
-
-  # Read the changelog before changing this value
-  system.stateVersion = "24.05";
-
-  # Set up nix for flakes
-  nix.extraOptions = ''
-    experimental-features = nix-command flakes
-  '';
-
-  # Set your time zone
-  #time.timeZone = "Europe/Berlin";
+      syncthing
+    ];
+  system.stateVersion = "26.05"; # Did you read the comment?
 }
