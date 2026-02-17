@@ -23,6 +23,7 @@
   - [[#electric][Electric]]
   - [[#undo-fu][UNDO-FU]]
   - [[#helpful][Helpful]]
+  - [[#misc][Misc]]
 - [[#org-mode][ORG MODE]]
   - [[#evil-org][EVIL ORG]]
   - [[#enabling-table-of-content][Enabling Table of Content]]
@@ -81,7 +82,6 @@
 - [[#nano-calendar][NANO CALENDAR]]
 - [[#direnv-mode][DIRENV MODE]]
 - [[#convert-pdfs][CONVERT PDFS]]
-- [[#emacs-reader][Emacs reader]]
 - [[#smudge][SMUDGE]]
 - [[#general-keybindings][General Keybindings]]
   - [[#hydra][HYDRA]]
@@ -201,6 +201,9 @@
   (evil-snipe-mode 1)
   (evil-snipe-override-mode 1))
 #+end_src
+
+#+RESULTS:
+: [nil 27026 19163 846992 nil elpaca-process-queues nil nil 137000 nil]
 
 *** Evil Surround
 
@@ -456,6 +459,9 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (setq enable-local-variables t)
 #+end_src
 
+#+RESULTS:
+: t
+
 ** Display Line Numbers and Truncated Lines
 
 #+begin_src emacs-lisp
@@ -471,10 +477,16 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 #+end_src
 
+#+RESULTS:
+: ((.* . ~/.local/share/Trash/files))
+
 ** Minibuffer escape
 #+begin_src emacs-lisp
 (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
+
+#+RESULTS:
+: keyboard-escape-quit
 
 ** GNUPG
 
@@ -482,6 +494,9 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 ;;this is going to bite me in the ass someday isnt it
 (load "~/.secrets/authinfo.el")
 #+end_src
+
+#+RESULTS:
+: t
 
 #+begin_src emacs-lisp
 (require 'epg)
@@ -493,9 +508,10 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   (setq epg-pinentry-mode 'loopback)
   :config
   (pinentry-start))
-(setq plstore-passphrase-function
-      (lambda () plstore-passphrase))
 #+end_src
+
+#+RESULTS:
+: #[nil (plstore-passphrase) nil]
 
 
 ** Electric
@@ -504,7 +520,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (electric-indent-mode -1)
 (electric-pair-mode 1)
 (setq org-edit-src-content-indentation 0)
-
 (defun my-org-electric-pair-hook ()
   (add-function :before-until (local 'electric-pair-inhibit-predicate)
                 (lambda (c) (eq c ?<))))
@@ -528,6 +543,21 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   :ensure t)
 #+end_src
 
+** Misc 
+
+#+begin_src emacs-lisp
+(defun open-messages-buffer ()
+"Open the *Messages* buffer in a vertical split."
+  (interactive)
+  (let ((buf (get-buffer "*Messages*")))
+    (if buf
+        (select-window (split-window-right))
+      (setq buf (get-buffer-create "*Messages*")))
+    (switch-to-buffer buf)))
+#+end_src
+
+#+RESULTS:
+: open-messages-buffer
 
 * ORG MODE
 
@@ -1853,8 +1883,8 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 (use-package python
   :ensure t
-  :mode ("\\.py\\'" . python-mode))
-
+  :mode ("\\.py\\'" . python-mode) )
+(setq python-indent-offset 4)
 ;; Nix integration
 (use-package nix-mode
   :ensure t
@@ -1867,7 +1897,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (add-to-list 'org-src-lang-modes '("nix" . nix))
 )
 #+end_src
-
 
 
 #+begin_src emacs-lisp
@@ -2279,8 +2308,29 @@ https://github.com/rougier/notebook-mode
 * GPTEL
 #+begin_src emacs-lisp
 (use-package gptel
-  :ensure t)
+  :ensure t
+  :init
+  (setq gptel-log-level 'debug)
+  (setq gptel-default-mode 'org-mode)
+  (setq gptel-backend
+	(gptel-make-openai "Perplexity"
+	  :host "api.perplexity.ai/v2"
+	  :endpoint "/responses"
+	  :stream t
+	  :models '("openai/gpt-5.1")   
+	  :key perplexity-api))
+  
+  (setq gptel-model "openai/gpt-5.1")
+  )
+
 #+end_src
+
+#+RESULTS:
+: [nil 27024 21390 111409 nil elpaca-process-queues nil nil 517000 nil]
+
+
+
+
 
 * SVG Tag Mode
 #+begin_src emacs-lisp
@@ -2469,26 +2519,11 @@ Preserves existing entries to avoid overwriting."
 
 #+end_src
 
-* Emacs reader
-#+begin_src emacs-lisp
-;; (use-package reader
-;; :defer t
-;; :init
-;; (add-hook 'reader-mode-hook
-;;             (lambda ()
-;;               (evil-define-key 'normal (current-local-map)
-;;                 (kbd "j") #'reader-scroll-down
-;;                 (kbd "k") #'reader-scroll-up
-;;                 (kbd "h") #'reader-prev-page
-;;                 (kbd "l") #'reader-next-page
-;;                 (kbd "q") #'quit-window)
-;; )))
-#+end_src
-
 * SMUDGE
 #+begin_src emacs-lisp
 (use-package smudge
   :ensure t
+  :defer t
   :config
   (global-smudge-remote-mode)
   :init
@@ -2665,6 +2700,7 @@ Preserves existing entries to avoid overwriting."
       "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
       "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
       "t t" '(visual-line-mode :wk "Toggle truncated lines")
+      "t m" '(open-messages-buffer :wk "Toggle Message Buffer ")
       "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
       "t v" '(vterm-toggle :wk "Toggle Vterm"))
 
@@ -2697,10 +2733,13 @@ Preserves existing entries to avoid overwriting."
     (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
     
     (leader-key
-      "s" '(:keymap smudge-command-map :wk "Spotify"))
+      "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
     )
 
 #+END_SRC
+
+#+RESULTS:
+: [nil 27024 16807 842792 nil elpaca-process-queues nil nil 134000 nil]
 
 
 ** HYDRA
@@ -2744,4 +2783,7 @@ _j_: next block    _k_: previous block
 
 )
 #+end_src
+
+#+RESULTS:
+: [nil 27024 16800 805194 nil elpaca-process-queues nil nil 194000 nil]
 

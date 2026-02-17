@@ -312,14 +312,11 @@ one, an error is signaled."
   (setq epg-pinentry-mode 'loopback)
   :config
   (pinentry-start))
-(setq plstore-passphrase-function
-      (lambda () plstore-passphrase))
 
 (delete-selection-mode 1)
 (electric-indent-mode -1)
 (electric-pair-mode 1)
 (setq org-edit-src-content-indentation 0)
-
 (defun my-org-electric-pair-hook ()
   (add-function :before-until (local 'electric-pair-inhibit-predicate)
                 (lambda (c) (eq c ?<))))
@@ -332,6 +329,15 @@ one, an error is signaled."
 
 (use-package helpful
   :ensure t)
+
+(defun open-messages-buffer ()
+"Open the *Messages* buffer in a vertical split."
+  (interactive)
+  (let ((buf (get-buffer "*Messages*")))
+    (if buf
+        (select-window (split-window-right))
+      (setq buf (get-buffer-create "*Messages*")))
+    (switch-to-buffer buf)))
 
 (setq font-lock-multiline t)
 ;; (setq jit-lock-defer-time 0) ; Immediate fontification
@@ -1450,8 +1456,8 @@ tags from the candidate string presented to the completion framework."
 
 (use-package python
   :ensure t
-  :mode ("\\.py\\'" . python-mode))
-
+  :mode ("\\.py\\'" . python-mode) )
+(setq python-indent-offset 4)
 ;; Nix integration
 (use-package nix-mode
   :ensure t
@@ -1775,7 +1781,20 @@ tags from the candidate string presented to the completion framework."
   )
 
 (use-package gptel
-  :ensure t)
+  :ensure t
+  :init
+  (setq gptel-log-level 'debug)
+  (setq gptel-default-mode 'org-mode)
+  (setq gptel-backend
+	(gptel-make-openai "Perplexity"
+	  :host "api.perplexity.ai/v2"
+	  :endpoint "/responses"
+	  :stream t
+	  :models '("openai/gpt-5.1")   
+	  :key perplexity-api))
+  
+  (setq gptel-model "openai/gpt-5.1")
+  )
 
 (use-package svg-lib
   :ensure t
@@ -1943,21 +1962,9 @@ Preserves existing entries to avoid overwriting."
     (message "Exported %d citar entries to %s" 
              (hash-table-count all-entries) output-file)))
 
-;; (use-package reader
-;; :defer t
-;; :init
-;; (add-hook 'reader-mode-hook
-;;             (lambda ()
-;;               (evil-define-key 'normal (current-local-map)
-;;                 (kbd "j") #'reader-scroll-down
-;;                 (kbd "k") #'reader-scroll-up
-;;                 (kbd "h") #'reader-prev-page
-;;                 (kbd "l") #'reader-next-page
-;;                 (kbd "q") #'quit-window)
-;; )))
-
 (use-package smudge
   :ensure t
+  :defer t
   :config
   (global-smudge-remote-mode)
   :init
@@ -2130,6 +2137,7 @@ Preserves existing entries to avoid overwriting."
       "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
       "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
       "t t" '(visual-line-mode :wk "Toggle truncated lines")
+      "t m" '(open-messages-buffer :wk "Toggle Message Buffer ")
       "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
       "t v" '(vterm-toggle :wk "Toggle Vterm"))
 
@@ -2162,7 +2170,7 @@ Preserves existing entries to avoid overwriting."
     (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
     
     (leader-key
-      "s" '(:keymap smudge-command-map :wk "Spotify"))
+      "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
     )
 
 (use-package hydra
