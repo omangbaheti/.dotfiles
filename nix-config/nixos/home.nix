@@ -66,6 +66,8 @@
       enable = true;
       pinentry.package = pkgs.pinentry-curses; 
       extraConfig = ''
+      default-cache-ttl = 31536000;  # 1 year in seconds
+      max-cache-ttl = 31536000;
         allow-loopback-pinentry
       '';
     };  

@@ -50,7 +50,7 @@ in
       ripgrep
       poetry
       pandoc
-      
+      gpg-tui     
       #LSPs / Compilers / Dev Envs
       #C/C++
       glib
