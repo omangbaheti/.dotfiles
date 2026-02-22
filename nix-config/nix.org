@@ -666,6 +666,7 @@ in
   home.stateVersion = "26.05";
   <<common-home-config>>  
   
+  fonts.fontconfig.enable = true;
   home.packages = (with pkgs;
     [
       git
@@ -690,6 +691,13 @@ in
       ripgrep
       poetry
       pandoc
+      emacs-nox
+      tirith
+      devenv
+      nix-direnv
+      android-tools
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.symbols-only
     ]);
   programs.zsh.initContent = 
     ''

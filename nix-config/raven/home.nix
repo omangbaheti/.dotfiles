@@ -63,6 +63,7 @@
       '';
     };  
   
+  fonts.fontconfig.enable = true;
   home.packages = (with pkgs;
     [
       git
@@ -87,6 +88,13 @@
       ripgrep
       poetry
       pandoc
+      emacs-nox
+      tirith
+      devenv
+      nix-direnv
+      android-tools
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.symbols-only
     ]);
   programs.zsh.initContent = 
     ''
