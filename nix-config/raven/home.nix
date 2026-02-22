@@ -1,4 +1,8 @@
 { config, pkgs, stable, machine, ... }:
+let
+  svDir = "${config.home.homeDirectory}/.config/sv";
+  sshPort = "2222";
+in
 {
   home.stateVersion = "26.05";
   
@@ -74,9 +78,9 @@
       emacs-nox
       tirith
       android-tools
-      nerd-fonts.jetbrains-mono
-      nerd-fonts.symbols-only
+      stable.runit
     ]);
+  
   programs.zsh.initContent = 
     ''
  eval "$(zoxide init zsh)"

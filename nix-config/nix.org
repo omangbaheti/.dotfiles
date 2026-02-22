@@ -661,6 +661,10 @@ in
 ** Raven - Realme
 #+begin_src nix :noweb yes :tangle ./raven/home.nix
 { config, pkgs, stable, machine, ... }:
+let
+  svDir = "${config.home.homeDirectory}/.config/sv";
+  sshPort = "2222";
+in
 {
   home.stateVersion = "26.05";
   
@@ -736,9 +740,9 @@ in
       emacs-nox
       tirith
       android-tools
-      nerd-fonts.jetbrains-mono
-      nerd-fonts.symbols-only
+      stable.runit
     ]);
+  
   programs.zsh.initContent = 
     ''
  <<commonZshConfig>>
