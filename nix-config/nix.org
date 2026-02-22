@@ -20,6 +20,7 @@
   - [[#annie---pixel][Annie - Pixel]]
     - [[#configurationnix-1][Configuration.nix]]
     - [[#homenix-1][Home.nix]]
+  - [[#raven---realme][Raven - Realme]]
   - [[#fern---t490][Fern - T490]]
     - [[#configurationnix-2][Configuration.nix]]
     - [[#homenix-2][Home.nix]]
@@ -114,6 +115,14 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                   systemType = "annie";
                 };
         
+        raven =  commonSettings //
+                {
+                  system = "aarch64-linux";
+                  host = "raven";
+                  username = "raven";
+                  systemType = "other-distro";
+                };
+        
         sakura = (commonSettings // # overriding system when required
                   {
                     system = "aarch64-linux";
@@ -121,6 +130,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                     username = "sakura";
                     systemType = "pi";
                   });
+        
       };
     <<makeSystem>> 
     <<makeHome>>
@@ -142,6 +152,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
           "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
           "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
+          "${machines.raven.username}@${machines.raven.host}" = mkHome machines.sakura;
         };
     };
 #+end_src
@@ -566,7 +577,6 @@ in
 }
 #+end_src
 
-
 ** Annie - Pixel 
 *** Configuration.nix
 #+begin_src nix :noweb yes :tangle ./annie/configuration.nix
@@ -641,6 +651,46 @@ in
 
   home.stateVersion = "26.05";
   <<common-home-config>>  
+  programs.zsh.initContent = 
+    ''
+ <<commonZshConfig>>
+    '';
+}
+#+end_src
+
+** Raven - Realme
+#+begin_src nix :noweb yes :tangle ./raven/home.nix
+{ config, pkgs, stable, machine, ... }:
+{
+
+  home.stateVersion = "26.05";
+  <<common-home-config>>  
+  
+  home.packages = (with pkgs;
+    [
+      git
+      git-lfs
+      lazygit
+      wiper
+      zoxide
+      fzf
+      vim 
+      zsh
+      oh-my-posh
+      tealdeer
+      btop
+      #nnn  
+      fd
+      eza
+      devenv
+      nix-direnv
+      yazi
+      diff-so-fancy
+      fastfetch
+      ripgrep
+      poetry
+      pandoc
+    ]);
   programs.zsh.initContent = 
     ''
  <<commonZshConfig>>
@@ -865,7 +915,6 @@ in
   home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
 }
 #+end_src
-
 
 * ZSH Config
 #+name:commonZshConfig
