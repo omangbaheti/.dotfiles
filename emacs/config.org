@@ -73,7 +73,6 @@
 - [[#deadgrep][DEADGREP]]
 - [[#spacious-padding][SPACIOUS PADDING]]
 - [[#prettifying][Prettifying]]
-- [[#][]]
 - [[#csv-mode][CSV MODE]]
 - [[#nano-elfeed][NANO ELFEED]]
 - [[#org-kanban][ORG KANBAN]]
@@ -85,6 +84,7 @@
 - [[#smudge][SMUDGE]]
 - [[#general-keybindings][General Keybindings]]
   - [[#hydra][HYDRA]]
+- [[#todo][TODO]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 
@@ -202,9 +202,6 @@
   (evil-snipe-override-mode 1))
 #+end_src
 
-#+RESULTS:
-: [nil 27026 19163 846992 nil elpaca-process-queues nil nil 137000 nil]
-
 *** Evil Surround
 
 #+begin_src emacs-lisp
@@ -233,19 +230,26 @@
 #+end_src
 
 *** Code Folding
+
 #+begin_src emacs-lisp
-(use-package outline-indent
+(use-package kirigami
   :ensure t
-  :commands outline-indent-minor-mode
-  :hook 
-  ((python-mode . outline-indent-minor-mode)
-   (python-ts-mode . outline-indent-minor-mode)
-   (yaml-mode . outline-indent-minor-mode)
-   (yaml-ts-mode . outline-indent-minor-mode) 
-   (nix-mode . outline-indent-minor-mode)
-   (emacs-lisp-mode . outline-indent-minor-mode))
-  :custom
-  (outline-indent-ellipsis " ..."))
+)
+#+end_src
+
+#+begin_src emacs-lisp
+;; (use-package outline-indent
+;;   :ensure t
+;;   :commands outline-indent-minor-mode
+;;   :hook 
+;;   ((python-mode . outline-indent-minor-mode)
+;;    (python-ts-mode . outline-indent-minor-mode)
+;;    (yaml-mode . outline-indent-minor-mode)
+;;    (yaml-ts-mode . outline-indent-minor-mode) 
+;;    (nix-mode . outline-indent-minor-mode)
+;;    (emacs-lisp-mode . outline-indent-minor-mode))
+;;   :custom
+;;   (outline-indent-ellipsis " ..."))
 #+end_src
 
 
@@ -477,26 +481,16 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 #+end_src
 
-#+RESULTS:
-: ((.* . ~/.local/share/Trash/files))
-
 ** Minibuffer escape
 #+begin_src emacs-lisp
 (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
 
-#+RESULTS:
-: keyboard-escape-quit
-
 ** GNUPG
-
 #+begin_src emacs-lisp
 ;;this is going to bite me in the ass someday isnt it
 (load "~/.secrets/authinfo.el")
 #+end_src
-
-#+RESULTS:
-: t
 
 #+begin_src emacs-lisp
 (require 'epg)
@@ -509,10 +503,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
   :config
   (pinentry-start))
 #+end_src
-
-#+RESULTS:
-: #[nil (plstore-passphrase) nil]
-
 
 ** Electric
 #+begin_src emacs-lisp
@@ -555,9 +545,6 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
       (setq buf (get-buffer-create "*Messages*")))
     (switch-to-buffer buf)))
 #+end_src
-
-#+RESULTS:
-: open-messages-buffer
 
 * ORG MODE
 
@@ -2270,15 +2257,8 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
 (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
 #+end_src
 
-* TODO 
-https://github.com/emacs-vs/codemetrics
-https://github.com/emacs-vs/rainbow-csv
-https://github.com/rougier/nano-mu4e
-https://github.com/rougier/notebook-mode
-
 
 * CSV MODE
-
 #+begin_src emacs-lisp
 (use-package rainbow-csv
   :ensure (:host github :repo "emacs-vs/rainbow-csv")
@@ -2320,16 +2300,9 @@ https://github.com/rougier/notebook-mode
 	  :models '("openai/gpt-5.1")   
 	  :key perplexity-api))
   
-  (setq gptel-model "openai/gpt-5.1")
-  )
+  (setq gptel-model "openai/gpt-5.1"))
 
 #+end_src
-
-#+RESULTS:
-: [nil 27024 21390 111409 nil elpaca-process-queues nil nil 517000 nil]
-
-
-
 
 
 * SVG Tag Mode
@@ -2730,17 +2703,24 @@ Preserves existing entries to avoid overwriting."
       ;; New Window
       "w N" '(make-frame-command :wk "New Frame")
       )
+
     (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
     
     (leader-key
       "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
     )
 
+(general-define-key
+ :states 'normal
+ :keymaps 'override
+ "zo" #'kirigami-open-fold
+ "zO" #'kirigami-open-fold-rec
+ "zc" #'kirigami-close-fold
+ "za" #'kirigami-toggle-fold
+ "zr" #'kirigami-open-folds
+ "zm" #'kirigami-close-folds)
+
 #+END_SRC
-
-#+RESULTS:
-: [nil 27024 16807 842792 nil elpaca-process-queues nil nil 134000 nil]
-
 
 ** HYDRA
 #+begin_src emacs-lisp
@@ -2784,6 +2764,9 @@ _j_: next block    _k_: previous block
 )
 #+end_src
 
-#+RESULTS:
-: [nil 27024 16800 805194 nil elpaca-process-queues nil nil 194000 nil]
 
+* TODO TODO
+https://github.com/emacs-vs/codemetrics
+https://github.com/emacs-vs/rainbow-csv
+https://github.com/rougier/nano-mu4e
+https://github.com/rougier/notebook-mode

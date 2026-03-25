@@ -118,18 +118,22 @@
    '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 
-(use-package outline-indent
+(use-package kirigami
   :ensure t
-  :commands outline-indent-minor-mode
-  :hook 
-  ((python-mode . outline-indent-minor-mode)
-   (python-ts-mode . outline-indent-minor-mode)
-   (yaml-mode . outline-indent-minor-mode)
-   (yaml-ts-mode . outline-indent-minor-mode) 
-   (nix-mode . outline-indent-minor-mode)
-   (emacs-lisp-mode . outline-indent-minor-mode))
-  :custom
-  (outline-indent-ellipsis " ..."))
+)
+
+;; (use-package outline-indent
+;;   :ensure t
+;;   :commands outline-indent-minor-mode
+;;   :hook 
+;;   ((python-mode . outline-indent-minor-mode)
+;;    (python-ts-mode . outline-indent-minor-mode)
+;;    (yaml-mode . outline-indent-minor-mode)
+;;    (yaml-ts-mode . outline-indent-minor-mode) 
+;;    (nix-mode . outline-indent-minor-mode)
+;;    (emacs-lisp-mode . outline-indent-minor-mode))
+;;   :custom
+;;   (outline-indent-ellipsis " ..."))
 
 ;; (use-package casual
 ;;   :ensure t
@@ -1793,8 +1797,7 @@ tags from the candidate string presented to the completion framework."
 	  :models '("openai/gpt-5.1")   
 	  :key perplexity-api))
   
-  (setq gptel-model "openai/gpt-5.1")
-  )
+  (setq gptel-model "openai/gpt-5.1"))
 
 (use-package svg-lib
   :ensure t
@@ -2167,11 +2170,22 @@ Preserves existing entries to avoid overwriting."
       ;; New Window
       "w N" '(make-frame-command :wk "New Frame")
       )
+
     (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
     
     (leader-key
       "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
     )
+
+(general-define-key
+ :states 'normal
+ :keymaps 'override
+ "zo" #'kirigami-open-fold
+ "zO" #'kirigami-open-fold-rec
+ "zc" #'kirigami-close-fold
+ "za" #'kirigami-toggle-fold
+ "zr" #'kirigami-open-folds
+ "zm" #'kirigami-close-folds)
 
 (use-package hydra
   :ensure t
