@@ -119,21 +119,21 @@
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 
 (use-package kirigami
-  :ensure t
+  :ensure   (:host github :repo "jamescherti/kirigami.el")
 )
 
-;; (use-package outline-indent
-;;   :ensure t
-;;   :commands outline-indent-minor-mode
-;;   :hook 
-;;   ((python-mode . outline-indent-minor-mode)
-;;    (python-ts-mode . outline-indent-minor-mode)
-;;    (yaml-mode . outline-indent-minor-mode)
-;;    (yaml-ts-mode . outline-indent-minor-mode) 
-;;    (nix-mode . outline-indent-minor-mode)
-;;    (emacs-lisp-mode . outline-indent-minor-mode))
-;;   :custom
-;;   (outline-indent-ellipsis " ..."))
+(use-package outline-indent
+  :ensure t
+  :commands outline-indent-minor-mode
+  :hook 
+  ((python-mode . outline-indent-minor-mode)
+   (python-ts-mode . outline-indent-minor-mode)
+   (yaml-mode . outline-indent-minor-mode)
+   (yaml-ts-mode . outline-indent-minor-mode) 
+   (nix-mode . outline-indent-minor-mode)
+   (emacs-lisp-mode . outline-indent-minor-mode))
+  :custom
+  (outline-indent-ellipsis " ..."))
 
 ;; (use-package casual
 ;;   :ensure t
@@ -294,6 +294,8 @@ one, an error is signaled."
 
 ;; WHy am i havin to do this
 (setq enable-local-variables t)
+;; solves the font lock 
+(add-hook 'org-mode-hook #'font-lock-fontify-buffer)
 
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
@@ -351,19 +353,13 @@ one, an error is signaled."
   :ensure nil
   :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
-  (setq org-startup-folded t)              ;; fold on open [web:1]
+  (setq org-startup-folded t)              
   (setq org-cycle-hide-drawers 'all)
   (setq org-src-fontify-natively t)
+  (setq jit-lock-contextually t)
   (setq org-log-done 'note)
   (setq org-confirm-babel-evaluate nil)
   (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
-  ;; (jit-lock-defer-time nil)
-  ;; ;; Stealth fontification kicks in quickly
-  ;; (jit-lock-stealth-time 0.2)
-  ;; (jit-lock-stealth-nice 0.1)
-  ;; (jit-lock-stealth-load 200)
-  ;; ;; Ensure maximum chunks get refontified eagerly
-  ;; (jit-lock-chunk-size 5000)
   )
 
 (use-package evil-org
@@ -1442,7 +1438,7 @@ tags from the candidate string presented to the completion framework."
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
-        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python" "")
+;;        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python" "emacs-lisp")
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "basedpyright"
 	lsp-bridge-nix-lsp-server "nil"
@@ -1451,17 +1447,19 @@ tags from the candidate string presented to the completion framework."
   ;; (setq lsp-bridge-log-level 'debug)
   (setq acm-enable-jupyter t
         acm-enable-yas t
-	acm-enable-org-roam t)
+	acm-enable-org-roam t
+        acm-enable-elisp t)
   :config
-
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
   )
 
 (use-package python
   :ensure t
-  :mode ("\\.py\\'" . python-mode) )
+  :mode ("\\.py\\'" . python-mode))
+
 (setq python-indent-offset 4)
+
 ;; Nix integration
 (use-package nix-mode
   :ensure t
@@ -1473,6 +1471,10 @@ tags from the candidate string presented to the completion framework."
   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode))
   (add-to-list 'org-src-lang-modes '("nix" . nix))
 )
+
+(with-eval-after-load 'lsp-bridge
+  (require 'acm-backend-elisp)
+  (setq acm-enable-elisp t))
 
 (use-package ess
   :ensure t
@@ -1724,6 +1726,7 @@ tags from the candidate string presented to the completion framework."
 
 (use-package spacious-padding
   :ensure t
+  :defer 10
   :config
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
@@ -1997,6 +2000,16 @@ Preserves existing entries to avoid overwriting."
     (setq evil-want-keybinding nil)
     
     (general-define-key
+    :states 'normal
+    :keymaps 'override
+    "zo" #'kirigami-open-fold
+    "zO" #'kirigami-open-fold-rec
+    "zc" #'kirigami-close-fold
+    "za" #'kirigami-toggle-fold
+    "zr" #'kirigami-open-folds
+    "zm" #'kirigami-close-folds)
+    
+    (general-define-key
      :states 'normal
      :keymaps 'override
      "<escape>" (lambda ()
@@ -2175,8 +2188,7 @@ Preserves existing entries to avoid overwriting."
     
     (leader-key
       "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
-    )
-
+    
 (general-define-key
  :states 'normal
  :keymaps 'override
@@ -2186,6 +2198,9 @@ Preserves existing entries to avoid overwriting."
  "za" #'kirigami-toggle-fold
  "zr" #'kirigami-open-folds
  "zm" #'kirigami-close-folds)
+
+
+    )
 
 (use-package hydra
   :ensure t
