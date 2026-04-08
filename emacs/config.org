@@ -7,6 +7,7 @@ Emacs Config
 * TABLE OF CONTENTS :toc:
 - [[#important-programs-to-load-first][IMPORTANT PROGRAMS TO LOAD FIRST]]
   - [[#package-manager][Package Manager]]
+  - [[#benchmarking][Benchmarking]]
   - [[#load-evil-mode][Load Evil Mode]]
   - [[#casual][CASUAL]]
   - [[#pulsar][Pulsar]]
@@ -155,6 +156,18 @@ Emacs Config
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
 
+#+end_src
+
+
+
+** Benchmarking
+
+#+begin_src emacs-lisp
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 #+end_src
 
 ** Load Evil Mode
@@ -815,7 +828,7 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 #+begin_src emacs-lisp
 (use-package org-roam
   :ensure t
-  :demand t
+  :defer 2
   :custom
   (org-roam-directory (file-truename "~/Notes"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -1835,14 +1848,15 @@ Modern on-the-fly syntax checking extension for GNU Emacs
                        :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  :hook ((org-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         ;; Ensure src-edit buffers (C-c ') get lsp-bridge
-         (org-src-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (LaTeX-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (python-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (python-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (nix-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (csharp-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1))))
+  :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
+  ;; :hook ((org-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+  ;;        (org-src-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (LaTeX-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (python-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (python-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (nix-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (csharp-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1))))
   :init
   (setq lsp-bridge-user-multiserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
@@ -1894,10 +1908,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq acm-enable-elisp t))
 #+end_src
 
-#+RESULTS:
-: t
-
-
 #+begin_src emacs-lisp
 (use-package ess
   :ensure t
@@ -1909,9 +1919,10 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ;; Packages you need
 (use-package yasnippet
   :ensure t
-:config
+  :defer 4
+  :config
   (yas-global-mode 1)
-)
+  )
 
 #+end_src
 
@@ -2054,8 +2065,9 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 (use-package pdf-tools
   :ensure t
   :magic ("%PDF" . pdf-view-mode)
-  :init
+  :config
   (pdf-tools-install)
+  :init
   (setq-default pdf-view-display-size 'fit-page)
   (setq pdf-annot-activate-created-annotations t)
   (setq pdf-cache-image-limit 15)
@@ -2219,7 +2231,7 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
 #+begin_src emacs-lisp
 (use-package spacious-padding
   :ensure t
-  :defer 10
+  :defer 2
   :config
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
