@@ -47,7 +47,7 @@ in
   # Enable the GNOME Desktop Environment.
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
-
+  services.xserver.videoDrivers = [ "modesetting" ];
   # Configure keymap in X11
   services.xserver = 
     {
@@ -61,6 +61,7 @@ in
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
+  services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
   services.pipewire = 
     {

@@ -54,10 +54,28 @@
         };
     };
   
-  services.syncthing = 
-    {
-      enable = true;
-    };
+  
+    # Direnv for automatic environment loading
+    programs.direnv = 
+      {
+        enable = true;
+        enableZshIntegration = true;
+        nix-direnv.enable = true;
+        
+        config = {
+          global = {
+            log_format = "-";
+            log_filter = "^$";
+            hide_env_diff = true;
+          };
+        };
+      };
+  
+  
+      services.syncthing = 
+      {
+          enable = true;
+      };
   
   programs.gpg.enable = true;
   
@@ -118,21 +136,6 @@
       enableZshIntegration = true;
     };
   
-  # Direnv for automatic environment loading
-  programs.direnv = 
-    {
-      enable = true;
-      enableZshIntegration = true;
-      nix-direnv.enable = true;
-      
-      config = {
-        global = {
-          log_format = "-";
-          log_filter = "^$";
-          hide_env_diff = true;
-        };
-      };
-    };
 
     services.emacs = {
       enable = true;

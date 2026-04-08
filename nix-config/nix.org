@@ -426,10 +426,28 @@ programs.zsh =
       };
   };
 
-services.syncthing = 
-  {
-    enable = true;
-  };
+
+  # Direnv for automatic environment loading
+  programs.direnv = 
+    {
+      enable = true;
+      enableZshIntegration = true;
+      nix-direnv.enable = true;
+      
+      config = {
+        global = {
+          log_format = "-";
+          log_filter = "^$";
+          hide_env_diff = true;
+        };
+      };
+    };
+
+
+    services.syncthing = 
+    {
+        enable = true;
+    };
 
 programs.gpg.enable = true;
 
@@ -534,21 +552,6 @@ in
       enableZshIntegration = true;
     };
   
-  # Direnv for automatic environment loading
-  programs.direnv = 
-    {
-      enable = true;
-      enableZshIntegration = true;
-      nix-direnv.enable = true;
-      
-      config = {
-        global = {
-          log_format = "-";
-          log_filter = "^$";
-          hide_env_diff = true;
-        };
-      };
-    };
 
   <<emacs-config-wayland>>
   gtk = 
@@ -802,7 +805,7 @@ in
   # Enable the GNOME Desktop Environment.
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
-
+  services.xserver.videoDrivers = [ "modesetting" ];
   # Configure keymap in X11
   services.xserver = 
     {
@@ -816,6 +819,7 @@ in
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
+  services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
   services.pipewire = 
     {
@@ -956,7 +960,6 @@ in
     ]);
 
   <<emacs-config-wayland>>
-
   home.sessionVariables = 
     {
       EMACSLOADINIT = "~/.dotfiles/emacs/init.el";
