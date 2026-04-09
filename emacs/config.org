@@ -2353,7 +2353,9 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
                             :margin 0
                             :radius 0
                             :padding 0)))))))
-
+(add-hook 'server-after-make-frame-hook
+          (lambda ()
+            (setq svg-lib-style-default (svg-lib-style-compute-default))))
 #+end_src
 
 * NANO CALENDAR
