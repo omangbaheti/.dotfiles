@@ -1,5 +1,4 @@
-#+TITLE: 
-Emacs Config
+#+TITLE: Emacs Config
 #+DESCRIPTION: Personal Config
 #+STARTUP: showeverything
 #+OPTIONS: toc:3
@@ -251,8 +250,6 @@ Emacs Config
 )
 #+end_src
 
-#+RESULTS:
-: [nil 27076 24601 497845 nil elpaca-process-queues nil nil 754000 nil]
 
 #+begin_src emacs-lisp
 (use-package outline-indent
@@ -269,8 +266,13 @@ Emacs Config
   (outline-indent-ellipsis " ..."))
 #+end_src
 
-#+RESULTS:
-: [nil 27076 24599 263205 nil elpaca-process-queues nil nil 316000 nil]
+*** Evil Comment
+
+#+begin_src emacs-lisp
+(use-package evil-nerd-commenter
+  :ensure t
+  )
+#+end_src
 
 
 ** TODO CASUAL
@@ -478,15 +480,15 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
-
 ;; WHy am i havin to do this
 (setq enable-local-variables t)
 ;; solves the font lock 
 (add-hook 'org-mode-hook #'font-lock-fontify-buffer)
+;;opens window in fullscreen
+;;opens window in fullscreen
+;;opens window in fullscreen
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 #+end_src
-
-#+RESULTS:
-: t
 
 ** Display Line Numbers and Truncated Lines
 
@@ -1862,29 +1864,30 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
   (setq lsp-bridge-user-langserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
-  (setq lsp-bridge-enable-diagnostics t
+  (setq lsp-bridge-enable-diagnostics nil 
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
         lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
-;;        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python" "emacs-lisp")
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "basedpyright"
 	lsp-bridge-nix-lsp-server "nil"
-        lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
+        lsp-bridge-csharp-lsp-server "omnisharp-roslyn"
+        lsp-bridge-deferred-tick-time 0.01
+        )
   ;; (setq lsp-bridge-enable-debug t) 
   ;; (setq lsp-bridge-log-level 'debug)
   (setq acm-enable-jupyter t
         acm-enable-yas t
 	acm-enable-org-roam t
-        acm-enable-elisp t)
+        acm-enable-elisp t
+        )
   :config
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
   )
-
 (use-package python
   :ensure t
   :mode ("\\.py\\'" . python-mode))
@@ -2317,16 +2320,18 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
   :init
   (setq gptel-log-level 'debug)
   (setq gptel-default-mode 'org-mode)
-  (setq gptel-backend
-	(gptel-make-openai "Perplexity"
-	  :host "api.perplexity.ai/v2"
-	  :endpoint "/responses"
-	  :stream t
-	  :models '("openai/gpt-5.1")   
-	  :key perplexity-api))
-  
-  (setq gptel-model "openai/gpt-5.1"))
+  (defvar azure
+    (gptel-make-openai "Azure"
+      :host "emacs-resource.services.ai.azure.com"
+      :protocol "https"
+      :endpoint "/openai/v1/chat/completions"
+      :stream t
+      :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
+      :key azure-deepseek-api))
 
+  (setq gptel-backend azure)
+  (setq gptel-model "gpt-5.4-nano")
+)
 #+end_src
 
 
@@ -2579,7 +2584,7 @@ Preserves existing entries to avoid overwriting."
       "f n" '((lambda () (interactive) (find-file "~/.dotfiles/nix-config/nix.org")) :wk "Edit Nix Config")
       "f r" '(consult-recent-file :wk "Find Recent Files")
       "f /" '(consult-line :wk "Find Line")
-      "TAB TAB" '(comment-line :wk "Comment lines"))
+      "TAB TAB" '(evilnc-comment-or-uncomment-lines :wk "Comment lines"))
 
     (leader-key
       "a" '(:ignore t :wk "Agenda")
@@ -2761,6 +2766,9 @@ Preserves existing entries to avoid overwriting."
 
 
 #+END_SRC
+
+#+RESULTS:
+: [nil 27096 9625 420911 nil elpaca-process-queues nil nil 0 nil]
 
 ** HYDRA
 #+begin_src emacs-lisp

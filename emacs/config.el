@@ -60,6 +60,12 @@
 ;;Useful for configuring built-in emacs features.
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
 (setq evil-want-keybinding nil)
 (setq evil-want-integration t)
 (use-package evil
@@ -134,6 +140,10 @@
    (emacs-lisp-mode . outline-indent-minor-mode))
   :custom
   (outline-indent-ellipsis " ..."))
+
+(use-package evil-nerd-commenter
+  :ensure t
+  )
 
 ;; (use-package casual
 ;;   :ensure t
@@ -291,11 +301,14 @@ one, an error is signaled."
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
-
 ;; WHy am i havin to do this
 (setq enable-local-variables t)
 ;; solves the font lock 
 (add-hook 'org-mode-hook #'font-lock-fontify-buffer)
+;;opens window in fullscreen
+;;opens window in fullscreen
+;;opens window in fullscreen
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
@@ -546,7 +559,7 @@ one, an error is signaled."
 
 (use-package org-roam
   :ensure t
-  :demand t
+  :defer 2
   :custom
   (org-roam-directory (file-truename "~/Notes"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -1418,42 +1431,44 @@ tags from the candidate string presented to the completion framework."
                        :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  :hook ((org-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         ;; Ensure src-edit buffers (C-c ') get lsp-bridge
-         (org-src-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (LaTeX-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (python-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (python-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (nix-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-         (csharp-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1))))
+  :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
+  ;; :hook ((org-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        ;; Ensure src-edit buffers (C-c ') get lsp-bridge
+  ;;        (org-src-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (LaTeX-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (python-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (python-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (nix-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
+  ;;        (csharp-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1))))
   :init
   (setq lsp-bridge-user-multiserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
   (setq lsp-bridge-user-langserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
-  (setq lsp-bridge-enable-diagnostics t
+  (setq lsp-bridge-enable-diagnostics nil 
         lsp-bridge-enable-signature-help t
         lsp-bridge-enable-hover-diagnostic t
         lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
         lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
-;;        lsp-bridge-org-babel-lang-list '("python" "nix" "csharp" "jupyter-python" "emacs-lisp")
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "basedpyright"
 	lsp-bridge-nix-lsp-server "nil"
-        lsp-bridge-csharp-lsp-server "omnisharp-roslyn")
+        lsp-bridge-csharp-lsp-server "omnisharp-roslyn"
+        lsp-bridge-deferred-tick-time 0.01
+        )
   ;; (setq lsp-bridge-enable-debug t) 
   ;; (setq lsp-bridge-log-level 'debug)
   (setq acm-enable-jupyter t
         acm-enable-yas t
 	acm-enable-org-roam t
-        acm-enable-elisp t)
+        acm-enable-elisp t
+        )
   :config
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
   )
-
 (use-package python
   :ensure t
   :mode ("\\.py\\'" . python-mode))
@@ -1483,9 +1498,10 @@ tags from the candidate string presented to the completion framework."
 ;; Packages you need
 (use-package yasnippet
   :ensure t
-:config
+  :defer 4
+  :config
   (yas-global-mode 1)
-)
+  )
 
 (use-package yasnippet-snippets
   :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
@@ -1595,8 +1611,9 @@ tags from the candidate string presented to the completion framework."
 (use-package pdf-tools
   :ensure t
   :magic ("%PDF" . pdf-view-mode)
-  :init
+  :config
   (pdf-tools-install)
+  :init
   (setq-default pdf-view-display-size 'fit-page)
   (setq pdf-annot-activate-created-annotations t)
   (setq pdf-cache-image-limit 15)
@@ -1726,7 +1743,7 @@ tags from the candidate string presented to the completion framework."
 
 (use-package spacious-padding
   :ensure t
-  :defer 10
+  :defer 2
   :config
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
@@ -1792,15 +1809,18 @@ tags from the candidate string presented to the completion framework."
   :init
   (setq gptel-log-level 'debug)
   (setq gptel-default-mode 'org-mode)
-  (setq gptel-backend
-	(gptel-make-openai "Perplexity"
-	  :host "api.perplexity.ai/v2"
-	  :endpoint "/responses"
-	  :stream t
-	  :models '("openai/gpt-5.1")   
-	  :key perplexity-api))
-  
-  (setq gptel-model "openai/gpt-5.1"))
+  (defvar azure
+    (gptel-make-openai "Azure"
+      :host "emacs-resource.services.ai.azure.com"
+      :protocol "https"
+      :endpoint "/openai/v1/chat/completions"
+      :stream t
+      :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
+      :key azure-deepseek-api))
+
+  (setq gptel-backend azure)
+  (setq gptel-model "gpt-5.4-nano")
+)
 
 (use-package svg-lib
   :ensure t
@@ -1823,6 +1843,9 @@ tags from the candidate string presented to the completion framework."
                             :margin 0
                             :radius 0
                             :padding 0)))))))
+(add-hook 'server-after-make-frame-hook
+          (lambda ()
+            (setq svg-lib-style-default (svg-lib-style-compute-default))))
 
 (use-package direnv
   :ensure t)
@@ -2022,7 +2045,7 @@ Preserves existing entries to avoid overwriting."
       "f n" '((lambda () (interactive) (find-file "~/.dotfiles/nix-config/nix.org")) :wk "Edit Nix Config")
       "f r" '(consult-recent-file :wk "Find Recent Files")
       "f /" '(consult-line :wk "Find Line")
-      "TAB TAB" '(comment-line :wk "Comment lines"))
+      "TAB TAB" '(evilnc-comment-or-uncomment-lines :wk "Comment lines"))
 
     (leader-key
       "a" '(:ignore t :wk "Agenda")

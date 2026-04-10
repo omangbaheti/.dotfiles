@@ -8,4 +8,3 @@
  (expand-file-name
   "~/.dotfiles/emacs/config.org"
   user-emacs-directory))
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
