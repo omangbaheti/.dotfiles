@@ -53,8 +53,6 @@
   (elpaca-use-package-mode))
 
 (elpaca-wait)
-
-
 ;;Turns off elpaca-use-package-mode current declaration
 ;;Note this will cause evaluate the declaration immediately. It is not deferred.
 ;;Useful for configuring built-in emacs features.
@@ -65,1000 +63,6 @@
   :config
   ;; To disable collection of benchmark data after init is done.
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
-
-(setq evil-want-keybinding nil)
-(setq evil-want-integration t)
-(use-package evil
-  :ensure t
-  :init
-  (setq evil-vsplit-window-right t)
-  (setq evil-split-window-below t)
-  (setq evil-search-module 'evil-search)
-  (evil-mode))
-
-(use-package evil-collection
-  :ensure t
-  :after evil
-  :config
-  (setq evil-collection-mode-list '(dashboard dired ibuffer))
-  (evil-collection-init)) 
-
-(use-package evil-tutor :ensure t)
-
-(with-eval-after-load 'evil-maps
-  (define-key evil-motion-state-map (kbd "SPC") nil)
-  (define-key evil-motion-state-map (kbd "RET") nil)
-  (define-key evil-motion-state-map (kbd "TAB") nil))
-
-;;setting RETURN key in org-mode to follow links
-(setq org-return-follows-link t)
-
-(use-package evil-snipe
-  :ensure t
-  :after evil
-  :demand t
-  :config
-  (setq evil-snipe-scope 'line
-        evil-snipe-repeat-scope 'whole-visible
-        evil-snipe-smart-case t)
-  (evil-snipe-mode 1)
-  (evil-snipe-override-mode 1))
-
-(use-package evil-surround
-  :ensure t
-  :config
-  (global-evil-surround-mode 1))
-
-(use-package evil-goggles
-  :ensure t
-  :config
-  (evil-goggles-mode)
-  (setq evil-goggles-enable-paste t)
-  (setq evil-goggles-enable-yank t)
-  (setq evil-goggles-duration 0.100) 
-  ;; Define custom colors instead of using diff faces
-  (custom-set-faces
-   '(evil-goggles-delete-face ((t (:background "#ff6c6b" :foreground "white"))))
-   '(evil-goggles-paste-face ((t (:background "#98be65" :foreground "black"))))
-   '(evil-goggles-yank-face ((t (:background "#ECBE7B" :foreground "black"))))
-   '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
-   '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
-
-(use-package kirigami
-  :ensure   (:host github :repo "jamescherti/kirigami.el")
-)
-
-(use-package outline-indent
-  :ensure t
-  :commands outline-indent-minor-mode
-  :hook 
-  ((python-mode . outline-indent-minor-mode)
-   (python-ts-mode . outline-indent-minor-mode)
-   (yaml-mode . outline-indent-minor-mode)
-   (yaml-ts-mode . outline-indent-minor-mode) 
-   (nix-mode . outline-indent-minor-mode)
-   (emacs-lisp-mode . outline-indent-minor-mode))
-  :custom
-  (outline-indent-ellipsis " ..."))
-
-(use-package evil-nerd-commenter
-  :ensure t
-  )
-
-;; (use-package casual
-;;   :ensure t
-;;   :config)
-
-(use-package pulsar
-  :ensure t
-  :hook
-  (after-init . pulsar-global-mode)
-  :init
-  (setq pulsar-pulse t)
-  (setq pulsar-delay 0.025)
-  (setq pulsar-iterations 20)
-  (setq pulsar-face 'evil-ex-lazy-highlight)
-  :config
-  (add-to-list 'pulsar-pulse-functions 'evil-scroll-down)
-  (add-to-list 'pulsar-pulse-functions 'flymake-goto-next-error)
-  (add-to-list 'pulsar-pulse-functions 'flymake-goto-prev-error)
-  (add-to-list 'pulsar-pulse-functions 'evil-yank)
-  (add-to-list 'pulsar-pulse-functions 'evil-yank-line)
-  (add-to-list 'pulsar-pulse-functions 'evil-delete)
-  (add-to-list 'pulsar-pulse-functions 'evil-delete-line)
-  (add-to-list 'pulsar-pulse-functions 'evil-jump-item)
-  (add-to-list 'pulsar-pulse-functions 'diff-hl-next-hunk)
-  (add-to-list 'pulsar-pulse-functions 'diff-hl-previous-hunk))
-
-(defun keyboard-quit-dwim ()
-  (interactive)
-  (cond
-   ((region-active-p)
-    (keyboard-quit))
-   ((derived-mode-p 'completion-list-mode)
-    (delete-completion-window))
-   ((> (minibuffer-depth) 0)
-    (abort-recursive-edit))
-   (t
-    (keyboard-quit))))
-
-(define-key global-map (kbd "C-g") #'keyboard-quit-dwim)
-
-(require 'windmove)
-
-;;;###autoload
-(defun buf-move-up ()
-  "Swap the current buffer and the buffer above the split.
-If there is no split, ie now window above the current one, an
-error is signaled."
-  ;;  "Switches between the current buffer, and the buffer above the
-  ;;  split, if possible."
-  (interactive)
-  (let* ((other-win (windmove-find-other-window 'up))
-	 (buf-this-buf (window-buffer (selected-window))))
-    (if (null other-win)
-        (error "No window above this one")
-      ;; swap top with this one
-      (set-window-buffer (selected-window) (window-buffer other-win))
-      ;; move this one to top
-      (set-window-buffer other-win buf-this-buf)
-      (select-window other-win))))
-
-;;;###autoload
-(defun buf-move-down ()
-  "Swap the current buffer and the buffer under the split.
-If there is no split, ie now window under the current one, an
-error is signaled."
-  (interactive)
-  (let* ((other-win (windmove-find-other-window 'down))
-	 (buf-this-buf (window-buffer (selected-window))))
-    (if (or (null other-win) 
-            (string-match "^ \\*Minibuf" (buffer-name (window-buffer other-win))))
-        (error "No window under this one")
-      ;; swap top with this one
-      (set-window-buffer (selected-window) (window-buffer other-win))
-      ;; move this one to top
-      (set-window-buffer other-win buf-this-buf)
-      (select-window other-win))))
-
-;;;###autoload
-(defun buf-move-left ()
-  "Swap the current buffer and the buffer on the left of the split.
-If there is no split, ie now window on the left of the current
-one, an error is signaled."
-  (interactive)
-  (let* ((other-win (windmove-find-other-window 'left))
-	 (buf-this-buf (window-buffer (selected-window))))
-    (if (null other-win)
-        (error "No left split")
-      ;; swap top with this one
-      (set-window-buffer (selected-window) (window-buffer other-win))
-      ;; move this one to top
-      (set-window-buffer other-win buf-this-buf)
-      (select-window other-win))))
-
-;;;###autoload
-(defun buf-move-right ()
-  "Swap the current buffer and the buffer on the right of the split.
-If there is no split, ie now window on the right of the current
-one, an error is signaled."
-  (interactive)
-  (let* ((other-win (windmove-find-other-window 'right))
-	 (buf-this-buf (window-buffer (selected-window))))
-    (if (null other-win)
-        (error "No right split")
-      ;; swap top with this one
-      (set-window-buffer (selected-window) (window-buffer other-win))
-      ;; move this one to top
-      (set-window-buffer other-win buf-this-buf)
-      (select-window other-win))))
-
-;; Setting the default font
-(set-face-attribute 'default nil
-		    :font "JetBrainsMono Nerd Font"
-		    :height 110
-		    :weight 'medium)
-;; Setting font for variable pitch
-(set-face-attribute 'variable-pitch nil
-                    :family (or (car (seq-filter
-                                      (lambda (f) (member f (font-family-list)))
-                                      '("Ubuntu" "DejaVu Sans" "Arial")))
-                                "Sans")
-                    :height 140)
-;;Setting font for fixed pitch
-(set-face-attribute 'fixed-pitch nil
-		    :font "JetBrainsMono Nerd Font"
-		    :height 110
-		    :weight 'medium)
-
-;; Makes commented text and keywords  italics
-(set-face-attribute 'font-lock-comment-face nil
-		    :slant 'italic)
-(set-face-attribute 'font-lock-keyword-face nil
-		    :slant 'italic)
-
-(add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
-(setq-default line-spacing 0.12)
-
-(global-set-key (kbd "C-=") 'text-scale-increase)
-(global-set-key (kbd "C--") 'text-scale-decrease)
-(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
-(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
-
-(setq frame-title-format "%b")
-(scroll-bar-mode -1)               ; disable scrollbar
-(window-divider-mode 1)
-(custom-set-faces
- '(vertical-border ((t (:foreground "gray")))))
-(setq window-divider-default-bottom-width 1)
-(setq window-divider-default-right-width 1)
-(tool-bar-mode -1)                 ; disable toolbar
-(tooltip-mode -1)                  ; disable tooltips
-(set-fringe-mode 10)               ; give some breathing room
-(menu-bar-mode -1)                 ; disable menubar
-(blink-cursor-mode 0)              ; disable blinking cursor
-(pixel-scroll-precision-mode 1)
-(setq mouse-wheel-scroll-amount-horizontal 20)
-(setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
-(setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
-;; WHy am i havin to do this
-(setq enable-local-variables t)
-;; solves the font lock 
-(add-hook 'org-mode-hook #'font-lock-fontify-buffer)
-;;opens window in fullscreen
-;;opens window in fullscreen
-;;opens window in fullscreen
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-(global-display-line-numbers-mode 1)
-(global-visual-line-mode t)
-(setq truncate-lines nil)
-(setq display-line-numbers-type 'relative)
-
-(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
-
-(global-set-key [escape] 'keyboard-escape-quit)
-
-;;this is going to bite me in the ass someday isnt it
-(load "~/.secrets/authinfo.el")
-
-(require 'epg)
-(setq epg-debug t)
-(setq plstore-encrypt-to "omangbaheti@pm.me")
-(use-package pinentry
-  :ensure t
-  :init
-  (setq epg-pinentry-mode 'loopback)
-  :config
-  (pinentry-start))
-
-(delete-selection-mode 1)
-(electric-indent-mode -1)
-(electric-pair-mode 1)
-(setq org-edit-src-content-indentation 0)
-(defun my-org-electric-pair-hook ()
-  (add-function :before-until (local 'electric-pair-inhibit-predicate)
-                (lambda (c) (eq c ?<))))
-
-(add-hook 'org-mode-hook #'my-org-electric-pair-hook)
-
-(use-package undo-fu
-  :ensure t
-)
-
-(use-package helpful
-  :ensure t)
-
-(defun open-messages-buffer ()
-"Open the *Messages* buffer in a vertical split."
-  (interactive)
-  (let ((buf (get-buffer "*Messages*")))
-    (if buf
-        (select-window (split-window-right))
-      (setq buf (get-buffer-create "*Messages*")))
-    (switch-to-buffer buf)))
-
-(setq font-lock-multiline t)
-;; (setq jit-lock-defer-time 0) ; Immediate fontification
-(setq fast-but-imprecise-scrolling nil)
-
-(use-package org
-  :ensure nil
-  :config
-  ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
-  (setq org-startup-folded t)              
-  (setq org-cycle-hide-drawers 'all)
-  (setq org-src-fontify-natively t)
-  (setq jit-lock-contextually t)
-  (setq org-log-done 'note)
-  (setq org-confirm-babel-evaluate nil)
-  (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
-  )
-
-(use-package evil-org
-  :ensure t
-  :diminish evil-org-mode
-  :after org
-  :config
-  (add-hook 'org-mode-hook 'evil-org-mode)
-  (add-hook 'evil-org-mode-hook
-            (lambda () (evil-org-set-key-theme))))
-
-(use-package toc-org
-  :ensure t
-  :commands toc-org-enable
-  :init (add-hook 'org-mode-hook 'toc-org-enable))
-
-(add-hook 'org-mode-hook 'org-indent-mode)
-(use-package org-bullets
-  :ensure t
-)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-
-(require 'org-tempo)
-
-(tempo-define-template "jupyter-python"
-                       '("#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t"
-                         n p n
-                         "#+end_src")
-                       "<jpy"
-                       "Insert Jupyter Python block"
-                       'org-tempo-tags)
-
-
-(tempo-define-template "jupyter-R"
-                       '("#+begin_src jupyter-R :session R :async yes :pandoc t"
-                         n p n
-                         "#+end_src")
-                       "<jpr"
-                       "Insert Jupyter-R block"
-                       'org-tempo-tags)
-
-(tempo-define-template "python"
-                       '("#+begin_src python :tangle temp.py :session py :results output"
-                         n p n
-                         "#+end_src")
-                       "<py"
-                       "Insert Python block"
-                       'org-tempo-tags)
-
-(tempo-define-template "emacs-lisp"
-                       '("#+begin_src emacs-lisp"
-                         n p n
-                         "#+end_src")
-                       "<el"
-                       "Insert Emacs Lisp block"
-                       'org-tempo-tags)
-
-(tempo-define-template "nix"
-                       '("#+begin_src nix"
-                         n p n
-                         "#+end_src")
-                       "<n"
-                       "Insert Nix block"
-                       'org-tempo-tags)
-
-(use-package org-modern
-  :ensure t
-  :hook (org-mode . org-modern-mode)
-  :config
-  ;; Customize as needed
-  (modify-all-frames-parameters
-   '((right-divider-width . 0)
-     (internal-border-width . 0)))
-  (dolist (face '(window-divider
-                  window-divider-first-pixel
-                  window-divider-last-pixel))
-    (face-spec-reset-face face)
-    (set-face-foreground face (face-attribute 'default :background)))
-  (set-face-background 'fringe (face-attribute 'default :background))
-  (setq org-modern-todo-faces org-todo-keyword-faces)
-  (setq org-modern-todo t)
-  (setq org-modern-tag t)
-  (setq org-modern-fold-stars 
-        '(("" . "")     ; Down arrow when folded, right arrow when expanded
-          ("" . "") 
-          ("" . "")
-          ("" . "")
-          ("" . "")))
-  (setq ;;org-modern-star '("◉" "○" "✸" "✿")
-   org-modern-table t 
-   org-ellipsis " "
-   org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
-   org-modern-block-fringe nil 
-   org-modern-priority
-   '((?A . "󱗗")  ;; High
-     (?B . "󰐃")  ;; Medium
-     (?C . "󰒲")))) ;; Low 
-
-(use-package org-modern-indent
-  :ensure (:host github :repo "jdtsmith/org-modern-indent")
-  :config ; add late to hook
-  (org-modern-indent-mode 1)
-  (add-hook 'org-mode-hook #'org-modern-indent-mode t))
-
-(use-package olivetti
-  :ensure t
-  :diminish olivetti-mode
-  :bind (("<left-margin> <mouse-1>" . ignore)
-         ("<right-margin> <mouse-1>" . ignore)
-         ("C-c {" . olivetti-shrink)
-         ("C-c }" . olivetti-expand)
-         ("C-c |" . olivetti-set-width))
-  :custom
-  (olivetti-body-width 0.65)          ; 70% of window width
-  (olivetti-minimum-body-width 80)   ; Minimum width in characters
-  (olivetti-recall-visual-line-mode-entry-state t)
-  :hook
-  ((markdown-mode . olivetti-mode)
-   (org-mode . olivetti-mode)))
-
-(defun my/olivetti-only-when-single-window ()
-  "Enable Olivetti mode only when there is a single window."
-  (if (= (count-windows) 1)
-      (olivetti-mode 1)
-    (olivetti-mode -1)))
-
-;; (add-hook 'window-configuration-change-hook
-;;           #'my/olivetti-only-when-single-window)
-
-(with-eval-after-load 'org
-  (setq org-agenda-files (directory-files-recursively "~/Notes/Agenda" "\\.org$"))
-  (setq org-agenda-skip-timestamp-if-done t
-        org-agenda-skip-deadline-if-done t
-        org-agenda-skip-scheduled-if-done t
-        org-agenda-skip-scheduled-if-deadline-is-shown t
-        org-agenda-skip-timestamp-if-deadline-is-shown t)
-  (setq org-agenda-span 1
-        org-agenda-start-day "+0d")
-  (setq org-agenda-current-time-string "")
-  (setq org-agenda-time-grid '((daily) () "" "")))
-
-(setq org-todo-keywords
-      '((sequence "TODO(t)" "DOING(s)" "|" "DONE(d)" )))
-
-(setq org-todo-keyword-faces
-      '(("TODO"      . (:foreground "white" :background "#FF5964"     :weight bold))
-        ("DOING"   . (:foreground "black" :background "#FFF4AD"           :weight bold))
-        ;; ("WAITING"   . (:foreground "white" :background "DarkOrange3"    :weight bold))
-        ("DONE"      . (:foreground "white" :background "#ABD1B5"    :weight bold))
-        ;; ("CANCELLED" . (:foreground "white" :background "DimGray"        :weight bold)) 
-	))
-
-;; (use-package org-supertag
-;;   :ensure (org-supertag :host github :repo "yibie/org-supertag")
-;;   :defer t
-;;   :init
-;;   ;; Index these directories; adjust to preferred note roots.
-;;   (setq org-supertag-sync-directories '("~/Notes/"))
-;;   :commands
-;;   (org-supertag-view-node
-;;    org-supertag-query
-;;    org-supertag-view-kanban
-;;    org-supertag-view-discover
-;;    org-supertag-view-chat-open)
-;;   :hook
-;;   (org-mode . (lambda ()
-;;                 (require 'org-supertag)
-;;                 (local-set-key (kbd "C-c s n") #'org-supertag-view-node)
-;;                 (local-set-key (kbd "C-c s q") #'org-supertag-query)
-;;                 (local-set-key (kbd "C-c s k") #'org-supertag-view-kanban)
-;;                 (local-set-key (kbd "C-c s d") #'org-supertag-view-discover)
-;;                 (local-set-key (kbd "C-c s c") #'org-supertag-view-chat-open)))
-;;   :config
-;;   ;; Example: custom field type
-;;   (setq org-supertag-sync-directories '("~/Notes"))
-;;   (setq org-supertag-data  '("~/Notes"))
-;;   (setq org-supertag-data-directory "~/Notes/.supertag")
-;;   (setq supertag-data-directory "~/Notes/.supertag")
-;;   (add-to-list 'org-supertag-field-types
-;;                '(rating . (:validator org-supertag-validate-rating
-;;                            :formatter org-supertag-format-rating
-;;                            :description "Rating (1-5)")))
-;; )
-
-(use-package org-roam
-  :ensure t
-  :defer 2
-  :custom
-  (org-roam-directory (file-truename "~/Notes"))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n g" . org-roam-graph)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n c" . org-roam-capture)
-         ;; Dailies
-         ("C-c n j" . org-roam-dailies-capture-today))
-  :config
-  ;; If you're using a vertical completion framework, you might want a more informative completion interface
-  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-  (setq org-roam-db-gc-threshold most-positive-fixnum)
-  ;; If using org-roam-protocol
-  (require 'org-roam-protocol)
-  (setq org-roam-capture-templates
-        '(
-	  ;; Plain Template
-	  ("d" "default" plain "%?"
-	   :target 
-	   (
-	    file+head "Unfiled/${slug}.org"
-	    "#+TITLE: ${title}
-#+filetags: %^{Tags}
-#+STARTUP: showall
-"
-	    )
-	   :unnarrowed t)
-
-
-	  ("r" "roam-tag" plain "%?"
-	   :target 
-	   (
-	    file+head "TopLevelTopics/${slug}.org"
-	    "#+TITLE: ${title}
-#+filetags: roam-tag %^{Tags}
-#+STARTUP: showall
-"
-	    )
-	   :unnarrowed t)
-
-	  ;; Template for Person
-	  ("p" "person" plain "%?"
-	   :target 
-	   (
-	    file+head "People/${slug}.org"                              
-	    "
-:PROPERTIES:
-:ROAM_ALIASES: \"${fullname}\"
-:DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
-:END:
-#+TITLE: ${title}
-#+filetags: %^{Tags}
-#+OPTIONS: toc:2
-#+STARTUP: showall
-* TABLE OF CONTENTS :toc:
-"
-	    )
-           :unnarrowed t
-           )
-	  
-	  ;; Template for Agenda Board
-	  ("a" "Agenda Board" plain "%?"
-	   :target 
-	   (
-	    file+head "Agenda/${slug}.org"                              
-	    "
-:PROPERTIES:
-:ROAM_ALIASES: \"${Project Board}\"
-:DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
-:END:
-#+TITLE: ${title}
-#+filetags: %^{Tags}
-#+STARTUP: showall
-#+OPTIONS: toc:2
-"
-	    )
-	   :unnarrowed t
-	   )
-
-	  ;; Agenda Task Template
-	  ("t" "Agenda Task" entry
-	   "* TODO ${Task Name}%?
-DEADLINE: %^t
-:PROPERTIES:
-:DATE: %<%d-%m-%Y-(%H-%M-%S)>
-:END:
-"
-	   :target (file "Agenda/${slug}.org")
-	   :unnarrowed t)
-
-	  ("n" "literature note" plain "%?"
-	   :target
-	   (file+head "%(expand-file-name (or citar-org-roam-subdir \"\\ResearchNotes\") org-roam-directory)/${citar-citekey}.org"
-		      "
-:PROPERTIES:
-:AUTHOR: ${citar-author}
-:DATE_PUBLISHED: ${citar-date}
-:END:\n
-#+TITLE: ${citar-title}
-#+filetags: Research %^{Tags}
-\n\n"
-		      )
-	   :unnarrowed t)
-
-	  )))
-
-(use-package md-roam
-  :after org-roam
-  :ensure (:host github :repo "nobiot/md-roam")
-  :config
-  ;; Enable Org-roam for markdown files
-  (setq org-roam-file-extensions '("org" "md"))
-  ;; Activate md-roam-mode
-  (md-roam-mode 1)
-  (org-roam-db-autosync-mode 1)
-)
-  ;; (md-roam-file-extension "md")  ; or "markdown"
-  ;; Optional: Add markdown capture template
-  ;; (add-to-list 'org-roam-capture-templates
-  ;;              '("m" "Markdown" plain "" :target
-  ;;                (file+head "%<%Y-%m-%dT%H%M%S>.md"
-  ;;                           "---\ntitle: ${title}\nid: %<%Y-%m-%dT%H%M%S>\ncategory: \n---\n")
-  ;;                :unnarrowed t))
-  
-  ;; Optional: Enable completion-at-point for Corfu in markdown-mode)
-
-(defun org-roam-buffer-toggle-and-focus ()
-  "Toggle the org-roam buffer and switch focus to it."
-  (interactive)
-  (org-roam-buffer-toggle)
-  (let ((roam-buffer (get-buffer "*org-roam*")))
-    (when (and roam-buffer (not (eq (current-buffer) roam-buffer)))
-      (pop-to-buffer roam-buffer))))
-
-(use-package consult-org-roam
-  :ensure t
-  :after org-roam
-  :init
-  ;; Activate the minor mode
-  (consult-org-roam-mode 1)
-  :config
-  ;; Use SETQ to set variables, not call them as functions
-  (setq consult-org-roam-grep-func #'consult-ripgrep)
-  (setq consult-org-roam-buffer-narrow-key ?r)
-  (setq consult-org-roam-buffer-after-buffers t)
-  
-  ;; Eventually suppress previewing for certain functions
-  (consult-customize
-   consult-org-roam-find-by-title
-   consult-org-roam-file-find      
-   consult-org-roam-backlinks       
-   consult-org-roam-forward-links
-   :preview-key "M-.")
-  :bind
-  ("C-c n e" . consult-org-roam-file-find)
-  ("C-c n b" . consult-org-roam-backlinks)
-  ("C-c n B" . consult-org-roam-backlinks-recursive)
-  ("C-c n l" . consult-org-roam-forward-links)
-  ("C-c n r" . consult-org-roam-search))
-
-(defun consult-org-roam-find-by-title ()
-  "Find an Org Roam node by searching titles only.
-This gives preference to exact title matches by temporarily excluding
-tags from the candidate string presented to the completion framework."
-  (interactive)
-  (let ((org-roam-node-display-template "${title}"))
-    (org-roam-node-visit (consult-org-roam-node-read))))
-
-(cl-defun org-roam-tag-node-insert(&optional filter-fn &key templates info)
-  "Insert org-roam link with description wrapped in colons."
-  (interactive)
-  (unwind-protect
-      (atomic-change-group
-        (let* (region-text
-               beg end
-               (_ (when (region-active-p)
-                    (setq beg (set-marker (make-marker) (region-beginning)))
-                    (setq end (set-marker (make-marker) (region-end)))
-                    (setq region-text (org-link-display-format 
-                                       (buffer-substring-no-properties beg end)))))
-               (node (org-roam-node-read region-text filter-fn))
-               (description (or region-text
-				(org-roam-node-formatted node))))
-          (if (org-roam-node-id node)
-              (progn
-                (when region-text
-                  (delete-region beg end)
-                  (set-marker beg nil)
-                  (set-marker end nil))
-                (let ((id (org-roam-node-id node)))
-                  (insert (concat "" (org-link-make-string
-                                      (concat "id:" id)
-                                      (concat "  :" description ":  "))
-                                  "  "))  ; Add colons here
-                  (run-hook-with-args 'org-roam-post-node-insert-hook
-                                      id
-                                      description)))
-            (org-roam-capture-
-             :node node
-             :info info
-             :templates templates
-             :props (append
-                     (when (and beg end) 
-                       (list :region (cons beg end)))
-                     (list :link-description description
-                           :finalize 'insert-link))))))
-    (deactivate-mark)))
-;; (advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
-
-;; (defun my/navigate-note (arg &optional node choices)
-;;   "Navigate notes by link. With universal ARG tries to use only to navigate the tags of the current note. Optionally takes a selected NOTE and filepaths CHOICES."
-;;   (interactive "P")
-;;   (let* ((depth (if (numberp arg) arg 1))
-;;          (choices
-;;           (or choices
-;;               (when arg
-;;                 (-map #'org-roam-backlink-target-node (org-roam-backlinks-get (org-roam-node-from-id (or (ignore-errors (org-roam-node-id node))
-;;                                                                                                          (org-id-get-create))))))))
-;;          (all-notes (org-roam-node--completions))
-;;          (completions
-;;           (or (--filter (-contains-p choices (cdr it)) all-notes) all-notes))
-;;          (next-node
-;;           ;; taken from org-roam-node-read
-;;           (let* ((nodes completions)
-;;                  (node (completing-read
-;;                         "Node: "
-;;                         (lambda (string pred action)
-;;                           (if (eq action 'metadata)
-;;                               '(metadata
-;;                                 (annotation-function . (lambda (title)
-;;                                                          (funcall org-roam-node-annotation-function
-;;                                                                   (get-text-property 0 'node title))))
-;;                                 (category . org-roam-node))
-;;                             (complete-with-action action nodes string pred))))))
-;;             (or (cdr (assoc node nodes))
-;;                 (org-roam-node-create :title node)))
-;;           )
-;;          )
-;;     (if (equal node next-node)
-;;         (org-roam-node-visit node)
-;;       (my/navigate-note nil next-node (cons next-node (-map #'org-roam-backlink-source-node (org-roam-backlinks-get next-node)))))))
-
-(use-package org-roam-ql
-  :ensure t
-  :after (org-roam))
-
-
-
-(use-package org-noter
-  :ensure t
-  :defer t
-  :config
-  (setq org-noter-notes-search-path '("~/Notes/ResearchNotes"))
-  (setq org-noter-highlight-selected-text t)
-)
-
-(use-package org-roam-ui
-  :ensure
-  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
-  :after org-roam
-  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-  ;;         a hookable mode anymore, you're advised to pick something yourself
-  ;;         if you don't care about startup time, use
-  ;;  :hook (after-init . org-roam-ui-mode)
-  :config
-  (setq org-roam-ui-sync-theme t
-        org-roam-ui-follow t
-        org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t)
-  )
-
-(use-package org-transclusion
-  :ensure t
-  :after org
-  :hook (org-mode . org-transclusion-mode)
-  )
-
-;; (require 'ansi-color)
-
-;; (defun my-ansi-colorize-buffer ()
-;;   (ansi-color-apply-on-region (point-min) (point-max)))
-
-;; (add-hook 'org-babel-after-execute-hook
-;;           (lambda ()
-;;             (when (eq major-mode 'org-mode)
-;;               (save-excursion
-;;                 (goto-char (org-babel-where-is-src-block-result nil nil))
-;;                 (when (looking-at org-babel-result-regexp)
-;;                   (let ((beg (match-end 0))
-;;                         (end (org-babel-result-end)))
-;;                     (ansi-color-apply-on-region beg end)))))))
-
-(use-package which-key
-  :ensure t
-  :init
-  (which-key-mode 1)
-  :config
-  (setq which-key-side-window-location 'bottom
-        which-key-sort-order #'which-key-key-order-alpha
-        which-key-sort-uppercase-first nil
-        which-key-add-column-padding 1
-        which-key-max-display-columns nil
-        which-key-min-display-lines 6
-        which-key-side-window-slot -10
-        which-key-side-window-max-height 0.25
-        which-key-idle-delay 0.8
-        which-key-max-description-length 25
-        which-key-allow-imprecise-window-fit nil 
-        which-key-separator " → " ))
-
-(use-package nerd-icons
-  :ensure t)
-
-(use-package nerd-icons-completion
-  :ensure t
-  :after marginalia
-  :config
-  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
-
-(use-package nerd-icons-corfu
-  :ensure t
-  :after corfu
-  :config
-  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
-
-(use-package nerd-icons-dired
-  :ensure t
-  :hook
-  (dired-mode . nerd-icons-dired-mode))
-
-(use-package vertico
-  :ensure t
-  :init
-  (vertico-mode)
-
-  ;; Different scroll margin
-  ;; (setq vertico-scroll-margin 0)
-
-  ;; Show more candidates
-  (setq vertico-count 10)
-
-  ;; Grow and shrink the Vertico minibuffer
-  (setq vertico-resize t
-        ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-        vertico-cycle t))
-
-(use-package zoxide
-  :ensure t
-  :config
-  :custom
-  (zoxide-add-to-history t))
-
-(use-package marginalia
-  :ensure t
-  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
-  ;; available in the *Completions* buffer, add it to the
-  ;; `completion-list-mode-map'.
-  :bind (:map minibuffer-local-map
-              ("M-A" . marginalia-cycle))
-  ;; The :init section is always executed.
-  :init
-  (marginalia-mode)
-  )
-
-(use-package orderless
-  :ensure t
-  :config
-  (setq completion-styles '(orderless basic))
-  (setq completion-category-defaults nil)
-  (setq completion-category-overrides 
-        '((file (styles partial-completion orderless)))))
-
-(use-package prescient
-  :ensure t
-  :config
-  (prescient-persist-mode))
-
-(use-package vertico-prescient
- :ensure t
-  :after vertico
-  :config
-  (vertico-prescient-mode))
-
-(use-package consult
-  :ensure t
-  ;; Enable automatic preview at point in the *Completions* buffer. This is
-  ;; relevant when you use the default completion UI.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
-
-  ;; The :init configuration is always executed (Not lazy)
-  :init
-
-  ;; Tweak the register preview for `consult-register-load',
-  ;; `consult-register-store' and the built-in commands.  This improves the
-  ;; register formatting, adds thin separator lines, register sorting and hides
-  ;; the window mode line.
-  (advice-add #'register-preview :override #'consult-register-window)
-  (setq register-preview-delay 0.5)
-
-  ;; Use Consult to select xref locations with preview
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-
-  ;; Configure other variables and modes in the :config section,
-  ;; after lazily loading the package.
-  :config
-
-  ;; Optionally configure preview. The default value
-  ;; is 'any, such that any key triggers the preview.
-  ;; (setq consult-preview-key 'any)
-  ;; (setq consult-preview-key "M-.")
-  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-  ;; For some commands and buffer sources it is useful to configure the
-  ;; :preview-key on a per-command basis using the `consult-customize' macro.
-  (setq consult-buffer-sources '(consult--source-buffer))
-  (consult-customize
-   consult-theme :preview-key '(:debounce 0.1 any)
-   consult-ripgrep consult-git-grep consult-grep consult-man
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
-   :preview-key "M-."
-   ;;:preview-key '(:debounce 0.4 any)
-   )
-  ;; (setq consult-preview-key (kbd "M-."))
-  ;; Optionally configure the narrowing key.
-  ;; Both < and C-+ work reasonably well.
-  (setq consult-narrow-key "<") ;; "C-+"
-  
-  ;; Optionally make narrowing help available in the minibuffer.
-  ;; You may want to use `embark-prefix-help-command' or which-key instead.
-  ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
-  )
-
-(defun consult-fd-windows ()
-  "Run consult-fd searching from home directory."
-  (interactive)
-  (let ((default-directory "/mnt/c/Users"))
-    (consult-fd)))
-
-(defun consult-find-home ()
-  "Run consult-fd searching from home directory."
-  (interactive)
-  (let ((default-directory "~/"))
-    (consult-find)))
-
-(use-package embark
-  :ensure t
-  :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-;" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-
-  :init
-
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-
-  ;; Show the Embark target at point via Eldoc. You may adjust the
-  ;; Eldoc strategy, if you want to see the documentation from
-  ;; multiple providers. Beware that using this can be a little
-  ;; jarring since the message shown in the minibuffer can be more
-  ;; than one line, causing the modeline to move up and down:
-
-  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-
-  ;; Add Embark to the mouse context menu. Also enable `context-menu-mode'.
-  ;; (context-menu-mode 1)
-  ;; (add-hook 'context-menu-functions #'embark-context-menu 100)
-
-  :config
-
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
-
-;; Consult users will also want the embark-consult package.
-(use-package embark-consult
-  :ensure t ; only need to install it, embark loads it after consult if found
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
-
-(use-package vterm
-  :ensure t
-  :config
-  (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
-  (setq vterm-max-scrollback 5000)
-  (setq vterm-shell-args '("-l"))
-  (evil-set-initial-state 'vterm-mode 'emacs)
-  :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
-
-(use-package vterm-toggle
-  :ensure t
-  :config
-  (setq vterm-toggle-fullscreen-p t))
 
 (use-package doom-themes
   :ensure t
@@ -1347,6 +351,1066 @@ tags from the candidate string presented to the completion framework."
 (setq doom-modeline-before-update-env-hook nil)
 (setq doom-modeline-after-update-env-hook nil)
 
+(setq evil-want-keybinding nil)
+(setq evil-want-integration t)
+
+(use-package evil
+  :ensure t
+  :init
+  (setq evil-vsplit-window-right t)
+  (setq evil-split-window-below t)
+  (setq evil-search-module 'evil-search)
+  (setq evil-undo-system 'undo-fu)
+  (evil-mode)
+)
+
+(use-package evil-collection
+  :ensure t
+  :after evil
+  :config
+  (setq evil-collection-mode-list '(dashboard dired ibuffer))
+  (evil-collection-init)) 
+
+(use-package evil-tutor :ensure t)
+
+(with-eval-after-load 'evil-maps
+  (define-key evil-motion-state-map (kbd "SPC") nil)
+  (define-key evil-motion-state-map (kbd "RET") nil)
+  (define-key evil-motion-state-map (kbd "TAB") nil))
+
+;;setting RETURN key in org-mode to follow links
+(setq org-return-follows-link t)
+
+(use-package evil-snipe
+  :ensure t
+  :after evil
+  :demand t
+  :config
+  (setq evil-snipe-scope 'line
+        evil-snipe-repeat-scope 'whole-visible
+        evil-snipe-smart-case t)
+  (evil-snipe-mode 1)
+  (evil-snipe-override-mode 1))
+
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
+
+(use-package evil-goggles
+  :ensure t
+  :config
+  (evil-goggles-mode)
+  (setq evil-goggles-enable-paste t)
+  (setq evil-goggles-enable-yank t)
+  (setq evil-goggles-duration 0.100) 
+  ;; Define custom colors instead of using diff faces
+  (custom-set-faces
+   '(evil-goggles-delete-face ((t (:background "#ff6c6b" :foreground "white"))))
+   '(evil-goggles-paste-face ((t (:background "#98be65" :foreground "black"))))
+   '(evil-goggles-yank-face ((t (:background "#ECBE7B" :foreground "black"))))
+   '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
+   '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
+
+(use-package kirigami
+  :ensure   (:host github :repo "jamescherti/kirigami.el")
+)
+
+(use-package outline-indent
+  :ensure t
+  :commands outline-indent-minor-mode
+  :hook 
+  ((python-mode . outline-indent-minor-mode)
+   (python-ts-mode . outline-indent-minor-mode)
+   (yaml-mode . outline-indent-minor-mode)
+   (yaml-ts-mode . outline-indent-minor-mode) 
+   (nix-mode . outline-indent-minor-mode)
+   (emacs-lisp-mode . outline-indent-minor-mode))
+  :custom
+  (outline-indent-ellipsis " ..."))
+
+(use-package evil-nerd-commenter
+  :ensure t
+)
+
+(use-package evil-mc
+  :ensure t
+  :after evil
+  :config
+  (global-evil-mc-mode 1)
+  (evil-define-key 'visual evil-mc-key-map
+    "A" #'evil-mc-make-cursor-in-visual-selection-end
+    "I" #'evil-mc-make-cursor-in-visual-selection-beg))
+
+(use-package scroll-on-jump
+    :after evil
+    :ensure t
+    :config
+    (setq scroll-on-jump-duration 0.15
+          scroll-on-jump-smooth t
+          scroll-on-jump-curve 'smooth-out
+          scroll-on-jump-curve-power 4.0)
+      (scroll-on-jump-advice-add evil-undo)
+      (scroll-on-jump-advice-add evil-redo)
+      (scroll-on-jump-advice-add evil-jump-item)
+      (scroll-on-jump-advice-add evil-jump-forward)
+      (scroll-on-jump-advice-add evil-jump-backward)
+      (scroll-on-jump-advice-add evil-ex-search-next)
+      (scroll-on-jump-advice-add evil-ex-search-previous)
+      (scroll-on-jump-advice-add evil-forward-paragraph)
+      (scroll-on-jump-advice-add evil-backward-paragraph)
+      (scroll-on-jump-advice-add evil-goto-mark)
+
+      (scroll-on-jump-with-scroll-advice-add evil-goto-line)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-down)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-up)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-center)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom)
+      (scroll-on-jump-with-scroll-advice-add consult-org-heading)
+)
+
+;; (use-package casual
+;;   :ensure t
+;;   :config)
+
+(use-package pulsar
+  :ensure t
+  :hook
+  (after-init . pulsar-global-mode)
+  :init
+  (setq pulsar-pulse t)
+  (setq pulsar-delay 0.025)
+  (setq pulsar-iterations 20)
+  (setq pulsar-face 'evil-ex-lazy-highlight)
+  :config
+  (add-to-list 'pulsar-pulse-functions 'evil-scroll-down)
+  (add-to-list 'pulsar-pulse-functions 'flymake-goto-next-error)
+  (add-to-list 'pulsar-pulse-functions 'flymake-goto-prev-error)
+  (add-to-list 'pulsar-pulse-functions 'evil-yank)
+  (add-to-list 'pulsar-pulse-functions 'evil-yank-line)
+  (add-to-list 'pulsar-pulse-functions 'evil-delete)
+  (add-to-list 'pulsar-pulse-functions 'evil-delete-line)
+  (add-to-list 'pulsar-pulse-functions 'evil-jump-item)
+  (add-to-list 'pulsar-pulse-functions 'diff-hl-next-hunk)
+  (add-to-list 'pulsar-pulse-functions 'diff-hl-previous-hunk))
+
+(defun keyboard-quit-dwim ()
+  (interactive)
+  (cond
+   ((region-active-p)
+    (keyboard-quit))
+   ((derived-mode-p 'completion-list-mode)
+    (delete-completion-window))
+   ((> (minibuffer-depth) 0)
+    (abort-recursive-edit))
+   (t
+    (keyboard-quit))))
+
+(define-key global-map (kbd "C-g") #'keyboard-quit-dwim)
+
+(require 'windmove)
+
+;;;###autoload
+(defun buf-move-up ()
+  "Swap the current buffer and the buffer above the split.
+If there is no split, ie now window above the current one, an
+error is signaled."
+  ;;  "Switches between the current buffer, and the buffer above the
+  ;;  split, if possible."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'up))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No window above this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun buf-move-down ()
+  "Swap the current buffer and the buffer under the split.
+If there is no split, ie now window under the current one, an
+error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'down))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (or (null other-win) 
+            (string-match "^ \\*Minibuf" (buffer-name (window-buffer other-win))))
+        (error "No window under this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun buf-move-left ()
+  "Swap the current buffer and the buffer on the left of the split.
+If there is no split, ie now window on the left of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'left))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No left split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun buf-move-right ()
+  "Swap the current buffer and the buffer on the right of the split.
+If there is no split, ie now window on the right of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'right))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No right split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;; Setting the default font
+(set-face-attribute 'default nil
+		    :font "JetBrainsMono Nerd Font"
+		    :height 110
+		    :weight 'medium)
+;; Setting font for variable pitch
+(set-face-attribute 'variable-pitch nil
+                    :family (or (car (seq-filter
+                                      (lambda (f) (member f (font-family-list)))
+                                      '("Ubuntu" "DejaVu Sans" "Arial")))
+                                "Sans")
+                    :height 140)
+;;Setting font for fixed pitch
+(set-face-attribute 'fixed-pitch nil
+		    :font "JetBrainsMono Nerd Font"
+		    :height 110
+		    :weight 'medium)
+
+;; Makes commented text and keywords  italics
+(set-face-attribute 'font-lock-comment-face nil
+		    :slant 'italic)
+(set-face-attribute 'font-lock-keyword-face nil
+		    :slant 'italic)
+
+(add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
+(setq-default line-spacing 0.12)
+
+(global-set-key (kbd "C-=") 'text-scale-increase)
+(global-set-key (kbd "C--") 'text-scale-decrease)
+(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
+(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
+
+(setq frame-title-format "%b")
+(scroll-bar-mode -1)               ; disable scrollbar
+(window-divider-mode 1)
+(custom-set-faces
+'(vertical-border ((t (:foreground "gray")))))
+(setq window-divider-default-bottom-width 1)
+(setq window-divider-default-right-width 1)
+(tool-bar-mode -1)                 ; disable toolbar
+(tooltip-mode -1)                  ; disable tooltips
+(set-fringe-mode 10)               ; give some breathing room
+(menu-bar-mode -1)                 ; disable menubar
+(blink-cursor-mode 0)              ; disable blinking cursor
+(pixel-scroll-precision-mode 1)
+(setq mouse-wheel-scroll-amount-horizontal 20)
+(setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
+(setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
+;; WHy am i havin to do this
+(setq enable-local-variables t)
+;; solves the font lock 
+(add-hook 'org-mode-hook #'font-lock-fontify-buffer)
+;;opens window in fullscreen
+;;opens window in fullscreen
+;;opens window in fullscreen
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+(global-display-line-numbers-mode 1)
+(global-visual-line-mode t)
+(setq truncate-lines nil)
+(setq display-line-numbers-type 'relative)
+
+(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+
+(global-set-key [escape] 'keyboard-escape-quit)
+
+;;this is going to bite me in the ass someday isnt it
+(load "~/.secrets/authinfo.el")
+
+(require 'epg)
+(setq epg-debug t)
+(setq plstore-encrypt-to "omangbaheti@pm.me")
+(use-package pinentry
+  :ensure t
+  :init
+  (setq epg-pinentry-mode 'loopback)
+  :config
+  (pinentry-start))
+
+(delete-selection-mode 1)
+(electric-indent-mode 1)
+(electric-pair-mode 1)
+(setq org-edit-src-content-indentation 0)
+(defun my-org-electric-pair-hook ()
+  (add-function :before-until (local 'electric-pair-inhibit-predicate)
+                (lambda (c) (eq c ?<))))
+
+(add-hook 'org-mode-hook #'my-org-electric-pair-hook)
+
+(use-package undo-fu
+  :ensure t
+)
+
+(use-package helpful
+  :ensure t)
+
+(defun open-messages-buffer ()
+"Open the *Messages* buffer in a vertical split."
+  (interactive)
+  (let ((buf (get-buffer "*Messages*")))
+    (if buf
+        (select-window (split-window-right))
+      (setq buf (get-buffer-create "*Messages*")))
+    (switch-to-buffer buf)))
+
+(setq font-lock-multiline t)
+;; (setq jit-lock-defer-time 0) ; Immediate fontification
+(setq fast-but-imprecise-scrolling nil)
+
+(use-package org
+  :ensure nil
+  :config
+  ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
+  (setq org-startup-folded t)              
+  (setq org-cycle-hide-drawers 'all)
+  (setq org-src-fontify-natively t)
+  (setq jit-lock-contextually t)
+  (setq org-log-done 'note)
+  (setq org-confirm-babel-evaluate nil)
+  (add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
+  )
+
+(use-package evil-org
+  :ensure t
+  :diminish evil-org-mode
+  :after org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'evil-org-mode-hook
+            (lambda () (evil-org-set-key-theme))))
+
+(use-package toc-org
+  :ensure t
+  :commands toc-org-enable
+  :init (add-hook 'org-mode-hook 'toc-org-enable))
+
+(add-hook 'org-mode-hook 'org-indent-mode)
+(use-package org-bullets
+  :ensure t
+)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
+(require 'org-tempo)
+
+(tempo-define-template "jupyter-python"
+                       '("#+begin_src jupyter-python :tangle temp.py :session py :async yes :pandoc t"
+                         n p n
+                         "#+end_src")
+                       "<jpy"
+                       "Insert Jupyter Python block"
+                       'org-tempo-tags)
+
+
+(tempo-define-template "jupyter-R"
+                       '("#+begin_src jupyter-R :session R :async yes :pandoc t"
+                         n p n
+                         "#+end_src")
+                       "<jpr"
+                       "Insert Jupyter-R block"
+                       'org-tempo-tags)
+
+(tempo-define-template "python"
+                       '("#+begin_src python :tangle temp.py :session py :results output"
+                         n p n
+                         "#+end_src")
+                       "<py"
+                       "Insert Python block"
+                       'org-tempo-tags)
+
+(tempo-define-template "emacs-lisp"
+                       '("#+begin_src emacs-lisp"
+                         n p n
+                         "#+end_src")
+                       "<el"
+                       "Insert Emacs Lisp block"
+                       'org-tempo-tags)
+
+(tempo-define-template "nix"
+                       '("#+begin_src nix"
+                         n p n
+                         "#+end_src")
+                       "<n"
+                       "Insert Nix block"
+                       'org-tempo-tags)
+
+(use-package org-modern
+  :ensure t
+  :hook (org-mode . org-modern-mode)
+  :config
+  ;; Customize as needed
+  (modify-all-frames-parameters
+   '((right-divider-width . 0)
+     (internal-border-width . 0)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+  (setq org-modern-todo-faces org-todo-keyword-faces)
+  (setq org-modern-todo t)
+  (setq org-modern-tag t)
+  (setq org-modern-fold-stars 
+        '(("" . "")     ; Down arrow when folded, right arrow when expanded
+          ("" . "") 
+          ("" . "")
+          ("" . "")
+          ("" . "")))
+  (setq ;;org-modern-star '("◉" "○" "✸" "✿")
+   org-modern-table t 
+   org-ellipsis " "
+   org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
+   org-modern-block-fringe nil 
+   org-modern-priority
+   '((?A . "󱗗")  ;; High
+     (?B . "󰐃")  ;; Medium
+     (?C . "󰒲")))) ;; Low 
+
+(use-package org-modern-indent
+  :ensure (:host github :repo "jdtsmith/org-modern-indent")
+  :config ; add late to hook
+  (org-modern-indent-mode 1)
+  (add-hook 'org-mode-hook #'org-modern-indent-mode t))
+
+(use-package olivetti
+  :ensure t
+  :diminish olivetti-mode
+  :bind (("<left-margin> <mouse-1>" . ignore)
+         ("<right-margin> <mouse-1>" . ignore)
+         ("C-c {" . olivetti-shrink)
+         ("C-c }" . olivetti-expand)
+         ("C-c |" . olivetti-set-width))
+  :custom
+  (olivetti-body-width 0.65)          ; 70% of window width
+  (olivetti-minimum-body-width 80)   ; Minimum width in characters
+  (olivetti-recall-visual-line-mode-entry-state t)
+  :hook
+  ((markdown-mode . olivetti-mode)
+   (org-mode . olivetti-mode)))
+
+(defun my/olivetti-only-when-single-window ()
+  "Enable Olivetti mode only when there is a single window."
+  (if (= (count-windows) 1)
+      (olivetti-mode 1)
+    (olivetti-mode -1)))
+
+;; (add-hook 'window-configuration-change-hook
+;;           #'my/olivetti-only-when-single-window)
+
+(with-eval-after-load 'org
+  (setq org-agenda-files (directory-files-recursively "~/Notes/Agenda" "\\.org$"))
+  (setq org-agenda-skip-timestamp-if-done t
+        org-agenda-skip-deadline-if-done t
+        org-agenda-skip-scheduled-if-done t
+        org-agenda-skip-scheduled-if-deadline-is-shown t
+        org-agenda-skip-timestamp-if-deadline-is-shown t)
+  (setq org-agenda-span 1
+        org-agenda-start-day "+0d")
+  (setq org-agenda-current-time-string "")
+  (setq org-agenda-time-grid '((daily) () "" "")))
+
+(setq org-todo-keywords
+      '((sequence "TODO(t)" "DOING(s)" "|" "DONE(d)" )))
+
+(setq org-todo-keyword-faces
+      '(("TODO"      . (:foreground "white" :background "#FF5964"     :weight bold))
+        ("DOING"   . (:foreground "black" :background "#FFF4AD"           :weight bold))
+        ;; ("WAITING"   . (:foreground "white" :background "DarkOrange3"    :weight bold))
+        ("DONE"      . (:foreground "white" :background "#ABD1B5"    :weight bold))
+        ;; ("CANCELLED" . (:foreground "white" :background "DimGray"        :weight bold)) 
+	))
+
+;; (use-package org-supertag
+;;   :ensure (org-supertag :host github :repo "yibie/org-supertag")
+;;   :defer t
+;;   :init
+;;   ;; Index these directories; adjust to preferred note roots.
+;;   (setq org-supertag-sync-directories '("~/Notes/"))
+;;   :commands
+;;   (org-supertag-view-node
+;;    org-supertag-query
+;;    org-supertag-view-kanban
+;;    org-supertag-view-discover
+;;    org-supertag-view-chat-open)
+;;   :hook
+;;   (org-mode . (lambda ()
+;;                 (require 'org-supertag)
+;;                 (local-set-key (kbd "C-c s n") #'org-supertag-view-node)
+;;                 (local-set-key (kbd "C-c s q") #'org-supertag-query)
+;;                 (local-set-key (kbd "C-c s k") #'org-supertag-view-kanban)
+;;                 (local-set-key (kbd "C-c s d") #'org-supertag-view-discover)
+;;                 (local-set-key (kbd "C-c s c") #'org-supertag-view-chat-open)))
+;;   :config
+;;   ;; Example: custom field type
+;;   (setq org-supertag-sync-directories '("~/Notes"))
+;;   (setq org-supertag-data  '("~/Notes"))
+;;   (setq org-supertag-data-directory "~/Notes/.supertag")
+;;   (setq supertag-data-directory "~/Notes/.supertag")
+;;   (add-to-list 'org-supertag-field-types
+;;                '(rating . (:validator org-supertag-validate-rating
+;;                            :formatter org-supertag-format-rating
+;;                            :description "Rating (1-5)")))
+;; )
+
+(use-package org-roam
+  :ensure t
+  :defer 2
+  :custom
+  (org-roam-directory (file-truename "~/Notes"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
+         ;; Dailies
+         ("C-c n j" . org-roam-dailies-capture-today))
+  :config
+  ;; If you're using a vertical completion framework, you might want a more informative completion interface
+  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (setq org-roam-db-gc-threshold most-positive-fixnum)
+  ;; If using org-roam-protocol
+  (require 'org-roam-protocol)
+  (setq org-roam-capture-templates
+        '(
+          ;; Plain Template
+          ("d" "default" plain "%?"
+           :target 
+           (
+            file+head "Unfiled/${slug}.org"
+            "#+TITLE: ${title}
+#+filetags: %^{Tags}
+#+STARTUP: showall
+"
+            )
+           :unnarrowed t)
+
+
+	  ("r" "roam-tag" plain "%?"
+	   :target 
+	   (
+	    file+head "TopLevelTopics/${slug}.org"
+	    "#+TITLE: ${title}
+#+filetags: roam-tag %^{Tags}
+#+STARTUP: showall
+"
+	    )
+	   :unnarrowed t)
+
+	  ;; Template for Person
+	  ("p" "person" plain "%?"
+	   :target 
+	   (
+	    file+head "People/${slug}.org"                              
+	    "
+:PROPERTIES:
+:ROAM_ALIASES: \"${fullname}\"
+:DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
+:END:
+#+TITLE: ${title}
+#+filetags: %^{Tags}
+#+OPTIONS: toc:2
+#+STARTUP: showall
+* TABLE OF CONTENTS :toc:
+"
+	    )
+           :unnarrowed t
+           )
+	  
+	  ;; Template for Agenda Board
+	  ("a" "Agenda Board" plain "%?"
+	   :target 
+	   (
+	    file+head "Agenda/${slug}.org"                              
+	    "
+:PROPERTIES:
+:ROAM_ALIASES: \"${Project Board}\"
+:DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
+:END:
+#+TITLE: ${title}
+#+filetags: %^{Tags}
+#+STARTUP: showall
+#+OPTIONS: toc:2
+"
+	    )
+	   :unnarrowed t
+	   )
+
+	  ;; Agenda Task Template
+	  ("t" "Agenda Task" entry
+	   "* TODO ${Task Name}%?
+DEADLINE: %^t
+:PROPERTIES:
+:DATE: %<%d-%m-%Y-(%H-%M-%S)>
+:END:
+"
+	   :target (file "Agenda/${slug}.org")
+	   :unnarrowed t)
+
+	  ("n" "literature note" plain "%?"
+	   :target
+	   (file+head "%(expand-file-name (or citar-org-roam-subdir \"\\ResearchNotes\") org-roam-directory)/${citar-citekey}.org"
+		      "
+:PROPERTIES:
+:AUTHOR: ${citar-author}
+:DATE_PUBLISHED: ${citar-date}
+:END:\n
+#+TITLE: ${citar-title}
+#+filetags: Research %^{Tags}
+\n\n"
+		      )
+	   :unnarrowed t)
+
+          )))
+
+(use-package md-roam
+  :after org-roam
+  :ensure (:host github :repo "nobiot/md-roam")
+  :config
+  ;; Enable Org-roam for markdown files
+  (setq org-roam-file-extensions '("org" "md"))
+  ;; Activate md-roam-mode
+  (md-roam-mode 1)
+  (org-roam-db-autosync-mode 1)
+)
+  ;; (md-roam-file-extension "md")  ; or "markdown"
+  ;; Optional: Add markdown capture template
+  ;; (add-to-list 'org-roam-capture-templates
+  ;;              '("m" "Markdown" plain "" :target
+  ;;                (file+head "%<%Y-%m-%dT%H%M%S>.md"
+  ;;                           "---\ntitle: ${title}\nid: %<%Y-%m-%dT%H%M%S>\ncategory: \n---\n")
+  ;;                :unnarrowed t))
+  
+  ;; Optional: Enable completion-at-point for Corfu in markdown-mode)
+
+(defun org-roam-buffer-toggle-and-focus ()
+  "Toggle the org-roam buffer and switch focus to it."
+  (interactive)
+  (org-roam-buffer-toggle)
+  (let ((roam-buffer (get-buffer "*org-roam*")))
+    (when (and roam-buffer (not (eq (current-buffer) roam-buffer)))
+      (pop-to-buffer roam-buffer))))
+
+(use-package consult-org-roam
+  :ensure t
+  :after org-roam
+  :init
+  ;; Activate the minor mode
+  (consult-org-roam-mode 1)
+  :config
+  ;; Use SETQ to set variables, not call them as functions
+  (setq consult-org-roam-grep-func #'consult-ripgrep)
+  (setq consult-org-roam-buffer-narrow-key ?r)
+  (setq consult-org-roam-buffer-after-buffers t)
+  
+  ;; Eventually suppress previewing for certain functions
+  (consult-customize
+   consult-org-roam-find-by-title
+   consult-org-roam-file-find      
+   consult-org-roam-backlinks       
+   consult-org-roam-forward-links
+   :preview-key "M-.")
+  :bind
+  ("C-c n e" . consult-org-roam-file-find)
+  ("C-c n b" . consult-org-roam-backlinks)
+  ("C-c n B" . consult-org-roam-backlinks-recursive)
+  ("C-c n l" . consult-org-roam-forward-links)
+  ("C-c n r" . consult-org-roam-search))
+
+(defun consult-org-roam-find-by-title ()
+  "Find an Org Roam node by searching titles only.
+This gives preference to exact title matches by temporarily excluding
+tags from the candidate string presented to the completion framework."
+  (interactive)
+  (let ((org-roam-node-display-template "${title}"))
+    (org-roam-node-visit (consult-org-roam-node-read))))
+
+(cl-defun org-roam-tag-node-insert(&optional filter-fn &key templates info)
+  "Insert org-roam link with description wrapped in colons."
+  (interactive)
+  (unwind-protect
+      (atomic-change-group
+        (let* (region-text
+               beg end
+               (_ (when (region-active-p)
+                    (setq beg (set-marker (make-marker) (region-beginning)))
+                    (setq end (set-marker (make-marker) (region-end)))
+                    (setq region-text (org-link-display-format 
+                                       (buffer-substring-no-properties beg end)))))
+               (node (org-roam-node-read region-text filter-fn))
+               (description (or region-text
+				(org-roam-node-formatted node))))
+          (if (org-roam-node-id node)
+              (progn
+                (when region-text
+                  (delete-region beg end)
+                  (set-marker beg nil)
+                  (set-marker end nil))
+                (let ((id (org-roam-node-id node)))
+                  (insert (concat "" (org-link-make-string
+                                      (concat "id:" id)
+                                      (concat "  :" description ":  "))
+                                  "  "))  ; Add colons here
+                  (run-hook-with-args 'org-roam-post-node-insert-hook
+                                      id
+                                      description)))
+            (org-roam-capture-
+             :node node
+             :info info
+             :templates templates
+             :props (append
+                     (when (and beg end) 
+                       (list :region (cons beg end)))
+                     (list :link-description description
+                           :finalize 'insert-link))))))
+    (deactivate-mark)))
+;; (advice-add 'org-roam-node-insert :override #'org-roam-node-insert-custom)
+
+;; (defun my/navigate-note (arg &optional node choices)
+;;   "Navigate notes by link. With universal ARG tries to use only to navigate the tags of the current note. Optionally takes a selected NOTE and filepaths CHOICES."
+;;   (interactive "P")
+;;   (let* ((depth (if (numberp arg) arg 1))
+;;          (choices
+;;           (or choices
+;;               (when arg
+;;                 (-map #'org-roam-backlink-target-node (org-roam-backlinks-get (org-roam-node-from-id (or (ignore-errors (org-roam-node-id node))
+;;                                                                                                          (org-id-get-create))))))))
+;;          (all-notes (org-roam-node--completions))
+;;          (completions
+;;           (or (--filter (-contains-p choices (cdr it)) all-notes) all-notes))
+;;          (next-node
+;;           ;; taken from org-roam-node-read
+;;           (let* ((nodes completions)
+;;                  (node (completing-read
+;;                         "Node: "
+;;                         (lambda (string pred action)
+;;                           (if (eq action 'metadata)
+;;                               '(metadata
+;;                                 (annotation-function . (lambda (title)
+;;                                                          (funcall org-roam-node-annotation-function
+;;                                                                   (get-text-property 0 'node title))))
+;;                                 (category . org-roam-node))
+;;                             (complete-with-action action nodes string pred))))))
+;;             (or (cdr (assoc node nodes))
+;;                 (org-roam-node-create :title node)))
+;;           )
+;;          )
+;;     (if (equal node next-node)
+;;         (org-roam-node-visit node)
+;;       (my/navigate-note nil next-node (cons next-node (-map #'org-roam-backlink-source-node (org-roam-backlinks-get next-node)))))))
+
+(use-package org-roam-ql
+  :ensure t
+  :after (org-roam))
+
+
+
+(use-package org-noter
+  :ensure t
+  :defer t
+  :config
+  (setq org-noter-notes-search-path '("~/Notes/ResearchNotes"))
+  (setq org-noter-highlight-selected-text t)
+)
+
+(use-package org-roam-ui
+  :ensure
+  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :after org-roam
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t)
+  )
+
+(use-package org-transclusion
+  :ensure t
+  :after org
+  :hook (org-mode . org-transclusion-mode)
+  )
+
+;; (require 'ansi-color)
+
+;; (defun my-ansi-colorize-buffer ()
+;;   (ansi-color-apply-on-region (point-min) (point-max)))
+
+;; (add-hook 'org-babel-after-execute-hook
+;;           (lambda ()
+;;             (when (eq major-mode 'org-mode)
+;;               (save-excursion
+;;                 (goto-char (org-babel-where-is-src-block-result nil nil))
+;;                 (when (looking-at org-babel-result-regexp)
+;;                   (let ((beg (match-end 0))
+;;                         (end (org-babel-result-end)))
+;;                     (ansi-color-apply-on-region beg end)))))))
+
+;; (use-package org-appear
+;;   :ensure t
+;;   :after org
+;;   :hook
+;;   (org-mode . org-appear-mode)
+;;   :custom
+;;   (org-appear-autolinks t))
+
+(use-package which-key
+  :ensure t
+  :init
+  (which-key-mode 1)
+  :config
+  (setq which-key-side-window-location 'bottom
+        which-key-sort-order #'which-key-key-order-alpha
+        which-key-sort-uppercase-first nil
+        which-key-add-column-padding 1
+        which-key-max-display-columns nil
+        which-key-min-display-lines 6
+        which-key-side-window-slot -10
+        which-key-side-window-max-height 0.25
+        which-key-idle-delay 0.8
+        which-key-max-description-length 25
+        which-key-allow-imprecise-window-fit nil 
+        which-key-separator " → " ))
+
+(use-package nerd-icons
+  :ensure t)
+
+(use-package nerd-icons-completion
+  :ensure t
+  :after marginalia
+  :config
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+
+(use-package nerd-icons-corfu
+  :ensure t
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
+(use-package nerd-icons-dired
+  :ensure t
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
+
+(use-package vertico
+  :ensure t
+  :init
+  (vertico-mode)
+
+  ;; Different scroll margin
+  ;; (setq vertico-scroll-margin 0)
+
+  ;; Show more candidates
+  (setq vertico-count 10)
+
+  ;; Grow and shrink the Vertico minibuffer
+  (setq vertico-resize t
+        ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+        vertico-cycle t))
+
+(use-package zoxide
+  :ensure t
+  :config
+  :custom
+  (zoxide-add-to-history t))
+
+(use-package marginalia
+  :ensure t
+  ;; Bind `marginalia-cycle' locally in the minibuffer. To make the binding
+  ;; available in the *Completions* buffer, add it to the
+  ;; `completion-list-mode-map'.
+  :bind (:map minibuffer-local-map
+              ("M-A" . marginalia-cycle))
+  ;; The :init section is always executed.
+  :init
+  (marginalia-mode)
+  )
+
+(use-package orderless
+  :ensure t
+  :config
+  (setq completion-styles '(orderless basic))
+  (setq completion-category-defaults nil)
+  (setq completion-category-overrides 
+        '((file (styles partial-completion orderless)))))
+
+(use-package prescient
+  :ensure t
+  :config
+  (prescient-persist-mode))
+
+(use-package vertico-prescient
+ :ensure t
+  :after vertico
+  :config
+  (vertico-prescient-mode))
+
+(use-package consult
+  :ensure t
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+
+  ;; Tweak the register preview for `consult-register-load',
+  ;; `consult-register-store' and the built-in commands.  This improves the
+  ;; register formatting, adds thin separator lines, register sorting and hides
+  ;; the window mode line.
+  (advice-add #'register-preview :override #'consult-register-window)
+  (setq register-preview-delay 0.5)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key "M-.")
+  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (setq consult-buffer-sources '(consult--source-buffer))
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.1 any)
+   consult-ripgrep consult-git-grep consult-grep consult-man
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   :preview-key "M-."
+   ;;:preview-key '(:debounce 0.4 any)
+   )
+  ;; (setq consult-preview-key (kbd "M-."))
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; "C-+"
+  
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
+  )
+
+(defun consult-fd-windows ()
+  "Run consult-fd searching from home directory."
+  (interactive)
+  (let ((default-directory "/mnt/c/Users"))
+    (consult-fd)))
+
+(defun consult-find-home ()
+  "Run consult-fd searching from home directory."
+  (interactive)
+  (let ((default-directory "~/"))
+    (consult-find)))
+
+(use-package consult-omni
+  :ensure (consult-omni :type git :host github :repo "armindarvish/consult-omni" :branch "main" :files (:defaults "sources/*.el"))
+  :after consut
+  :config
+  ;; Load Sources Core code
+  (require 'consult-omni-sources)
+  ;; Load Embark Actions
+  (require 'consult-omni-embark)
+  ;; Only load brave-auto-suggest source
+  (require 'consult-omni-brave-autosuggest)
+  ;;; Set your shorthand favorite interactive command
+  (setq consult-omni-default-interactive-command #'consult-omni-brave-autosuggest))
+
+(use-package embark
+  :ensure t
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  ;; Show the Embark target at point via Eldoc. You may adjust the
+  ;; Eldoc strategy, if you want to see the documentation from
+  ;; multiple providers. Beware that using this can be a little
+  ;; jarring since the message shown in the minibuffer can be more
+  ;; than one line, causing the modeline to move up and down:
+
+  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+  ;; Add Embark to the mouse context menu. Also enable `context-menu-mode'.
+  ;; (context-menu-mode 1)
+  ;; (add-hook 'context-menu-functions #'embark-context-menu 100)
+
+  :config
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+;; Consult users will also want the embark-consult package.
+(use-package embark-consult
+  :ensure t ; only need to install it, embark loads it after consult if found
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
+(use-package vterm
+  :ensure t
+  :config
+  (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
+  (setq vterm-max-scrollback 5000)
+  (setq vterm-shell-args '("-l"))
+  (evil-set-initial-state 'vterm-mode 'emacs)
+  :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
+
+(use-package vterm-toggle
+  :ensure t
+  :config
+  (setq vterm-toggle-fullscreen-p t))
+
+(use-package ghostel
+  :ensure (:host github :repo "https://github.com/dakra/ghostel")
+  :hook ((ghostel-mode . (lambda () (display-line-numbers-mode 0))))
+  )
+
 (use-package dirvish
   :ensure t
   :after evil
@@ -1380,13 +1444,15 @@ tags from the candidate string presented to the completion framework."
   )
 
 (use-package flycheck
-  :ensure t 
-  :config (add-hook 'after-init-hook #'global-flycheck-mode))
+  :ensure t
+  :init
+  (global-flycheck-mode))
 
 (use-package flyover
   :ensure (:host github :repo "https://github.com/konrad1977/flyover")
-  :hook ((flycheck-mode . flyover-mode)
-         (flymake-mode . flyover-mode))
+  :hook ((flycheck-mode . flyover-mode))
+  :config
+  (setq flyover-show-at-eol t)
   :custom
   ;; Checker settings
   (flyover-checkers '(flycheck flymake))
@@ -1398,7 +1464,6 @@ tags from the candidate string presented to the completion framework."
   (flyover-percent-darker 40)
   (flyover-text-tint 'lighter)
   (flyover-text-tint-percent 50)
-
   ;; Icons
   (flyover-info-icon " ")
   (flyover-warning-icon " ")
@@ -1426,36 +1491,43 @@ tags from the candidate string presented to the completion framework."
   (setq treesit-language-source-alist
         '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
 
+(use-package indent-bars
+  :ensure t
+  :custom
+  (indent-bars-no-descend-lists 'skip) ; prevent extra bars in nested lists + skip intermediate bars
+  (indent-bars-treesit-support t)
+  (indent-bars-treesit-ignore-blank-lines-types '("module"))
+  ;; Add other languages as needed; check the wiki
+  (indent-bars-treesit-scope '((python function_definition class_definition for_statement
+	  if_statement with_statement while_statement)))
+  ;; Note: wrap likely not be needed if no-descend-list is enough
+  ;;(indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
+  ;;				      list list_comprehension
+  ;;				      dictionary dictionary_comprehension
+  ;;				      parenthesized_expression subscript)))
+  :hook ((python-base-mode yaml-mode) . indent-bars-mode))
+
 (use-package lsp-bridge
   :ensure '(lsp-bridge :type git 
                        :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
-  ;; :hook ((org-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-  ;;        ;; Ensure src-edit buffers (C-c ') get lsp-bridge
-  ;;        (org-src-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-  ;;        (LaTeX-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-  ;;        (python-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-  ;;        (python-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-  ;;        (nix-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1)))
-  ;;        (csharp-ts-mode . (lambda () (require 'lsp-bridge) (lsp-bridge-mode 1))))
+  :hook ((prog-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
   :init
   (setq lsp-bridge-user-multiserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
   (setq lsp-bridge-user-langserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
   (setq lsp-bridge-enable-diagnostics nil 
-        lsp-bridge-enable-signature-help t
-        lsp-bridge-enable-hover-diagnostic t
+        lsp-bridge-enable-signature-help nil
+        lsp-bridge-enable-hover-diagnostic nil
         lsp-bridge-enable-auto-format-code nil
         lsp-bridge-enable-completion-in-minibuffer nil
-        lsp-bridge-enable-log t
         lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
         lsp-bridge-use-popup t
         lsp-bridge-python-lsp-server "basedpyright"
 	lsp-bridge-nix-lsp-server "nil"
-        lsp-bridge-csharp-lsp-server "omnisharp-roslyn"
+        lsp-bridge-csharp-lsp-server "csharp-ls"
         lsp-bridge-deferred-tick-time 0.01
         )
   ;; (setq lsp-bridge-enable-debug t) 
@@ -1469,16 +1541,6 @@ tags from the candidate string presented to the completion framework."
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
   )
-(use-package python
-  :ensure t
-  :mode ("\\.py\\'" . python-mode))
-
-(setq python-indent-offset 4)
-
-;; Nix integration
-(use-package nix-mode
-  :ensure t
-  :mode "\\.nix\\'")
 
 ;;org-babel support
 (with-eval-after-load 'org
@@ -1490,6 +1552,18 @@ tags from the candidate string presented to the completion framework."
 (with-eval-after-load 'lsp-bridge
   (require 'acm-backend-elisp)
   (setq acm-enable-elisp t))
+
+(use-package python
+  :ensure t
+  :mode ("\\.py\\'" . python-mode)
+  :config
+  (setq python-indent-offset 4)
+)
+
+;; Nix integration
+(use-package nix-mode
+  :ensure t
+  :mode "\\.nix\\'")
 
 (use-package ess
   :ensure t
@@ -1517,6 +1591,7 @@ tags from the candidate string presented to the completion framework."
   :init
   (setq initial-buffer-choice 'dashboard-open)
   (setq dashboard-set-heading-icons t)
+  ;; (setq dashboard-footer-messages nil)
   (setq dashboard-set-footer nil)
   (setq dashboard-set-navigator t)
   (setq dashboard-set-file-icons t)
@@ -1769,7 +1844,7 @@ tags from the candidate string presented to the completion framework."
   (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
   (push '(":AUTHOR:" . "") prettify-symbols-alist)
   (push '(":ROAM_REFS:" . " ") prettify-symbols-alist)
-  (push '(":PRIORITY:" . "") prettify-symbols-alist)
+  (push '(":PRIORITY:" . "󰁝") prettify-symbols-alist)
   (push '(":END:" . "") prettify-symbols-alist)
   (push '(":RESULTS:" . "") prettify-symbols-alist)
   ;; Tags
@@ -1805,22 +1880,56 @@ tags from the candidate string presented to the completion framework."
   )
 
 (use-package gptel
-  :ensure t
+  :ensure (:host github :repo "karthink/gptel" :branch main)
   :init
   (setq gptel-log-level 'debug)
   (setq gptel-default-mode 'org-mode)
-  (defvar azure
+  (setq gptel-include-reasoning t)
+  (setq gptel-include-reasoning 'buffer)
+  ;; (defvar azure
+  ;;   (gptel-make-openai-responses "Azure"
+  ;;     :host "https://emacs-resource.services.ai.azure.com/"
+  ;;     :endpoint "/api/projects/emacs"
+  ;;     :stream t
+  ;;     :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
+  ;;     :key azure-api)
+  ;;   )
+(defvar azure
     (gptel-make-openai "Azure"
       :host "emacs-resource.services.ai.azure.com"
       :protocol "https"
       :endpoint "/openai/v1/chat/completions"
       :stream t
       :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
-      :key azure-deepseek-api))
-
+      :key azure-api))
+  
+  ;; (setq gptel-backend
+  ;;       (gptel-make-openai-responses
+  ;;           "Azure-Emacs-Agent"
+  ;;         :host "emacs-resource.services.ai.azure.com"
+  ;;         :protocol "https"
+  ;;         :endpoint "/api/projects/emacs/openai/v1/responses"
+  ;;         :key (lambda () (shell-command-to-string "az account get-access-token --resource https://ai.azure.com --query accessToken -o tsv | tr -d '\n'"))
+  ;;         :stream t
+  ;;         :models '(emacs)
+  ;;         :request-params '(:agent_reference (:name "emacs" :version "1" :type "agent_reference"))))
+  
   (setq gptel-backend azure)
   (setq gptel-model "gpt-5.4-nano")
-)
+  )
+
+(use-package gptel-agent
+  :ensure t 
+  :config (gptel-agent-update))
+
+;; (use-package ob-gptel
+;;   :ensure t
+;;   :config
+;;   (add-to-list 'org-babel-load-languages '(gptel . t))
+;;   (defun ob-gptel-setup-completions ()
+;;     (add-hook 'completion-at-point-functions
+;;               'ob-gptel-capf nil t))
+;;   :hook (org-mode . ob-gptel-setup-completions))
 
 (use-package svg-lib
   :ensure t
@@ -2054,13 +2163,15 @@ Preserves existing entries to avoid overwriting."
       )
 
     (leader-key
-      "b" '(:ignore t :wk "buffer")
+      "b" '(:ignore t :wk "buffer/bookmarks")
       "b b" '(consult-buffer :wk "Switch buffer")
       "b i" '(ibuffer :wk "Ibuffer")
       "b k" '(kill-buffer :wk "Kill buffer")
       "b n" '(next-buffer :wk "Next buffer")
       "b p" '(previous-buffer :wk "Previous buffer")
       "b r" '(revert-buffer :wk "Reload buffer")
+      "b j" '(bookmark-jump :wk "Jump to Bookmark")
+      "b s" '(bookmark-set :wk "Set Bookmark")
       )
 
     (leader-key
@@ -2148,7 +2259,8 @@ Preserves existing entries to avoid overwriting."
 
       "o c" '(:ignore t :wk "Org Capture")
       "o c s" '(org-roam-capture :wk "Org Capture"))  
-(leader-key
+    
+    (leader-key
     "fu" '(sudo-edit-find-file :wk "Sudo find file")
     "fU" '(sudo-edit :wk "Sudo Edit File"))
     
