@@ -46,7 +46,6 @@
 ;; See the "recipes" section of the manual for more details.
 
 ;; (elpaca example-package)
-
 ;; Install use-package support
 (elpaca elpaca-use-package
   ;; Enable use-package :ensure support for Elpaca.
@@ -412,23 +411,6 @@
    '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
    '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
 
-(use-package kirigami
-  :ensure   (:host github :repo "jamescherti/kirigami.el")
-)
-
-(use-package outline-indent
-  :ensure t
-  :commands outline-indent-minor-mode
-  :hook 
-  ((python-mode . outline-indent-minor-mode)
-   (python-ts-mode . outline-indent-minor-mode)
-   (yaml-mode . outline-indent-minor-mode)
-   (yaml-ts-mode . outline-indent-minor-mode) 
-   (nix-mode . outline-indent-minor-mode)
-   (emacs-lisp-mode . outline-indent-minor-mode))
-  :custom
-  (outline-indent-ellipsis " ..."))
-
 (use-package evil-nerd-commenter
   :ensure t
 )
@@ -473,27 +455,6 @@
 ;; (use-package casual
 ;;   :ensure t
 ;;   :config)
-
-(use-package pulsar
-  :ensure t
-  :hook
-  (after-init . pulsar-global-mode)
-  :init
-  (setq pulsar-pulse t)
-  (setq pulsar-delay 0.025)
-  (setq pulsar-iterations 20)
-  (setq pulsar-face 'evil-ex-lazy-highlight)
-  :config
-  (add-to-list 'pulsar-pulse-functions 'evil-scroll-down)
-  (add-to-list 'pulsar-pulse-functions 'flymake-goto-next-error)
-  (add-to-list 'pulsar-pulse-functions 'flymake-goto-prev-error)
-  (add-to-list 'pulsar-pulse-functions 'evil-yank)
-  (add-to-list 'pulsar-pulse-functions 'evil-yank-line)
-  (add-to-list 'pulsar-pulse-functions 'evil-delete)
-  (add-to-list 'pulsar-pulse-functions 'evil-delete-line)
-  (add-to-list 'pulsar-pulse-functions 'evil-jump-item)
-  (add-to-list 'pulsar-pulse-functions 'diff-hl-next-hunk)
-  (add-to-list 'pulsar-pulse-functions 'diff-hl-previous-hunk))
 
 (defun keyboard-quit-dwim ()
   (interactive)
@@ -605,11 +566,6 @@ one, an error is signaled."
 (add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
 (setq-default line-spacing 0.12)
 
-(global-set-key (kbd "C-=") 'text-scale-increase)
-(global-set-key (kbd "C--") 'text-scale-decrease)
-(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
-(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
-
 (setq frame-title-format "%b")
 (scroll-bar-mode -1)               ; disable scrollbar
 (window-divider-mode 1)
@@ -630,8 +586,6 @@ one, an error is signaled."
 (setq enable-local-variables t)
 ;; solves the font lock 
 (add-hook 'org-mode-hook #'font-lock-fontify-buffer)
-;;opens window in fullscreen
-;;opens window in fullscreen
 ;;opens window in fullscreen
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
@@ -674,14 +628,30 @@ one, an error is signaled."
 (use-package helpful
   :ensure t)
 
-(defun open-messages-buffer ()
-"Open the *Messages* buffer in a vertical split."
-  (interactive)
-  (let ((buf (get-buffer "*Messages*")))
-    (if buf
-        (select-window (split-window-right))
-      (setq buf (get-buffer-create "*Messages*")))
-    (switch-to-buffer buf)))
+(global-set-key (kbd "C-=") 'text-scale-increase)
+(global-set-key (kbd "C--") 'text-scale-decrease)
+(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
+(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
+
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
+(setq bidi-inhibit-bpa t)
+
+(setq redisplay-skip-fontification-on-input t)
+
+(setq-default cursor-in-non-selected-windows nil)
+
+(setq highlight-nonselected-windows nil)
+
+(setq kill-do-not-save-duplicates t)
+
+(setq window-combination-resize t)
+
+(setq set-mark-command-repeat-pop t)
+
+(advice-add 'save-place-find-file-hook :after
+            (lambda (&rest _)
+              (when buffer-file-name (ignore-errors (recenter)))))
 
 (setq font-lock-multiline t)
 ;; (setq jit-lock-defer-time 0) ; Immediate fontification
@@ -884,7 +854,7 @@ one, an error is signaled."
 
 (use-package org-roam
   :ensure t
-  :defer 2
+  ;; :defer 2
   :custom
   (org-roam-directory (file-truename "~/Notes"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -1186,6 +1156,17 @@ tags from the candidate string presented to the completion framework."
 ;;   :custom
 ;;   (org-appear-autolinks t))
 
+(use-package org-kanban
+  :ensure t
+  :after org
+  :commands (org-kanban/initialize
+             org-kanban/initialize-at-end
+             org-kanban/shift)
+  :config
+  ;; Optional: Set mirrored to nil if you want the board the other way around
+  (setq org-kanban/mirrored nil)
+  )
+
 (use-package which-key
   :ensure t
   :init
@@ -1203,6 +1184,99 @@ tags from the candidate string presented to the completion framework."
         which-key-max-description-length 25
         which-key-allow-imprecise-window-fit nil 
         which-key-separator " → " ))
+
+(use-package spacious-padding
+  :ensure t
+  :defer 1
+  :config
+  (setq spacious-padding-widths
+	'(;; Adjust other padding values as you see fit
+          :internal-border-width 15
+          :header-line-width 4
+          :mode-line-width 6
+          :tab-width 4
+          :scroll-bar-width 4
+          ;; Set the divider width to 1 to make it visible
+          :right-divider-width 10
+          ))
+  (spacious-padding-mode 15)
+  (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
+  )
+
+(defun my/prettify-symbols-setup ()
+
+  ;; Drawers
+  (push '(":PROPERTIES:" . "") prettify-symbols-alist)
+  (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
+  (push '(":ID:" . " ") prettify-symbols-alist)
+  (push '(":DATE:" . "") prettify-symbols-alist)
+  (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
+  (push '(":AUTHOR:" . "") prettify-symbols-alist)
+  (push '(":ROAM_REFS:" . " ") prettify-symbols-alist)
+  (push '(":PRIORITY:" . "󰁝") prettify-symbols-alist)
+  (push '(":END:" . "") prettify-symbols-alist)
+  (push '(":RESULTS:" . "") prettify-symbols-alist)
+  ;; Tags
+  (push '(":projects:" . "  Projects") prettify-symbols-alist)
+  (push '(":work:"     . "  Work") prettify-symbols-alist)
+  (push '(":inbox:"    . "  Inbox") prettify-symbols-alist)
+  (push '(":task:"     . "  Task") prettify-symbols-alist)
+  (push '(":thesis:"   . "  Thesis") prettify-symbols-alist)
+  (push '(":learn:"    . "  Learn") prettify-symbols-alist)
+  (push '(":code:"     . "  Code") prettify-symbols-alist)
+
+  (set-face-attribute 'org-drawer nil :height 1.3)
+  (set-face-attribute 'org-special-keyword nil :height 1.3)
+  (prettify-symbols-mode))
+
+(add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
+(add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
+
+(use-package svg-lib
+  :ensure t
+  :defer t
+  )
+
+(use-package svg-tag-mode
+  :ensure t
+  :defer t
+  :hook (org-mode . svg-tag-mode)
+  :config
+  (setq svg-tag-tags
+        '(("\\[\\[id:[^]]+\\]\\[\\(:[^]:]+:\\)\\]\\]" . 
+           ;; '(("\\[\\[id:[^]]+\\]\\[:\\([^]:]+\\):\\]\\]" . 
+           ((lambda (tag)
+              (svg-tag-make tag
+			    :beg 1
+                            :end -1
+                            :face 'org-tag
+                            :margin 0
+                            :radius 0
+                            :padding 0)))))))
+(add-hook 'server-after-make-frame-hook
+          (lambda ()
+            (setq svg-lib-style-default (svg-lib-style-compute-default))))
+
+(use-package pulsar
+  :ensure t
+  :hook
+  (after-init . pulsar-global-mode)
+  :init
+  (setq pulsar-pulse t)
+  (setq pulsar-delay 0.025)
+  (setq pulsar-iterations 20)
+  (setq pulsar-face 'evil-ex-lazy-highlight)
+  :config
+  (add-to-list 'pulsar-pulse-functions 'evil-scroll-down)
+  (add-to-list 'pulsar-pulse-functions 'flymake-goto-next-error)
+  (add-to-list 'pulsar-pulse-functions 'flymake-goto-prev-error)
+  (add-to-list 'pulsar-pulse-functions 'evil-yank)
+  (add-to-list 'pulsar-pulse-functions 'evil-yank-line)
+  (add-to-list 'pulsar-pulse-functions 'evil-delete)
+  (add-to-list 'pulsar-pulse-functions 'evil-delete-line)
+  (add-to-list 'pulsar-pulse-functions 'evil-jump-item)
+  (add-to-list 'pulsar-pulse-functions 'diff-hl-next-hunk)
+  (add-to-list 'pulsar-pulse-functions 'diff-hl-previous-hunk))
 
 (use-package nerd-icons
   :ensure t)
@@ -1239,12 +1313,6 @@ tags from the candidate string presented to the completion framework."
   (setq vertico-resize t
         ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
         vertico-cycle t))
-
-(use-package zoxide
-  :ensure t
-  :config
-  :custom
-  (zoxide-add-to-history t))
 
 (use-package marginalia
   :ensure t
@@ -1392,48 +1460,18 @@ tags from the candidate string presented to the completion framework."
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
-(use-package vterm
-  :ensure t
-  :config
-  (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
-  (setq vterm-max-scrollback 5000)
-  (setq vterm-shell-args '("-l"))
-  (evil-set-initial-state 'vterm-mode 'emacs)
-  :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
-
-(use-package vterm-toggle
-  :ensure t
-  :config
-  (setq vterm-toggle-fullscreen-p t))
-
 (use-package ghostel
-  :ensure (:host github :repo "https://github.com/dakra/ghostel")
+  :ensure (:host github :repo "dakra/ghostel")
   :hook ((ghostel-mode . (lambda () (display-line-numbers-mode 0))))
-  )
+)
+(use-package evil-ghostel
+  :after (ghostel evil)
+  :hook (ghostel-mode . evil-ghostel-mode))
 
 (use-package dirvish
   :ensure t
   :after evil
   :init (dirvish-override-dired-mode))
-
-(use-package neotree
-  :ensure t
-  :config
-  (setq neo-smart-open t
-	neo-show-hidden-files t
-	neo-window-width 35
-	neo-window-fixed-size nil
-	inhibit-compacting-font-caches t
-	projectile-switch-project-action 'neotree-projectile-action) 
-  (setq neo-theme (if (display-graphic-p) 'nerd-icons))
-  ;; truncate long file names in neotree
-  (add-hook 'neo-after-create-hook
-            #'(lambda (_)
-		(with-current-buffer (get-buffer neo-buffer-name)
-                  (setq truncate-lines t)
-                  (setq word-wrap nil)
-                  (make-local-variable 'auto-hscroll-mode)
-                  (setq auto-hscroll-mode nil)))))
 
 (use-package grease
   :ensure (:host github :repo "https://github.com/mwac-dev/grease.el")
@@ -1442,6 +1480,24 @@ tags from the candidate string presented to the completion framework."
   ;; Sorting defaults to 'type (directories first, then files)
   ;; Hidden files are hidden by default
   )
+
+;; Nix integration
+(use-package nix-ts-mode
+  :ensure t
+)
+
+(use-package ess
+  :ensure t
+  :defer t
+)
+
+(use-package treesit-auto
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode)
+)
 
 (use-package flycheck
   :ensure t
@@ -1482,14 +1538,66 @@ tags from the candidate string presented to the completion framework."
   ;; Performance
   (flyover-debounce-interval 0.2))
 
-(use-package treesit-auto
-  :custom
-  (treesit-auto-install 'prompt)
+(use-package lsp-bridge
+  :ensure '(lsp-bridge :type git 
+                       :host github :repo "manateelazycat/lsp-bridge"
+		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+		       :build (:not compile))
+  :defer 1
+  :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
+  :init
+  (setq lsp-bridge-user-multiserver-dir
+        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
+  (setq lsp-bridge-user-langserver-dir
+        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
+  ;;java stuff
+  (require 'lsp-bridge-jdtls)
+  (setq lsp-bridge-jdtls-jvm-args
+      (list (concat "-javaagent:" (getenv "LOMBOK_JAR"))))
+  (setq lsp-bridge-enable-auto-import t)
+  (setq lsp-bridge-enable-diagnostics nil 
+        lsp-bridge-enable-signature-help nil
+        lsp-bridge-enable-hover-diagnostic nil
+        lsp-bridge-enable-auto-format-code nil
+        lsp-bridge-enable-completion-in-minibuffer nil
+        lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
+        lsp-bridge-use-popup t
+        lsp-bridge-python-lsp-server "basedpyright"
+	lsp-bridge-nix-lsp-server "nil"
+        lsp-bridge-csharp-lsp-server "csharp-ls"
+        )
+  ;; (setq lsp-bridge-enable-debug t) 
+  ;; (setq lsp-bridge-log-level 'debug)
+  (setq acm-enable-jupyter t
+        acm-enable-yas t
+	acm-enable-org-roam t
+        acm-enable-elisp t
+        )
   :config
-  (treesit-auto-add-to-auto-mode-alist 'all)
-  (global-treesit-auto-mode)
-  (setq treesit-language-source-alist
-        '((javascript "https://github.com/tree-sitter/tree-sitter-javascript"))))
+  ;; (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
+  (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
+  )
+;;org-babel support
+(with-eval-after-load 'org
+  (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
+  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode))
+  (add-to-list 'org-src-lang-modes '("nix" . nix))
+)
+
+(with-eval-after-load 'lsp-bridge
+  (require 'acm-backend-elisp)
+  (setq acm-enable-elisp t))
+
+(use-package yasnippet
+  :ensure t
+  :defer 4
+  :config
+  (yas-global-mode 1)
+  )
+
+(use-package yasnippet-snippets
+  :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
+  :after yasnippet)
 
 (use-package indent-bars
   :ensure t
@@ -1506,110 +1614,6 @@ tags from the candidate string presented to the completion framework."
   ;;				      dictionary dictionary_comprehension
   ;;				      parenthesized_expression subscript)))
   :hook ((python-base-mode yaml-mode) . indent-bars-mode))
-
-(use-package lsp-bridge
-  :ensure '(lsp-bridge :type git 
-                       :host github :repo "manateelazycat/lsp-bridge"
-		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-		       :build (:not compile))
-  :hook ((prog-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
-  :init
-  (setq lsp-bridge-user-multiserver-dir
-        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
-  (setq lsp-bridge-user-langserver-dir
-        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
-  (setq lsp-bridge-enable-diagnostics nil 
-        lsp-bridge-enable-signature-help nil
-        lsp-bridge-enable-hover-diagnostic nil
-        lsp-bridge-enable-auto-format-code nil
-        lsp-bridge-enable-completion-in-minibuffer nil
-        lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
-        lsp-bridge-use-popup t
-        lsp-bridge-python-lsp-server "basedpyright"
-	lsp-bridge-nix-lsp-server "nil"
-        lsp-bridge-csharp-lsp-server "csharp-ls"
-        lsp-bridge-deferred-tick-time 0.01
-        )
-  ;; (setq lsp-bridge-enable-debug t) 
-  ;; (setq lsp-bridge-log-level 'debug)
-  (setq acm-enable-jupyter t
-        acm-enable-yas t
-	acm-enable-org-roam t
-        acm-enable-elisp t
-        )
-  :config
-  (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
-  (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
-  )
-
-;;org-babel support
-(with-eval-after-load 'org
-  (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
-  (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode))
-  (add-to-list 'org-src-lang-modes '("nix" . nix))
-)
-
-(with-eval-after-load 'lsp-bridge
-  (require 'acm-backend-elisp)
-  (setq acm-enable-elisp t))
-
-(use-package python
-  :ensure t
-  :mode ("\\.py\\'" . python-mode)
-  :config
-  (setq python-indent-offset 4)
-)
-
-;; Nix integration
-(use-package nix-mode
-  :ensure t
-  :mode "\\.nix\\'")
-
-(use-package ess
-  :ensure t
-)
-
-;; Packages you need
-(use-package yasnippet
-  :ensure t
-  :defer 4
-  :config
-  (yas-global-mode 1)
-  )
-
-(use-package yasnippet-snippets
-  :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
-  :after yasnippet)
-
-(use-package projectile
-  :ensure t
-  :config
-  (projectile-mode 1))
-
-(use-package dashboard
-  :ensure t 
-  :init
-  (setq initial-buffer-choice 'dashboard-open)
-  (setq dashboard-set-heading-icons t)
-  ;; (setq dashboard-footer-messages nil)
-  (setq dashboard-set-footer nil)
-  (setq dashboard-set-navigator t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
-  (setq dashboard-image-banner-max-height 200)
-  (setq dashboard-image-banner-max-width 200)
-  (setq dashboard-projects-backend 'projectile)
-  (setq dashboard-center-content t) ;; set to 't' for centered content
-  (setq dashboard-items '((recents . 5)
-                          (agenda . 5 )
-                          (projects . 3)
-                          ))
-  
-  :custom
-  (dashboard-modify-heading-icons '((recents . "file-text")
-                                    (bookmarks . "book")))
-  :config
-  (dashboard-setup-startup-hook))
 
 (use-package jupyter
   :ensure t
@@ -1642,6 +1646,55 @@ tags from the candidate string presented to the completion framework."
 (use-package rainbow-delimiters
   :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package kirigami
+  :ensure   (:host github :repo "jamescherti/kirigami.el")
+)
+
+(use-package outline-indent
+  :ensure t
+  :commands outline-indent-minor-mode
+  :hook 
+  ((python-mode . outline-indent-minor-mode)
+   (python-ts-mode . outline-indent-minor-mode)
+   (java-mode . outline-indent-minor-mode)
+   (java-ts-mode . outline-indent-minor-mode)
+   (yaml-mode . outline-indent-minor-mode)
+   (yaml-ts-mode . outline-indent-minor-mode) 
+   (nix-mode . outline-indent-minor-mode)
+   (emacs-lisp-mode . outline-indent-minor-mode))
+  :custom
+  (outline-indent-ellipsis " ..."))
+
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-mode 1))
+
+(use-package dashboard
+  :ensure t 
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  (setq dashboard-set-heading-icons t)
+  ;; (setq dashboard-footer-messages nil)
+  (setq dashboard-set-footer nil)
+  (setq dashboard-set-navigator t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
+  (setq dashboard-image-banner-max-height 200)
+  (setq dashboard-image-banner-max-width 200)
+  (setq dashboard-projects-backend 'projectile)
+  (setq dashboard-center-content t) ;; set to 't' for centered content
+  (setq dashboard-items '((recents . 5)
+                          (agenda . 5 )
+                          (projects . 3)
+                          ))
+  
+  :custom
+  (dashboard-modify-heading-icons '((recents . "file-text")
+                                    (bookmarks . "book")))
+  :config
+  (dashboard-setup-startup-hook))
 
 (use-package auctex
   :ensure t
@@ -1809,75 +1862,10 @@ tags from the candidate string presented to the completion framework."
   :defer t
   )
 
-(use-package transient
-  :ensure t)
-
-(use-package deadgrep
-  :ensure t
-  :bind (("C-c H" . deadgrep)))
-
-(use-package spacious-padding
-  :ensure t
-  :defer 2
-  :config
-  (setq spacious-padding-widths
-	'(;; Adjust other padding values as you see fit
-          :internal-border-width 15
-          :header-line-width 4
-          :mode-line-width 6
-          :tab-width 4
-          :scroll-bar-width 4
-          ;; Set the divider width to 1 to make it visible
-          :right-divider-width 10
-          ))
-  (spacious-padding-mode 15)
-  (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
-  )
-
-(defun my/prettify-symbols-setup ()
-
-  ;; Drawers
-  (push '(":PROPERTIES:" . "") prettify-symbols-alist)
-  (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
-  (push '(":ID:" . " ") prettify-symbols-alist)
-  (push '(":DATE:" . "") prettify-symbols-alist)
-  (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
-  (push '(":AUTHOR:" . "") prettify-symbols-alist)
-  (push '(":ROAM_REFS:" . " ") prettify-symbols-alist)
-  (push '(":PRIORITY:" . "󰁝") prettify-symbols-alist)
-  (push '(":END:" . "") prettify-symbols-alist)
-  (push '(":RESULTS:" . "") prettify-symbols-alist)
-  ;; Tags
-  (push '(":projects:" . "  Projects") prettify-symbols-alist)
-  (push '(":work:"     . "  Work") prettify-symbols-alist)
-  (push '(":inbox:"    . "  Inbox") prettify-symbols-alist)
-  (push '(":task:"     . "  Task") prettify-symbols-alist)
-  (push '(":thesis:"   . "  Thesis") prettify-symbols-alist)
-  (push '(":learn:"    . "  Learn") prettify-symbols-alist)
-  (push '(":code:"     . "  Code") prettify-symbols-alist)
-
-  (set-face-attribute 'org-drawer nil :height 1.3)
-  (set-face-attribute 'org-special-keyword nil :height 1.3)
-  (prettify-symbols-mode))
-
-(add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
-(add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
-
 (use-package rainbow-csv
   :ensure (:host github :repo "emacs-vs/rainbow-csv")
   :hook ((csv-mode . rainbow-csv-mode)
          (tsv-mode . rainbow-csv-mode)))
-
-(use-package org-kanban
-  :ensure t
-  :after org
-  :commands (org-kanban/initialize
-             org-kanban/initialize-at-end
-             org-kanban/shift)
-  :config
-  ;; Optional: Set mirrored to nil if you want the board the other way around
-  (setq org-kanban/mirrored nil)
-  )
 
 (use-package gptel
   :ensure (:host github :repo "karthink/gptel" :branch main)
@@ -1930,31 +1918,6 @@ tags from the candidate string presented to the completion framework."
 ;;     (add-hook 'completion-at-point-functions
 ;;               'ob-gptel-capf nil t))
 ;;   :hook (org-mode . ob-gptel-setup-completions))
-
-(use-package svg-lib
-  :ensure t
-  :defer t
-  )
-
-(use-package svg-tag-mode
-  :ensure t
-  :defer t
-  :hook (org-mode . svg-tag-mode)
-  :config
-  (setq svg-tag-tags
-        '(("\\[\\[id:[^]]+\\]\\[\\(:[^]:]+:\\)\\]\\]" . 
-           ;; '(("\\[\\[id:[^]]+\\]\\[:\\([^]:]+\\):\\]\\]" . 
-           ((lambda (tag)
-              (svg-tag-make tag
-			    :beg 1
-                            :end -1
-                            :face 'org-tag
-                            :margin 0
-                            :radius 0
-                            :padding 0)))))))
-(add-hook 'server-after-make-frame-hook
-          (lambda ()
-            (setq svg-lib-style-default (svg-lib-style-compute-default))))
 
 (use-package direnv
   :ensure t)
@@ -2117,6 +2080,49 @@ Preserves existing entries to avoid overwriting."
   (smudge-player-use-transient-map t)
   )
 
+(defun ghostel-split ()
+  "Open ghostel in a vertical split."
+  (interactive)
+  (split-window-right)
+  (other-window 1)
+  (ghostel))
+
+(defun gptel-split ()
+  (interactive)
+  (split-window-right)
+  (other-window 1)
+  (switch-to-buffer (gptel (generate-new-buffer-name "*gptel*"))))
+
+(defun open-messages-buffer ()
+"Open the *Messages* buffer in a vertical split."
+  (interactive)
+  (let ((buf (get-buffer "*Messages*")))
+    (if buf
+        (select-window (split-window-right))
+      (setq buf (get-buffer-create "*Messages*")))
+    (switch-to-buffer buf)))
+
+(defun open-lazygit ()
+  (interactive)
+  (let* ((root (or (locate-dominating-file default-directory ".git")
+                   default-directory))
+         (buf-name (format "*ghostel-lazygit:%s*"
+                           (file-name-nondirectory
+                            (directory-file-name root))))
+         (buf (get-buffer buf-name)))
+    (if (and buf (buffer-live-p buf))
+        (progn
+          (switch-to-buffer buf)
+          (evil-emacs-state))
+      (let ((default-directory root))
+        (ghostel)
+        (rename-buffer buf-name)
+        (evil-emacs-state)
+        (sleep-for 0.3)
+        (process-send-string
+         (get-buffer-process (current-buffer))
+         "lazygit\n")))))
+
 (use-package general
     :ensure t
     :after evil
@@ -2186,6 +2192,15 @@ Preserves existing entries to avoid overwriting."
       "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
       "e r" '(eval-region :wk "Evaluate elisp in region")
       "e s" '(eshell :which-key "Eshell")
+      )
+
+    
+    (leader-key
+      "g" '(:ignore t :wk "GPTEL")
+      "g a" '(gptel-add :wk "Add to Context")
+      "g f" '(gptel-add-file :wk "Add file to Context")
+      "g g" '(gptel-split :wk "Open Gptel")
+      "g m" '(gptel-menu :wk "Open Transient Menu")
       )
     
     (leader-key
@@ -2290,7 +2305,8 @@ Preserves existing entries to avoid overwriting."
       "t t" '(visual-line-mode :wk "Toggle truncated lines")
       "t m" '(open-messages-buffer :wk "Toggle Message Buffer ")
       "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
-      "t v" '(vterm-toggle :wk "Toggle Vterm"))
+      "t g" '(open-lazygit :wk "Open Lazygit")
+      "t v" '(ghostel-split :wk "Toggle Vterm"))
 
     (leader-key
       "w" '(:ignore t :wk "Windows")
@@ -2333,8 +2349,6 @@ Preserves existing entries to avoid overwriting."
  "za" #'kirigami-toggle-fold
  "zr" #'kirigami-open-folds
  "zm" #'kirigami-close-folds)
-
-
     )
 
 (use-package hydra
@@ -2375,3 +2389,49 @@ _j_: next block    _k_: previous block
     ("q" nil "quit"))
 
 )
+
+(use-package transient
+  :ensure t)
+
+;; (use-package deadgrep
+;;   :ensure t
+;;   :bind (("C-c H" . deadgrep)))
+
+;; (use-package zoxide
+;;   :ensure t
+;;   :config
+;;   :custom
+;;   (zoxide-add-to-history t))
+
+;; (use-package vterm
+;;   :ensure t
+;;   :config
+;;   (setq vterm-shell (or (executable-find "zsh") "/bin/zsh"))
+;;   (setq vterm-max-scrollback 5000)
+;;   (setq vterm-shell-args '("-l"))
+;;   (evil-set-initial-state 'vterm-mode 'emacs)
+;;   :hook ((vterm-mode . (lambda () (display-line-numbers-mode 0)))))
+
+;; (use-package vterm-toggle
+;;   :ensure t
+;;   :config
+;;   (setq vterm-toggle-fullscreen-p t))
+
+;; (use-package neotree
+;;   :ensure t
+;;   :config
+;;   (setq neo-smart-open t
+;; 	neo-show-hidden-files t
+;; 	neo-window-width 35
+;; 	neo-window-fixed-size nil
+;; 	inhibit-compacting-font-caches t
+;; 	projectile-switch-project-action 'neotree-projectile-action) 
+;;   (setq neo-theme (if (display-graphic-p) 'nerd-icons))
+;;   ;; truncate long file names in neotree
+;;   (add-hook 'neo-after-create-hook
+;;             #'(lambda (_)
+;; 		(with-current-buffer (get-buffer neo-buffer-name)
+;;                   (setq truncate-lines t)
+;;                   (setq word-wrap nil)
+;;                   (make-local-variable 'auto-hscroll-mode)
+;;                   (setq auto-hscroll-mode nil)))))
