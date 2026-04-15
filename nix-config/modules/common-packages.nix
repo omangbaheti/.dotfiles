@@ -11,6 +11,7 @@ let
     seaborn
     xlib
     epc
+    orjson
     sexpdata
     six
     inflect
@@ -72,11 +73,14 @@ in
       nodejs_24
       
       #openjdk
-      zulu8 
+      jdt-language-server
+      lombok
+      openjdk25
+      # zulu8 
       
       # C#
       omnisharp-roslyn
-      
+      csharp-ls
       #Latex LSP and grammar checking
       (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
       proselint

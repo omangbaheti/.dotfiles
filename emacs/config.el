@@ -1206,16 +1206,16 @@ tags from the candidate string presented to the completion framework."
 (defun my/prettify-symbols-setup ()
 
   ;; Drawers
-  (push '(":PROPERTIES:" . "") prettify-symbols-alist)
-  (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
+  (push '(":PROPERTIES:" . " ") prettify-symbols-alist)
+  (push '(":ROAM_ALIASES:" . " ") prettify-symbols-alist)
   (push '(":ID:" . " ") prettify-symbols-alist)
-  (push '(":DATE:" . "") prettify-symbols-alist)
-  (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
-  (push '(":AUTHOR:" . "") prettify-symbols-alist)
+  (push '(":DATE:" . " ") prettify-symbols-alist)
+  (push '(":DATE_PUBLISHED:" . " ") prettify-symbols-alist)
+  (push '(":AUTHOR:" . " ") prettify-symbols-alist)
   (push '(":ROAM_REFS:" . " ") prettify-symbols-alist)
-  (push '(":PRIORITY:" . "󰁝") prettify-symbols-alist)
-  (push '(":END:" . "") prettify-symbols-alist)
-  (push '(":RESULTS:" . "") prettify-symbols-alist)
+  (push '(":PRIORITY:" . "󰁝 ") prettify-symbols-alist)
+  (push '(":END:" . " ") prettify-symbols-alist)
+  (push '(":RESULTS:" . " ") prettify-symbols-alist)
   ;; Tags
   (push '(":projects:" . "  Projects") prettify-symbols-alist)
   (push '(":work:"     . "  Work") prettify-symbols-alist)
@@ -2348,8 +2348,10 @@ Preserves existing entries to avoid overwriting."
  "zc" #'kirigami-close-fold
  "za" #'kirigami-toggle-fold
  "zr" #'kirigami-open-folds
- "zm" #'kirigami-close-folds)
-    )
+ "zm" #'kirigami-close-folds))
+
+(global-set-key (kbd "C-x h") 'previous-buffer)
+(global-set-key (kbd "C-x l") 'next-buffer)
 
 (use-package hydra
   :ensure t

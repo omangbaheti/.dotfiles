@@ -13,6 +13,10 @@
      user.email = "omangbaheti@gmail.com";
      init.defaultBranch = "main";
      push.default = "simple";
+     extraConfig =
+       {
+         credential.helper = "cache --timeout=28800";
+       };
    };
  };
  
@@ -164,6 +168,7 @@ eval "$(direnv hook zsh)"
       EMACSLOADINIT = "~/.dotfiles/emacs/init.el";
       EDITOR = machine.editor;
       BROWSER = machine.browser;
+      LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
       # SPAWNEDITOR = userSettings.spawnEditor;
     };
   home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;

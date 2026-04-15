@@ -21,6 +21,10 @@
       user.email = "omangbaheti@gmail.com";
       init.defaultBranch = "main";
       push.default = "simple";
+      extraConfig =
+        {
+          credential.helper = "cache --timeout=28800";
+        };
     };
   };
   
@@ -169,6 +173,7 @@
     {
       EMACSLOADINIT = "${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el";
       GTK_THEME = "Orchis-Dark";
+      LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
     };
   
   home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;

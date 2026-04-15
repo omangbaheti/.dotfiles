@@ -63,7 +63,7 @@
 - [[#language-setup][Language Setup]]
   - [[#language-modes][Language Modes]]
   - [[#syntax-parsing][Syntax Parsing]]
-  - [[#syntax-checking][Syntax Checking]]
+  - [[#syntax-checking----flycheck][Syntax Checking -- Flycheck]]
   - [[#lsps][LSPs]]
   - [[#yasnippet][YASNIPPET]]
   - [[#indent-bars][Indent Bars]]
@@ -1596,7 +1596,6 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
 (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
 #+end_src
 
-
 ** SVG Tag Mode
 #+begin_src emacs-lisp
 (use-package svg-lib
@@ -1928,7 +1927,7 @@ Language Modes that I need to install manually
 )
 #+end_src
 
-** Syntax Checking 
+** Syntax Checking -- Flycheck 
 Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
@@ -1941,7 +1940,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :ensure (:host github :repo "https://github.com/konrad1977/flyover")
   :hook ((flycheck-mode . flyover-mode))
   :config
-  (setq flyover-show-at-eol t)
+  (setq flyover-show-at-eol nil)
   :custom
   ;; Checker settings
   (flyover-checkers '(flycheck flymake))
@@ -1971,7 +1970,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   ;; Performance
   (flyover-debounce-interval 0.2))
 #+end_src
-
 
 ** LSPs
 #+begin_src emacs-lisp
@@ -2093,7 +2091,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
                                                   (:exports . "both")
                                                   (:results . "output")))
   )
-
 #+end_src
 
 ** RAINBOW MODE
@@ -2370,6 +2367,19 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   )
 #+end_src
 
+#+begin_src emacs-lisp
+(use-package git-gutter
+  :ensure t
+  ;; :hook ((prog-mode . git-gutter-mode)
+  ;;        (markdown-mode . git-gutter-mode)
+  ;;        (conf-mode . git-gutter-mode))
+  :init (global-git-gutter-mode t)
+  :config
+  (setq git-gutter:update-interval 1
+        git-gutter:ask-p nil)
+  )
+#+end_src
+
 * CSV MODE
 #+begin_src emacs-lisp
 (use-package rainbow-csv
@@ -2422,10 +2432,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq gptel-model "gpt-5.4-nano")
   )
 #+end_src
-
-#+RESULTS:
-: [nil 27101 6698 779938 nil elpaca-process-queues nil nil 193000 nil]
-
 
 
 ** GPTEL AGENT
@@ -2908,8 +2914,10 @@ Preserves existing entries to avoid overwriting."
  "zc" #'kirigami-close-fold
  "za" #'kirigami-toggle-fold
  "zr" #'kirigami-open-folds
- "zm" #'kirigami-close-folds)
-    )
+ "zm" #'kirigami-close-folds))
+
+(global-set-key (kbd "C-x h") 'previous-buffer)
+(global-set-key (kbd "C-x l") 'next-buffer)
 #+END_SRC
 
 ** HYDRA
@@ -2953,7 +2961,6 @@ _j_: next block    _k_: previous block
 
 )
 #+end_src
-
 
 ** TRANSIENT
 Its a built-in emacs package, its here only so that elpaca can manage it instead of emacs package manager

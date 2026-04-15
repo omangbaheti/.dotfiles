@@ -12,6 +12,10 @@
       user.email = "omangbaheti@gmail.com";
       init.defaultBranch = "main";
       push.default = "simple";
+      extraConfig =
+        {
+          credential.helper = "cache --timeout=28800";
+        };
     };
   };
   
