@@ -424,6 +424,23 @@
     "A" #'evil-mc-make-cursor-in-visual-selection-end
     "I" #'evil-mc-make-cursor-in-visual-selection-beg))
 
+(use-package flash
+  :ensure (:host github :repo "Prgebish/flash")
+  :commands (flash-jump flash-jump-continue
+             flash-treesitter)
+  :bind ("s-j" . flash-jump)
+  :custom
+  (flash-multi-window t)
+  :init
+  ;; Evil integration (simple setup)
+  (with-eval-after-load 'evil
+    (require 'flash-evil)
+    (flash-evil-setup t))  ; t = also set up f/t/F/T char motions
+  :config
+  ;; Search integration (labels during C-s, /, ?)
+  (require 'flash-isearch)
+  (flash-isearch-mode 1))
+
 (use-package scroll-on-jump
     :after evil
     :ensure t
@@ -539,6 +556,26 @@ one, an error is signaled."
       (set-window-buffer other-win buf-this-buf)
       (select-window other-win))))
 
+(use-package posframe
+  :ensure t)
+
+(use-package ace-window
+  :ensure t
+  :custom
+  (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (ace-window-posframe-mode t)
+  (aw-scope 'frame)
+  (aw-dispatch-always nil)
+  (aw-background t)
+  (aw-minibuffer-flag t)
+  :config
+  (set-face-attribute 'aw-background-face nil :foreground "gray40")
+  (set-face-attribute 'aw-leading-char-face nil
+                      :weight 'bold
+                      :foreground "#ECEFF4"
+                      :background "#3B4252"
+                      :height 2.0))
+
 ;; Setting the default font
 (set-face-attribute 'default nil
 		    :font "JetBrainsMono Nerd Font"
@@ -589,6 +626,15 @@ one, an error is signaled."
 ;;opens window in fullscreen
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
+(setq savehist-additional-variables
+      '(search-ring regexp-search-ring kill-ring))
+
+(add-hook 'savehist-save-hook
+          (lambda ()
+            (setq kill-ring
+                  (mapcar #'substring-no-properties
+                          (cl-remove-if-not #'stringp kill-ring)))))
+
 (global-display-line-numbers-mode 1)
 (global-visual-line-mode t)
 (setq truncate-lines nil)
@@ -638,6 +684,7 @@ one, an error is signaled."
 (setq bidi-inhibit-bpa t)
 
 (setq redisplay-skip-fontification-on-input t)
+
 
 (setq-default cursor-in-non-selected-windows nil)
 
@@ -1261,22 +1308,33 @@ tags from the candidate string presented to the completion framework."
   :ensure t
   :hook
   (after-init . pulsar-global-mode)
-  :init
-  (setq pulsar-pulse t)
-  (setq pulsar-delay 0.025)
-  (setq pulsar-iterations 20)
-  (setq pulsar-face 'evil-ex-lazy-highlight)
+  :custom
+  (pulsar-pulse t)
+  (pulsar-delay 0.01)
+  (pulsar-iterations 20)
+  (pulsar-face 'evil-ex-lazy-highlight)
+  (pulsar-pulse-functions
+   '(ace-window
+     other-window
+     evil-scroll-down
+     evil-yank
+     evil-yank-line
+     evil-delete
+     evil-delete-line
+     evil-jump-item
+     flymake-goto-next-error
+     flymake-goto-prev-error
+     diff-hl-next-hunk
+     diff-hl-previous-hunk))
+  )
+
+(use-package winpulse
+  :ensure (:host github :repo "xenodium/winpulse")
   :config
-  (add-to-list 'pulsar-pulse-functions 'evil-scroll-down)
-  (add-to-list 'pulsar-pulse-functions 'flymake-goto-next-error)
-  (add-to-list 'pulsar-pulse-functions 'flymake-goto-prev-error)
-  (add-to-list 'pulsar-pulse-functions 'evil-yank)
-  (add-to-list 'pulsar-pulse-functions 'evil-yank-line)
-  (add-to-list 'pulsar-pulse-functions 'evil-delete)
-  (add-to-list 'pulsar-pulse-functions 'evil-delete-line)
-  (add-to-list 'pulsar-pulse-functions 'evil-jump-item)
-  (add-to-list 'pulsar-pulse-functions 'diff-hl-next-hunk)
-  (add-to-list 'pulsar-pulse-functions 'diff-hl-previous-hunk))
+  (winpulse-mode +1)
+  :init
+  (setq winpulse-duration 0.15)
+  )
 
 (use-package nerd-icons
   :ensure t)
@@ -1313,6 +1371,11 @@ tags from the candidate string presented to the completion framework."
   (setq vertico-resize t
         ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
         vertico-cycle t))
+
+;;Deletes the entire word instead of subwords
+(with-eval-after-load 'vertico
+  (require 'vertico-directory)
+  (define-key vertico-map (kbd "C-<backspace>") #'vertico-directory-delete-word))
 
 (use-package marginalia
   :ensure t
@@ -1508,7 +1571,7 @@ tags from the candidate string presented to the completion framework."
   :ensure (:host github :repo "https://github.com/konrad1977/flyover")
   :hook ((flycheck-mode . flyover-mode))
   :config
-  (setq flyover-show-at-eol t)
+  (setq flyover-show-at-eol nil)
   :custom
   ;; Checker settings
   (flyover-checkers '(flycheck flymake))
@@ -1550,7 +1613,7 @@ tags from the candidate string presented to the completion framework."
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
   (setq lsp-bridge-user-langserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
-  ;;java stuff
+  ;; ;; java stuff
   (require 'lsp-bridge-jdtls)
   (setq lsp-bridge-jdtls-jvm-args
       (list (concat "-javaagent:" (getenv "LOMBOK_JAR"))))
@@ -1862,6 +1925,25 @@ tags from the candidate string presented to the completion framework."
   :defer t
   )
 
+(use-package git-gutter
+  :ensure t
+  :config
+  (setq git-gutter:added-sign "+")
+  (setq git-gutter:deleted-sign "-")
+  (setq git-gutter:modified-sign "~")
+
+  (set-face-foreground 'git-gutter:added "green")
+  (set-face-foreground 'git-gutter:deleted "red")
+  (set-face-foreground 'git-gutter:modified "yellow")
+  (global-git-gutter-mode +1))
+
+(use-package git-gutter-fringe
+  :ensure t
+  :after git-gutter
+  :config
+  (setq-default fringes-outside-margins t)
+  (fringe-mode '(15 . 15)))
+
 (use-package rainbow-csv
   :ensure (:host github :repo "emacs-vs/rainbow-csv")
   :hook ((csv-mode . rainbow-csv-mode)
@@ -1874,34 +1956,16 @@ tags from the candidate string presented to the completion framework."
   (setq gptel-default-mode 'org-mode)
   (setq gptel-include-reasoning t)
   (setq gptel-include-reasoning 'buffer)
-  ;; (defvar azure
-  ;;   (gptel-make-openai-responses "Azure"
-  ;;     :host "https://emacs-resource.services.ai.azure.com/"
-  ;;     :endpoint "/api/projects/emacs"
-  ;;     :stream t
-  ;;     :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
-  ;;     :key azure-api)
-  ;;   )
 (defvar azure
     (gptel-make-openai "Azure"
       :host "emacs-resource.services.ai.azure.com"
       :protocol "https"
       :endpoint "/openai/v1/chat/completions"
       :stream t
-      :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
+      ;; :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
+      :models '((gpt-5.4-nano :capabilities (reasoning))
+          (DeepSeek-V3.2-Speciale :capabilities (reasoning)))
       :key azure-api))
-  
-  ;; (setq gptel-backend
-  ;;       (gptel-make-openai-responses
-  ;;           "Azure-Emacs-Agent"
-  ;;         :host "emacs-resource.services.ai.azure.com"
-  ;;         :protocol "https"
-  ;;         :endpoint "/api/projects/emacs/openai/v1/responses"
-  ;;         :key (lambda () (shell-command-to-string "az account get-access-token --resource https://ai.azure.com --query accessToken -o tsv | tr -d '\n'"))
-  ;;         :stream t
-  ;;         :models '(emacs)
-  ;;         :request-params '(:agent_reference (:name "emacs" :version "1" :type "agent_reference"))))
-  
   (setq gptel-backend azure)
   (setq gptel-model "gpt-5.4-nano")
   )
@@ -2200,6 +2264,7 @@ Preserves existing entries to avoid overwriting."
       "g a" '(gptel-add :wk "Add to Context")
       "g f" '(gptel-add-file :wk "Add file to Context")
       "g g" '(gptel-split :wk "Open Gptel")
+      "g c" '(gptel-context-remove-all :wk "Open Gptel")
       "g m" '(gptel-menu :wk "Open Transient Menu")
       )
     
@@ -2301,17 +2366,21 @@ Preserves existing entries to avoid overwriting."
     (leader-key
       "t" '(:ignore t :wk "Toggle")
       "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
+      "t h" '(open-lazygit :wk "Open Lazygit")
+      "t g" '(grease-here :wk "Open Grease here")
       "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-      "t t" '(visual-line-mode :wk "Toggle truncated lines")
       "t m" '(open-messages-buffer :wk "Toggle Message Buffer ")
       "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
-      "t g" '(open-lazygit :wk "Open Lazygit")
-      "t v" '(ghostel-split :wk "Toggle Vterm"))
+      "t p" '(open-lazygit :wk "Open Lazygit")
+      "t v" '(ghostel-split :wk "Toggle Vterm")
+      "t t" '(visual-line-mode :wk "Toggle truncated lines")
+      )
 
     (leader-key
       "w" '(:ignore t :wk "Windows")
       ;; Window splits
       "w c" '(evil-window-delete :wk "Close window")
+      "w C" '(delete-other-windows :wk "Close all windows")
       "w n" '(evil-window-new :wk "New window")
       "w s" '(evil-window-split :wk "Horizontal split window")
       "w v" '(evil-window-vsplit :wk "Vertical split window")
@@ -2320,12 +2389,7 @@ Preserves existing entries to avoid overwriting."
       "w j" '(evil-window-down :wk "Window Down")
       "w k" '(evil-window-up :wk "Window Up")
       "w l" '(evil-window-right :wk "Window Right")
-      "w w" '(evil-window-next :wk "Goto Next Window")
-      ;;alternate bindings
-      "<left>" '(evil-window-left :wk "Window Left")
-      "<down>" '(evil-window-down :wk "Window Down")
-      "<up>" '(evil-window-up :wk "Window Up")
-      "<right>" '(evil-window-right :wk "Window Right")
+      "w w" '(ace-window :wk "Switch Window")
       ;; Move Windows
       "w H" '(buf-move-left :wk "Buffer Move Left")
       "w J" '(buf-move-down :wk "Buffer Move Down")
@@ -2334,6 +2398,8 @@ Preserves existing entries to avoid overwriting."
       ;; New Window
       "w N" '(make-frame-command :wk "New Frame")
       )
+    
+    (leader-key "," '(ace-window :which-key "Switch Window"))
 
     (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
     

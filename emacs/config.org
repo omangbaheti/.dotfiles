@@ -1,4 +1,4 @@
-#+TITLE: Emacs Config
+ #+TITLE: Emacs Config
 #+DESCRIPTION: Personal Config
 #+STARTUP: showeverything
 #+OPTIONS: toc:3
@@ -13,6 +13,8 @@
   - [[#casual][CASUAL]]
 - [[#closing-minibuffer][CLOSING MINIBUFFER]]
 - [[#buffer-move][BUFFER-MOVE]]
+- [[#posframe][POSFRAME]]
+- [[#ace-window][ACE-WINDOW]]
 - [[#fonts][FONTS]]
   - [[#setting-the-font-face][Setting the Font Face]]
 - [[#emacs-sane-defaults][EMACS SANE DEFAULTS]]
@@ -47,6 +49,7 @@
   - [[#prettifying-text-to-icons][Prettifying text to icons]]
   - [[#svg-tag-mode][SVG Tag Mode]]
   - [[#pulsar][Pulsar]]
+  - [[#winpulse][Winpulse]]
   - [[#nerd-icons][Nerd Icons]]
 - [[#vertico][VERTICO]]
 - [[#marginalia][MARGINALIA]]
@@ -62,13 +65,13 @@
   - [[#grease][GREASE]]
 - [[#language-setup][Language Setup]]
   - [[#language-modes][Language Modes]]
-  - [[#syntax-parsing][Syntax Parsing]]
-  - [[#syntax-checking----flycheck][Syntax Checking -- Flycheck]]
+  - [[#syntax-parsing---treesitter][Syntax Parsing - Treesitter]]
+  - [[#syntax-checking---flycheck][Syntax Checking - Flycheck]]
   - [[#lsps][LSPs]]
-  - [[#yasnippet][YASNIPPET]]
+  - [[#yasnippet][Yasnippet]]
   - [[#indent-bars][Indent Bars]]
-  - [[#jupyter][JUPYTER]]
-  - [[#rainbow-mode][RAINBOW MODE]]
+  - [[#jupyter][Jupyter]]
+  - [[#rainbow-mode][Rainbow mode]]
 - [[#projectile][PROJECTILE]]
 - [[#dashboard][DASHBOARD]]
 - [[#latex][LATEX]]
@@ -77,7 +80,6 @@
   - [[#misc-writing-tools][Misc writing tools]]
 - [[#git][GIT]]
 - [[#csv-mode][CSV MODE]]
-- [[#nano-elfeed][NANO ELFEED]]
 - [[#gptel][GPTEL]]
   - [[#gptel-agent][GPTEL AGENT]]
 - [[#nano-calendar][NANO CALENDAR]]
@@ -94,6 +96,7 @@
   - [[#vterm][Vterm]]
   - [[#neotree][NEOTREE]]
 - [[#todo][TODO]]
+- [[#nano-elfeed][NANO ELFEED]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
 
@@ -170,6 +173,7 @@
   ;; To disable collection of benchmark data after init is done.
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 #+end_src
+
 
 ** Theming
 *** Doom Themes
@@ -466,6 +470,7 @@
 
 #+end_src
 
+
 ** Load Evil Mode
 
 #+BEGIN_SRC emacs-lisp
@@ -563,6 +568,30 @@
     "I" #'evil-mc-make-cursor-in-visual-selection-beg))
 #+end_src
 
+*** Flash
+#+begin_src emacs-lisp
+(use-package flash
+  :ensure (:host github :repo "Prgebish/flash")
+  :commands (flash-jump flash-jump-continue
+             flash-treesitter)
+  :bind ("s-j" . flash-jump)
+  :custom
+  (flash-multi-window t)
+  :init
+  ;; Evil integration (simple setup)
+  (with-eval-after-load 'evil
+    (require 'flash-evil)
+    (flash-evil-setup t))  ; t = also set up f/t/F/T char motions
+  :config
+  ;; Search integration (labels during C-s, /, ?)
+  (require 'flash-isearch)
+  (flash-isearch-mode 1))
+#+end_src
+
+#+RESULTS:
+: [nil 27103 56653 114903 nil elpaca-process-queues nil nil 451000 nil]
+
+
 ** Scroll On Jump
 
 #+begin_src emacs-lisp
@@ -594,6 +623,7 @@
       (scroll-on-jump-with-scroll-advice-add consult-org-heading)
 )
 #+end_src
+
 
 ** TODO CASUAL
 
@@ -713,6 +743,37 @@ one, an error is signaled."
 #+end_src
 
 
+* POSFRAME
+#+begin_src emacs-lisp
+(use-package posframe
+  :ensure t)
+#+end_src
+
+* ACE-WINDOW
+
+#+begin_src emacs-lisp
+(use-package ace-window
+  :ensure t
+  :custom
+  (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (ace-window-posframe-mode t)
+  (aw-scope 'frame)
+  (aw-dispatch-always nil)
+  (aw-background t)
+  (aw-minibuffer-flag t)
+  :config
+  (set-face-attribute 'aw-background-face nil :foreground "gray40")
+  (set-face-attribute 'aw-leading-char-face nil
+                      :weight 'bold
+                      :foreground "#ECEFF4"
+                      :background "#3B4252"
+                      :height 2.0))
+#+end_src
+
+#+RESULTS:
+: [nil 27104 6670 15179 nil elpaca-process-queues nil nil 308000 nil]
+
+
 * FONTS
 Defining the fonts
 
@@ -776,6 +837,15 @@ Defining the fonts
 (add-hook 'org-mode-hook #'font-lock-fontify-buffer)
 ;;opens window in fullscreen
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+(setq savehist-additional-variables
+      '(search-ring regexp-search-ring kill-ring))
+
+(add-hook 'savehist-save-hook
+          (lambda ()
+            (setq kill-ring
+                  (mapcar #'substring-no-properties
+                          (cl-remove-if-not #'stringp kill-ring)))))
 #+end_src
 
 ** Display Line Numbers and Truncated Lines
@@ -863,6 +933,7 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 (setq bidi-inhibit-bpa t)
 
 (setq redisplay-skip-fontification-on-input t)
+
 
 (setq-default cursor-in-non-selected-windows nil)
 
@@ -1626,30 +1697,48 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
 
 
 ** Pulsar
+Package to highlight a line when jumping to different places
 #+begin_src emacs-lisp
 (use-package pulsar
   :ensure t
   :hook
   (after-init . pulsar-global-mode)
-  :init
-  (setq pulsar-pulse t)
-  (setq pulsar-delay 0.025)
-  (setq pulsar-iterations 20)
-  (setq pulsar-face 'evil-ex-lazy-highlight)
-  :config
-  (add-to-list 'pulsar-pulse-functions 'evil-scroll-down)
-  (add-to-list 'pulsar-pulse-functions 'flymake-goto-next-error)
-  (add-to-list 'pulsar-pulse-functions 'flymake-goto-prev-error)
-  (add-to-list 'pulsar-pulse-functions 'evil-yank)
-  (add-to-list 'pulsar-pulse-functions 'evil-yank-line)
-  (add-to-list 'pulsar-pulse-functions 'evil-delete)
-  (add-to-list 'pulsar-pulse-functions 'evil-delete-line)
-  (add-to-list 'pulsar-pulse-functions 'evil-jump-item)
-  (add-to-list 'pulsar-pulse-functions 'diff-hl-next-hunk)
-  (add-to-list 'pulsar-pulse-functions 'diff-hl-previous-hunk))
+  :custom
+  (pulsar-pulse t)
+  (pulsar-delay 0.01)
+  (pulsar-iterations 20)
+  (pulsar-face 'evil-ex-lazy-highlight)
+  (pulsar-pulse-functions
+   '(ace-window
+     other-window
+     evil-scroll-down
+     evil-yank
+     evil-yank-line
+     evil-delete
+     evil-delete-line
+     evil-jump-item
+     flymake-goto-next-error
+     flymake-goto-prev-error
+     diff-hl-next-hunk
+     diff-hl-previous-hunk))
+  )
 #+end_src
 
- 
+** Winpulse
+Package to highlight when switching buffer
+#+begin_src emacs-lisp
+(use-package winpulse
+  :ensure (:host github :repo "xenodium/winpulse")
+  :config
+  (winpulse-mode +1)
+  :init
+  (setq winpulse-duration 0.15)
+  )
+#+end_src
+
+#+RESULTS:
+: [nil 27104 5403 439827 nil elpaca-process-queues nil nil 637000 nil]
+
 ** Nerd Icons  
 #+begin_src emacs-lisp
 (use-package nerd-icons
@@ -1693,6 +1782,11 @@ Nicer M-x menu
   (setq vertico-resize t
         ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
         vertico-cycle t))
+
+;;Deletes the entire word instead of subwords
+(with-eval-after-load 'vertico
+  (require 'vertico-directory)
+  (define-key vertico-map (kbd "C-<backspace>") #'vertico-directory-delete-word))
 #+end_src
 
 * MARGINALIA
@@ -1916,7 +2010,7 @@ Language Modes that I need to install manually
 )
 #+end_src
 
-** Syntax Parsing
+** Syntax Parsing - Treesitter
 #+begin_src emacs-lisp
 (use-package treesit-auto
   :custom
@@ -1927,7 +2021,7 @@ Language Modes that I need to install manually
 )
 #+end_src
 
-** Syntax Checking -- Flycheck 
+** Syntax Checking - Flycheck 
 Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
@@ -1985,7 +2079,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
   (setq lsp-bridge-user-langserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
-  ;;java stuff
+  ;; ;; java stuff
   (require 'lsp-bridge-jdtls)
   (setq lsp-bridge-jdtls-jvm-args
       (list (concat "-javaagent:" (getenv "LOMBOK_JAR"))))
@@ -2024,7 +2118,10 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq acm-enable-elisp t))
 #+end_src
 
-** YASNIPPET
+#+RESULTS:
+: t
+
+** Yasnippet
 #+begin_src emacs-lisp
 (use-package yasnippet
   :ensure t
@@ -2061,7 +2158,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :hook ((python-base-mode yaml-mode) . indent-bars-mode))
 #+end_src
 
-** JUPYTER
+** Jupyter
 
 #+begin_src emacs-lisp
 (use-package jupyter
@@ -2093,7 +2190,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   )
 #+end_src
 
-** RAINBOW MODE
+** Rainbow mode
 
 #+begin_src emacs-lisp
 (use-package rainbow-delimiters
@@ -2370,14 +2467,22 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 (use-package git-gutter
   :ensure t
-  ;; :hook ((prog-mode . git-gutter-mode)
-  ;;        (markdown-mode . git-gutter-mode)
-  ;;        (conf-mode . git-gutter-mode))
-  :init (global-git-gutter-mode t)
   :config
-  (setq git-gutter:update-interval 1
-        git-gutter:ask-p nil)
-  )
+  (setq git-gutter:added-sign "+")
+  (setq git-gutter:deleted-sign "-")
+  (setq git-gutter:modified-sign "~")
+
+  (set-face-foreground 'git-gutter:added "green")
+  (set-face-foreground 'git-gutter:deleted "red")
+  (set-face-foreground 'git-gutter:modified "yellow")
+  (global-git-gutter-mode +1))
+
+(use-package git-gutter-fringe
+  :ensure t
+  :after git-gutter
+  :config
+  (setq-default fringes-outside-margins t)
+  (fringe-mode '(15 . 15)))
 #+end_src
 
 * CSV MODE
@@ -2389,7 +2494,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+end_src
 
-* NANO ELFEED
 
 * GPTEL
 #+begin_src emacs-lisp
@@ -2400,38 +2504,23 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq gptel-default-mode 'org-mode)
   (setq gptel-include-reasoning t)
   (setq gptel-include-reasoning 'buffer)
-  ;; (defvar azure
-  ;;   (gptel-make-openai-responses "Azure"
-  ;;     :host "https://emacs-resource.services.ai.azure.com/"
-  ;;     :endpoint "/api/projects/emacs"
-  ;;     :stream t
-  ;;     :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
-  ;;     :key azure-api)
-  ;;   )
 (defvar azure
     (gptel-make-openai "Azure"
       :host "emacs-resource.services.ai.azure.com"
       :protocol "https"
       :endpoint "/openai/v1/chat/completions"
       :stream t
-      :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
+      ;; :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
+      :models '((gpt-5.4-nano :capabilities (reasoning))
+          (DeepSeek-V3.2-Speciale :capabilities (reasoning)))
       :key azure-api))
-  
-  ;; (setq gptel-backend
-  ;;       (gptel-make-openai-responses
-  ;;           "Azure-Emacs-Agent"
-  ;;         :host "emacs-resource.services.ai.azure.com"
-  ;;         :protocol "https"
-  ;;         :endpoint "/api/projects/emacs/openai/v1/responses"
-  ;;         :key (lambda () (shell-command-to-string "az account get-access-token --resource https://ai.azure.com --query accessToken -o tsv | tr -d '\n'"))
-  ;;         :stream t
-  ;;         :models '(emacs)
-  ;;         :request-params '(:agent_reference (:name "emacs" :version "1" :type "agent_reference"))))
-  
   (setq gptel-backend azure)
   (setq gptel-model "gpt-5.4-nano")
   )
 #+end_src
+
+#+RESULTS:
+: [nil 27106 8101 801832 nil elpaca-process-queues nil nil 947000 nil]
 
 
 ** GPTEL AGENT
@@ -2766,6 +2855,7 @@ Preserves existing entries to avoid overwriting."
       "g a" '(gptel-add :wk "Add to Context")
       "g f" '(gptel-add-file :wk "Add file to Context")
       "g g" '(gptel-split :wk "Open Gptel")
+      "g c" '(gptel-context-remove-all :wk "Open Gptel")
       "g m" '(gptel-menu :wk "Open Transient Menu")
       )
     
@@ -2867,17 +2957,21 @@ Preserves existing entries to avoid overwriting."
     (leader-key
       "t" '(:ignore t :wk "Toggle")
       "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
+      "t h" '(open-lazygit :wk "Open Lazygit")
+      "t g" '(grease-here :wk "Open Grease here")
       "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-      "t t" '(visual-line-mode :wk "Toggle truncated lines")
       "t m" '(open-messages-buffer :wk "Toggle Message Buffer ")
       "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
-      "t g" '(open-lazygit :wk "Open Lazygit")
-      "t v" '(ghostel-split :wk "Toggle Vterm"))
+      "t p" '(open-lazygit :wk "Open Lazygit")
+      "t v" '(ghostel-split :wk "Toggle Vterm")
+      "t t" '(visual-line-mode :wk "Toggle truncated lines")
+      )
 
     (leader-key
       "w" '(:ignore t :wk "Windows")
       ;; Window splits
       "w c" '(evil-window-delete :wk "Close window")
+      "w C" '(delete-other-windows :wk "Close all windows")
       "w n" '(evil-window-new :wk "New window")
       "w s" '(evil-window-split :wk "Horizontal split window")
       "w v" '(evil-window-vsplit :wk "Vertical split window")
@@ -2886,12 +2980,7 @@ Preserves existing entries to avoid overwriting."
       "w j" '(evil-window-down :wk "Window Down")
       "w k" '(evil-window-up :wk "Window Up")
       "w l" '(evil-window-right :wk "Window Right")
-      "w w" '(evil-window-next :wk "Goto Next Window")
-      ;;alternate bindings
-      "<left>" '(evil-window-left :wk "Window Left")
-      "<down>" '(evil-window-down :wk "Window Down")
-      "<up>" '(evil-window-up :wk "Window Up")
-      "<right>" '(evil-window-right :wk "Window Right")
+      "w w" '(ace-window :wk "Switch Window")
       ;; Move Windows
       "w H" '(buf-move-left :wk "Buffer Move Left")
       "w J" '(buf-move-down :wk "Buffer Move Down")
@@ -2900,6 +2989,8 @@ Preserves existing entries to avoid overwriting."
       ;; New Window
       "w N" '(make-frame-command :wk "New Frame")
       )
+    
+    (leader-key "," '(ace-window :which-key "Switch Window"))
 
     (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
     
@@ -3043,3 +3134,5 @@ Neotree is a file tree viewer.  When you open neotree, it jumps to the current f
 https://github.com/emacs-vs/codemetrics
 https://github.com/rougier/nano-mu4e
 https://github.com/rougier/notebook-mode
+
+* TODO NANO ELFEED
