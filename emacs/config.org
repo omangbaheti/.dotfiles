@@ -1,4 +1,4 @@
- #+TITLE: Emacs Config
+#+TITLE: Emacs Config
 #+DESCRIPTION: Personal Config
 #+STARTUP: showeverything
 #+OPTIONS: toc:3
@@ -10,7 +10,6 @@
   - [[#theming][Theming]]
   - [[#load-evil-mode][Load Evil Mode]]
   - [[#scroll-on-jump][Scroll On Jump]]
-  - [[#casual][CASUAL]]
 - [[#closing-minibuffer][CLOSING MINIBUFFER]]
 - [[#buffer-move][BUFFER-MOVE]]
 - [[#posframe][POSFRAME]]
@@ -44,7 +43,7 @@
   - [[#org-appear][ORG Appear]]
   - [[#org-kanban][ORG KANBAN]]
 - [[#which-key][WHICH-KEY]]
-- [[#pretty-visuals][Pretty Visuals]]
+- [[#pretty-visuals][PRETTY VISUALS]]
   - [[#spacious-padding][Spacious Padding]]
   - [[#prettifying-text-to-icons][Prettifying text to icons]]
   - [[#svg-tag-mode][SVG Tag Mode]]
@@ -63,7 +62,7 @@
 - [[#filemanager][FILEMANAGER]]
   - [[#dirvish][DIRVISH]]
   - [[#grease][GREASE]]
-- [[#language-setup][Language Setup]]
+- [[#language-setup][LANGUAGE SETUP]]
   - [[#language-modes][Language Modes]]
   - [[#syntax-parsing---treesitter][Syntax Parsing - Treesitter]]
   - [[#syntax-checking---flycheck][Syntax Checking - Flycheck]]
@@ -80,8 +79,12 @@
   - [[#misc-writing-tools][Misc writing tools]]
 - [[#git][GIT]]
 - [[#csv-mode][CSV MODE]]
-- [[#gptel][GPTEL]]
+- [[#ai][AI]]
+  - [[#gptel][GPTEL]]
   - [[#gptel-agent][GPTEL AGENT]]
+  - [[#agent-shell][Agent Shell]]
+  - [[#mcp][MCP]]
+  - [[#minuet][Minuet]]
 - [[#nano-calendar][NANO CALENDAR]]
 - [[#direnv-mode][DIRENV MODE]]
 - [[#convert-pdfs][CONVERT PDFS]]
@@ -90,6 +93,7 @@
 - [[#general-keybindings][General Keybindings]]
   - [[#hydra][HYDRA]]
   - [[#transient][TRANSIENT]]
+  - [[#casual][CASUAL]]
 - [[#stuff-i-havent-used-in-a-while][Stuff I havent Used in a while]]
   - [[#deadgrep][DEADGREP]]
   - [[#zoxide][ZOXIDE]]
@@ -105,7 +109,7 @@
 #+begin_src emacs-lisp
 ;; (setq debug-on-error t)
 ;; why is emacs throwing a warning here
-(setq elpaca-core-date '(20251229))
+;; (setq elpaca-core-date '(20251229))
 
 (setq warning-minimum-level :error)
 (defvar elpaca-installer-version 0.11)
@@ -551,7 +555,7 @@
 #+begin_src emacs-lisp
 (use-package evil-nerd-commenter
   :ensure t
-)
+  )
 #+end_src
 
 
@@ -599,7 +603,7 @@
     :after evil
     :ensure t
     :config
-    (setq scroll-on-jump-duration 0.15
+    (setq scroll-on-jump-duration 0.25
           scroll-on-jump-smooth t
           scroll-on-jump-curve 'smooth-out
           scroll-on-jump-curve-power 4.0)
@@ -613,7 +617,6 @@
       (scroll-on-jump-advice-add evil-forward-paragraph)
       (scroll-on-jump-advice-add evil-backward-paragraph)
       (scroll-on-jump-advice-add evil-goto-mark)
-
       (scroll-on-jump-with-scroll-advice-add evil-goto-line)
       (scroll-on-jump-with-scroll-advice-add evil-scroll-down)
       (scroll-on-jump-with-scroll-advice-add evil-scroll-up)
@@ -623,16 +626,6 @@
       (scroll-on-jump-with-scroll-advice-add consult-org-heading)
 )
 #+end_src
-
-
-** TODO CASUAL
-
-#+begin_src emacs-lisp
-;; (use-package casual
-;;   :ensure t
-;;   :config)
-#+end_src
-
 
 
 * CLOSING MINIBUFFER
@@ -749,6 +742,7 @@ one, an error is signaled."
   :ensure t)
 #+end_src
 
+
 * ACE-WINDOW
 
 #+begin_src emacs-lisp
@@ -758,7 +752,7 @@ one, an error is signaled."
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   (ace-window-posframe-mode t)
   (aw-scope 'frame)
-  (aw-dispatch-always nil)
+  (aw-dispatch-always t)
   (aw-background t)
   (aw-minibuffer-flag t)
   :config
@@ -767,12 +761,28 @@ one, an error is signaled."
                       :weight 'bold
                       :foreground "#ECEFF4"
                       :background "#3B4252"
-                      :height 2.0))
+                      :height 2.0)
+  (setq aw-dispatch-alist
+        '((?0 aw-swap-window "Swap Windows")
+          (?M aw-move-window "Move Window")
+          (?m aw-swap-window "Swap Windows")
+          (?c aw-copy-window "Copy Window")
+          (?x aw-delete-window "Delete Window")
+          (?j aw-switch-buffer-in-window "Select Buffer")
+          (?n aw-flip-window)
+          (?u aw-switch-buffer-other-window "Switch Buffer Other Window")
+          (?v aw-split-window-vert "Split Vert Window")
+          (?b aw-split-window-horz "Split Horz Window")
+          (?o delete-other-windows "Delete Other Windows")
+          (?? aw-show-dispatch-help))))
+
+(defun ace-window-with-help ()
+  "Call ace-window with dispatch and help."
+  (interactive)
+  (let ((aw-dispatch-always t))
+    (aw-show-dispatch-help)
+    (ace-window current-prefix-arg)))
 #+end_src
-
-#+RESULTS:
-: [nil 27104 6670 15179 nil elpaca-process-queues nil nil 308000 nil]
-
 
 * FONTS
 Defining the fonts
@@ -797,6 +807,7 @@ Defining the fonts
 		    :font "JetBrainsMono Nerd Font"
 		    :height 110
 		    :weight 'medium)
+(set-fontset-font t 'emoji (font-spec :family "Noto Color Emoji") nil 'prepend)
 
 ;; Makes commented text and keywords  italics
 (set-face-attribute 'font-lock-comment-face nil
@@ -807,6 +818,17 @@ Defining the fonts
 (add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
 (setq-default line-spacing 0.12)
 
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package emojify
+  :ensure t
+  :config
+  (when (member "Noto Color Emoji" (font-family-list))
+    (set-fontset-font t 'symbol (font-spec :family "Noto Color Emoji") nil 'prepend))
+  (setq emojify-display-style 'unicode)
+  (setq emojify-emoji-styles '(unicode))
+  (global-emojify-mode 1))
 #+end_src
 
 
@@ -904,7 +926,7 @@ Defining the fonts
 #+begin_src emacs-lisp
 (use-package undo-fu
   :ensure t
-)
+  )
 #+end_src
 
 ** Helpful
@@ -933,7 +955,6 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 (setq bidi-inhibit-bpa t)
 
 (setq redisplay-skip-fontification-on-input t)
-
 
 (setq-default cursor-in-non-selected-windows nil)
 
@@ -1109,7 +1130,6 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
   :config ; add late to hook
   (org-modern-indent-mode 1)
   (add-hook 'org-mode-hook #'org-modern-indent-mode t))
-
 #+end_src
 
 
@@ -1169,9 +1189,6 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 	))
 #+end_src
 
-
-
-
 ** TODO ORG-SUPERTAG
 
 #+begin_src emacs-lisp
@@ -1215,7 +1232,6 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 #+begin_src emacs-lisp
 (use-package org-roam
   :ensure t
-  ;; :defer 2
   :custom
   (org-roam-directory (file-truename "~/Notes"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -1610,7 +1626,7 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 #+end_src
 
 
-* Pretty Visuals
+* PRETTY VISUALS
 ** Spacious Padding
 #+begin_src emacs-lisp
 (use-package spacious-padding
@@ -1789,6 +1805,7 @@ Nicer M-x menu
   (define-key vertico-map (kbd "C-<backspace>") #'vertico-directory-delete-word))
 #+end_src
 
+
 * MARGINALIA
 
 #+begin_src emacs-lisp
@@ -1805,6 +1822,7 @@ Nicer M-x menu
   )
 #+end_src
 
+
 * ORDERLESS
 
 #+begin_src emacs-lisp
@@ -1816,6 +1834,7 @@ Nicer M-x menu
   (setq completion-category-overrides 
         '((file (styles partial-completion orderless))))) 
 #+end_src
+
 
 * PRESCIENT
 
@@ -1833,6 +1852,7 @@ Enabling Frequency + Recency Sorting of options in vertico
   :config
   (vertico-prescient-mode))
 #+end_src
+
 
 * CONSULT
 #+begin_src emacs-lisp
@@ -1867,7 +1887,7 @@ Enabling Frequency + Recency Sorting of options in vertico
   ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
   ;; For some commands and buffer sources it is useful to configure the
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
-  (setq consult-buffer-sources '(consult--source-buffer))
+  ;; (setq consult-buffer-sources '(consult--source-buffer))
   (consult-customize
    consult-theme :preview-key '(:debounce 0.1 any)
    consult-ripgrep consult-git-grep consult-grep consult-man
@@ -1973,6 +1993,7 @@ Enabling Frequency + Recency Sorting of options in vertico
   :hook (ghostel-mode . evil-ghostel-mode))
 #+end_src
 
+
 * FILEMANAGER
 
 ** DIRVISH
@@ -1995,7 +2016,8 @@ Enabling Frequency + Recency Sorting of options in vertico
   )
 #+end_src
 
-* Language Setup
+
+* LANGUAGE SETUP
 ** Language Modes
 Language Modes that I need to install manually
 #+begin_src emacs-lisp
@@ -2028,7 +2050,9 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 (use-package flycheck
   :ensure t
   :init
-  (global-flycheck-mode))
+  (global-flycheck-mode)
+  :config
+  (setq flycheck-global-modes '(not org-mode)))
 
 (use-package flyover
   :ensure (:host github :repo "https://github.com/konrad1977/flyover")
@@ -2118,9 +2142,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq acm-enable-elisp t))
 #+end_src
 
-#+RESULTS:
-: t
-
 ** Yasnippet
 #+begin_src emacs-lisp
 (use-package yasnippet
@@ -2135,7 +2156,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 (use-package yasnippet-snippets
   :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
   :after yasnippet)
-
 #+end_src
 
 ** Indent Bars
@@ -2146,6 +2166,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :custom
   (indent-bars-no-descend-lists 'skip) ; prevent extra bars in nested lists + skip intermediate bars
   (indent-bars-treesit-support t)
+  (indent-bars-prefer-character t)
   (indent-bars-treesit-ignore-blank-lines-types '("module"))
   ;; Add other languages as needed; check the wiki
   (indent-bars-treesit-scope '((python function_definition class_definition for_statement
@@ -2155,7 +2176,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   ;;				      list list_comprehension
   ;;				      dictionary dictionary_comprehension
   ;;				      parenthesized_expression subscript)))
-  :hook ((python-base-mode yaml-mode) . indent-bars-mode))
+  :hook ((prog-mode) . indent-bars-mode))
 #+end_src
 
 ** Jupyter
@@ -2485,6 +2506,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (fringe-mode '(15 . 15)))
 #+end_src
 
+
 * CSV MODE
 #+begin_src emacs-lisp
 (use-package rainbow-csv
@@ -2495,16 +2517,16 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 
-* GPTEL
+* AI 
+** GPTEL
 #+begin_src emacs-lisp
 (use-package gptel
-  :ensure (:host github :repo "karthink/gptel" :branch main)
+  :ensure (:host github :repo "karthink/gptel" :branch "master" :depth nil)
   :init
   (setq gptel-log-level 'debug)
-  (setq gptel-default-mode 'org-mode)
   (setq gptel-include-reasoning t)
-  (setq gptel-include-reasoning 'buffer)
-(defvar azure
+  (setq gptel-max-tokens nil) ;; disable old param
+  (defvar azure
     (gptel-make-openai "Azure"
       :host "emacs-resource.services.ai.azure.com"
       :protocol "https"
@@ -2512,15 +2534,22 @@ Modern on-the-fly syntax checking extension for GNU Emacs
       :stream t
       ;; :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
       :models '((gpt-5.4-nano :capabilities (reasoning))
-          (DeepSeek-V3.2-Speciale :capabilities (reasoning)))
+		(DeepSeek-V3.2-Speciale :capabilities (reasoning)))
       :key azure-api))
-  (setq gptel-backend azure)
-  (setq gptel-model "gpt-5.4-nano")
+
+  (defvar azure-responses
+    (gptel-make-openai-responses "Azure-Responses"
+      :host "emacs-resource.services.ai.azure.com"
+      :endpoint "/openai/v1/responses"
+      :stream t
+      :models '((gpt-5.4-nano))
+      :key azure-api))
+  
+  (setq gptel-backend azure-responses)
+  (setq gptel-model 'gpt-5.4-nano)
   )
 #+end_src
 
-#+RESULTS:
-: [nil 27106 8101 801832 nil elpaca-process-queues nil nil 947000 nil]
 
 
 ** GPTEL AGENT
@@ -2542,8 +2571,29 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ;;   :hook (org-mode . ob-gptel-setup-completions))
 #+end_src
 
+** Agent Shell
+#+begin_src emacs-lisp
+;; (use-package agent-shell
+;;     :ensure t
+;; )
+#+end_src
+
+** MCP
+
+#+begin_src emacs-lisp
+
+#+end_src
+
+** Minuet
+
+#+begin_src emacs-lisp
+
+#+end_src
+
+
 
 * NANO CALENDAR
+
 
 * DIRENV MODE
 
@@ -2772,244 +2822,250 @@ Preserves existing entries to avoid overwriting."
         (process-send-string
          (get-buffer-process (current-buffer))
          "lazygit\n")))))
-
 #+end_src
+
 
 * General Keybindings
 
 #+BEGIN_SRC emacs-lisp
-  (use-package general
-    :ensure t
-    :after evil
-    :config
-    (general-evil-setup)
-    ;; set up 'SPC' as the global leader key
-    (general-create-definer leader-key
-      :states '(normal insert visual emacs)
-      :keymaps 'override
-      :prefix "SPC" ;; set leader
-      :global-prefix "M-SPC") ;; access leader in insert mode
-
-    (setq evil-want-keybinding nil)
-    
-    (general-define-key
-    :states 'normal
+(use-package general
+  :ensure t
+  :after evil
+  :config
+  (general-evil-setup)
+  ;; set up 'SPC' as the global leader key
+  (general-create-definer leader-key
+    :states '(normal insert visual emacs)
     :keymaps 'override
-    "zo" #'kirigami-open-fold
-    "zO" #'kirigami-open-fold-rec
-    "zc" #'kirigami-close-fold
-    "za" #'kirigami-toggle-fold
-    "zr" #'kirigami-open-folds
-    "zm" #'kirigami-close-folds)
+    :prefix "SPC" ;; set leader
+    :global-prefix "M-SPC") ;; access leader in insert mode
+
+  ;; (setq evil-want-keybinding nil)
+  
+  (general-define-key
+   :states 'normal
+   :keymaps 'override
+   "zo" #'kirigami-open-fold
+   "zO" #'kirigami-open-fold-rec
+   "zc" #'kirigami-close-fold
+   "za" #'kirigami-toggle-fold
+   "zr" #'kirigami-open-folds
+   "zm" #'kirigami-close-folds)
+  
+  (general-define-key
+   :states 'normal
+   :keymaps 'override
+   "<escape>" (lambda ()
+                (interactive)
+                (evil-ex-nohighlight)))
+  (leader-key
+    "SPC" '(consult-find-home :wk "Consult Find")
+    "." '(find-file :wk "Find file")
+    "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit Emacs Config")
+    "f n" '((lambda () (interactive) (find-file "~/.dotfiles/nix-config/nix.org")) :wk "Edit Nix Config")
+    "f r" '(consult-recent-file :wk "Find Recent Files")
+    "f /" '(consult-line :wk "Find Line")
+    "TAB TAB" '(evilnc-comment-or-uncomment-lines :wk "Comment lines"))
+
+  (leader-key
+    "a" '(:ignore t :wk "Agenda")
+    "a o" '(nano-agenda :wk "Open Agenda")
+    "a p" '(nano-agenda-popup :wk "Open Agenda popup")
+    )
+
+  (leader-key
+    "b" '(:ignore t :wk "buffer/bookmarks")
+    "b b" '(consult-buffer :wk "Switch buffer")
+    "b i" '(ibuffer :wk "Ibuffer")
+    "b k" '(kill-buffer :wk "Kill buffer")
+    "b n" '(next-buffer :wk "Next buffer")
+    "b p" '(previous-buffer :wk "Previous buffer")
+    "b r" '(revert-buffer :wk "Reload buffer")
+    "b j" '(bookmark-jump :wk "Jump to Bookmark")
+    "b s" '(bookmark-set :wk "Set Bookmark")
+    )
+
+  (leader-key
+    "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring")
+    )
+
+  (leader-key
+    "e" '(:ignore t :wk "Evaluate")
+    "e b" '(eval-buffer :wk "Evaluate the elisp in buffer")
+    "e d" '(eval-defun :wk "Evaluate defun containing or after point")
+    "e e" '(eval-expression :wk "Evaluate elisp expression")
+    "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
+    "e r" '(eval-region :wk "Evaluate elisp in region")
+    "e s" '(eshell :which-key "Eshell")
+    )
+
+  
+  (leader-key
+    "g" '(:ignore t :wk "GPTEL")
+    "g a" '(gptel-add :wk "Add to Context")
+    "g c" '(gptel-context-remove-all :wk "Open Gptel")
+    "g f" '(gptel-add-file :wk "Add file to Context")
+    "g g" '(gptel-split :wk "Open Gptel")
+    "g m" '(gptel-menu :wk "Open Transient Menu")
+    "g r" '(gptel-rewrite :wk "Rewrite")
+    "g A" '(gptel--rewrite-accept    :wk "accept rewrite" :predicate '(bound-and-true-p gptel--rewrite-overlays) )
+    "g Q" '(gptel--rewrite-reject    :wk "reject rewrite")
+    "g R" '(gptel--rewrite-rewrite   :wk "reiterate rewrite")
+    "g D" '(gptel--rewrite-diff      :wk "diff rewrite")
+    "g E" '(gptel--rewrite-ediff     :wk "ediff rewrite"))
+
+  (leader-key
+    "m" '(:ignore t :wk "Org")
+    "m e" '(org-export-dispatch :wk "Org export dispatch")
+    "m i" '(org-toggle-item :wk "Org toggle item")
+    "m t" '(org-todo :wk "Org todo")
+    "m B" '(org-babel-tangle :wk "Org babel tangle")
+    "m T" '(org-todo-list :wk "Org todo list")
+    )
+
+  (leader-key
+    :states '(normal)
+    "m n" '(org-babel-next-src-block :wk "Next src block")
+    "m p" '(org-babel-previous-src-block :wk "Previous src block")
+    )
+
+  (leader-key
+    "m b" '(:ignore t :wk "Tables")
+    "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
+
+  (leader-key
+    "m d" '(:ignore t :wk "Date/deadline")
+    "m d t" '(org-time-stamp :wk "Org time stamp")
+    )
+
+  (leader-key
+    "m c" '(:ignore t :wk "Org Capture")
+    "m c s" '(org-roam-capture :wk "Org Capture")
+    )
+
+  (leader-key
+    :states '(normal visual)
+    "o" '(:ignore t :wk "More Org")
     
-    (general-define-key
-     :states 'normal
-     :keymaps 'override
-     "<escape>" (lambda ()
-                  (interactive)
-                  (evil-ex-nohighlight)))
-    (leader-key
-      "SPC" '(consult-find-home :wk "Consult Find")
-      "." '(find-file :wk "Find file")
-      "f c" '((lambda () (interactive) (find-file "~/.dotfiles/emacs/config.org")) :wk "Edit Emacs Config")
-      "f n" '((lambda () (interactive) (find-file "~/.dotfiles/nix-config/nix.org")) :wk "Edit Nix Config")
-      "f r" '(consult-recent-file :wk "Find Recent Files")
-      "f /" '(consult-line :wk "Find Line")
-      "TAB TAB" '(evilnc-comment-or-uncomment-lines :wk "Comment lines"))
-
-    (leader-key
-      "a" '(:ignore t :wk "Agenda")
-      "a o" '(nano-agenda :wk "Open Agenda")
-      "a p" '(nano-agenda-popup :wk "Open Agenda popup")
-      )
-
-    (leader-key
-      "b" '(:ignore t :wk "buffer/bookmarks")
-      "b b" '(consult-buffer :wk "Switch buffer")
-      "b i" '(ibuffer :wk "Ibuffer")
-      "b k" '(kill-buffer :wk "Kill buffer")
-      "b n" '(next-buffer :wk "Next buffer")
-      "b p" '(previous-buffer :wk "Previous buffer")
-      "b r" '(revert-buffer :wk "Reload buffer")
-      "b j" '(bookmark-jump :wk "Jump to Bookmark")
-      "b s" '(bookmark-set :wk "Set Bookmark")
-      )
-
-    (leader-key
-      "k" '(consult-yank-from-kill-ring :wk "Yank from Kill Ring")
-      )
-
-    (leader-key
-      "e" '(:ignore t :wk "Evaluate")
-      "e b" '(eval-buffer :wk "Evaluate the elisp in buffer")
-      "e d" '(eval-defun :wk "Evaluate defun containing or after point")
-      "e e" '(eval-expression :wk "Evaluate elisp expression")
-      "e l" '(eval-last-sexp :wk "Evaluate elisp expressions before point")
-      "e r" '(eval-region :wk "Evaluate elisp in region")
-      "e s" '(eshell :which-key "Eshell")
-      )
-
+    "o j" '(consult-org-heading :wk "Org Jump")   
     
-    (leader-key
-      "g" '(:ignore t :wk "GPTEL")
-      "g a" '(gptel-add :wk "Add to Context")
-      "g f" '(gptel-add-file :wk "Add file to Context")
-      "g g" '(gptel-split :wk "Open Gptel")
-      "g c" '(gptel-context-remove-all :wk "Open Gptel")
-      "g m" '(gptel-menu :wk "Open Transient Menu")
-      )
+    "o t" '(:ignore t :wk "Transclusion")
+    "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
+    "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
+    "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
+    "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
+
+    "o r" '(:ignore t :wk "Org Roam")
+    "o r i" '(org-roam-node-insert :wk "Link Node")
+    "o r f" '(consult-org-roam-find-by-title :wk "Find Node")
+    "o r s" '(org-roam-buffer-toggle-and-focus :wk "Show Backlink")
+    "o r t" '(org-roam-tag-node-insert :wk "Roam Tag")
+    "o r b" '(consult-org-roam-backlinks :wk "Backlinks")
+    "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
+    "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
     
-    (leader-key
-      "m" '(:ignore t :wk "Org")
-      "m e" '(org-export-dispatch :wk "Org export dispatch")
-      "m i" '(org-toggle-item :wk "Org toggle item")
-      "m t" '(org-todo :wk "Org todo")
-      "m B" '(org-babel-tangle :wk "Org babel tangle")
-      "m T" '(org-todo-list :wk "Org todo list")
-      )
-
-    (leader-key
-      :states '(normal)
-      "m n" '(org-babel-next-src-block :wk "Next src block")
-      "m p" '(org-babel-previous-src-block :wk "Previous src block")
-      )
-
-    (leader-key
-      "m b" '(:ignore t :wk "Tables")
-      "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
-
-    (leader-key
-      "m d" '(:ignore t :wk "Date/deadline")
-      "m d t" '(org-time-stamp :wk "Org time stamp")
-      )
+    "o n" '(:ignore t :wk "Research Note")
+    "o n n" '(citar-create-note :wk "New Research Note")
+    "o n o" '(citar-open-note :wk "Open Note")
+    "o n s" '(citar-org-noter-open :wk "Noter Session")
+    "o n i" '(org-noter :wk "Noter Session Immediate")
+    "o n f" '(citar-org-roam-open-current-refs :wk "Open Paper")
     
-    (leader-key
-      "m c" '(:ignore t :wk "Org Capture")
-      "m c s" '(org-roam-capture :wk "Org Capture")
-      )
-    
-    (leader-key
-      :states '(normal visual)
-      "o" '(:ignore t :wk "More Org")
-      
-      "o j" '(consult-org-heading :wk "Org Jump")   
-      
-      "o t" '(:ignore t :wk "Transclusion")
-      "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
-      "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
-      "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
-      "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
+    "o s" '(:ignore t :wk "Insert Source Block Templates")
+    "o s r" '(tempo-template-jupyter-R :wk "Insert Jupyter R block")
+    "o s n" '(tempo-template-nix :wk "Insert Nix block")
+    "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
+    "o s p" '(tempo-template-python :wk "Insert Python block")
+    "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
 
-      "o r" '(:ignore t :wk "Org Roam")
-      "o r i" '(org-roam-node-insert :wk "Link Node")
-      "o r f" '(consult-org-roam-find-by-title :wk "Find Node")
-      "o r s" '(org-roam-buffer-toggle-and-focus :wk "Show Backlink")
-      "o r t" '(org-roam-tag-node-insert :wk "Roam Tag")
-      "o r b" '(consult-org-roam-backlinks :wk "Backlinks")
-      "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
-      "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
-      
-      "o n" '(:ignore t :wk "Research Note")
-      "o n n" '(citar-create-note :wk "New Research Note")
-      "o n o" '(citar-open-note :wk "Open Note")
-      "o n s" '(citar-org-noter-open :wk "Noter Session")
-      "o n i" '(org-noter :wk "Noter Session Immediate")
-      "o n f" '(citar-org-roam-open-current-refs :wk "Open Paper")
-      
-      "o s" '(:ignore t :wk "Insert Source Block Templates")
-      "o s r" '(tempo-template-jupyter-R :wk "Insert Jupyter R block")
-      "o s n" '(tempo-template-nix :wk "Insert Nix block")
-      "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
-      "o s p" '(tempo-template-python :wk "Insert Python block")
-      "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
+    "o o" '(:ignore t :wk "Insert Source Block Templates")
+    "o o e" '(olivetti-expand :wk "Expand")
+    "o o s" '(olivetti-shrink :wk "Shrink")
+    "o o o" '(olivetti-mode :wk "Toggle Olivetti")
 
-      "o o" '(:ignore t :wk "Insert Source Block Templates")
-      "o o e" '(olivetti-expand :wk "Expand")
-      "o o s" '(olivetti-shrink :wk "Shrink")
-      "o o o" '(olivetti-mode :wk "Toggle Olivetti")
+    "o c" '(:ignore t :wk "Org Capture")
+    "o c s" '(org-roam-capture :wk "Org Capture"))  
 
-      "o c" '(:ignore t :wk "Org Capture")
-      "o c s" '(org-roam-capture :wk "Org Capture"))  
-    
-    (leader-key
+  (leader-key
     "fu" '(sudo-edit-find-file :wk "Sudo find file")
     "fU" '(sudo-edit :wk "Sudo Edit File"))
-    
-    (leader-key
-      "p" '(projectile-command-map :wk "Projectile"))
-    
-    (leader-key
-      "h" '(:ignore t :wk "Help")
-      "h p" '(describe-package :wk "Describe Package")
-      "h f" '(helpful-function :wk "Describe function")
-      "h v" '(helpful-variable :wk "Describe Variable")
-      "h k" '(helpful-key :wk "Describe Key")
-      "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
-      "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
 
-    (leader-key
-      "j" '(:ignore t :wk "Jupyter / Org Babel")
-      "j c" '(org-ctrl-c-ctrl-c :wk "Execute Cell")
-      "j k" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
-      "j j" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
-      "j h" '(consult-org-heading :wk "Describe Key"))
+  (leader-key
+    "p" '(projectile-command-map :wk "Projectile"))
 
-    (leader-key
-      "t" '(:ignore t :wk "Toggle")
-      "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
-      "t h" '(open-lazygit :wk "Open Lazygit")
-      "t g" '(grease-here :wk "Open Grease here")
-      "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-      "t m" '(open-messages-buffer :wk "Toggle Message Buffer ")
-      "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
-      "t p" '(open-lazygit :wk "Open Lazygit")
-      "t v" '(ghostel-split :wk "Toggle Vterm")
-      "t t" '(visual-line-mode :wk "Toggle truncated lines")
-      )
+  (leader-key
+    "h" '(:ignore t :wk "Help")
+    "h p" '(describe-package :wk "Describe Package")
+    "h f" '(helpful-function :wk "Describe function")
+    "h v" '(helpful-variable :wk "Describe Variable")
+    "h k" '(helpful-key :wk "Describe Key")
+    "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
+    "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
 
-    (leader-key
-      "w" '(:ignore t :wk "Windows")
-      ;; Window splits
-      "w c" '(evil-window-delete :wk "Close window")
-      "w C" '(delete-other-windows :wk "Close all windows")
-      "w n" '(evil-window-new :wk "New window")
-      "w s" '(evil-window-split :wk "Horizontal split window")
-      "w v" '(evil-window-vsplit :wk "Vertical split window")
-      ;; Window motions
-      "w h" '(evil-window-left :wk "Window Left")
-      "w j" '(evil-window-down :wk "Window Down")
-      "w k" '(evil-window-up :wk "Window Up")
-      "w l" '(evil-window-right :wk "Window Right")
-      "w w" '(ace-window :wk "Switch Window")
-      ;; Move Windows
-      "w H" '(buf-move-left :wk "Buffer Move Left")
-      "w J" '(buf-move-down :wk "Buffer Move Down")
-      "w K" '(buf-move-up :wk "Buffer Move Up")
-      "w L" '(buf-move-right :wk "Buffer Move Right")
-      ;; New Window
-      "w N" '(make-frame-command :wk "New Frame")
-      )
-    
-    (leader-key "," '(ace-window :which-key "Switch Window"))
+  (leader-key
+    "j" '(:ignore t :wk "Jupyter / Org Babel")
+    "j c" '(org-ctrl-c-ctrl-c :wk "Execute Cell")
+    "j k" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
+    "j j" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
+    "j h" '(consult-org-heading :wk "Describe Key"))
 
-    (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
-    
-    (leader-key
-      "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
-    
-(general-define-key
- :states 'normal
- :keymaps 'override
- "zo" #'kirigami-open-fold
- "zO" #'kirigami-open-fold-rec
- "zc" #'kirigami-close-fold
- "za" #'kirigami-toggle-fold
- "zr" #'kirigami-open-folds
- "zm" #'kirigami-close-folds))
+  (leader-key
+    "t" '(:ignore t :wk "Toggle")
+    "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
+    "t h" '(open-lazygit :wk "Open Lazygit")
+    "t g" '(grease-here :wk "Open Grease here")
+    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+    "t m" '(open-messages-buffer :wk "Toggle Message Buffer ")
+    "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
+    "t p" '(open-lazygit :wk "Open Lazygit")
+    "t v" '(ghostel-split :wk "Toggle Vterm")
+    "t t" '(visual-line-mode :wk "Toggle truncated lines")
+    )
+
+  (leader-key
+    "w" '(:ignore t :wk "Windows")
+    ;; Window splits
+    "w c" '(evil-window-delete :wk "Close window")
+    "w C" '(delete-other-windows :wk "Close all windows")
+    "w n" '(evil-window-new :wk "New window")
+    "w s" '(evil-window-split :wk "Horizontal split window")
+    "w v" '(evil-window-vsplit :wk "Vertical split window")
+    ;; Window motions
+    ;; "w h" '(evil-window-left :wk "Window Left")
+    ;; "w j" '(evil-window-down :wk "Window Down")
+    ;; "w k" '(evil-window-up :wk "Window Up")
+    ;; "w l" '(evil-window-right :wk "Window Right")
+    "w w" '(ace-window :wk "Switch Window")
+    ;; Move Windows
+    "w H" '(buf-move-left :wk "Buffer Move Left")
+    "w J" '(buf-move-down :wk "Buffer Move Down")
+    "w K" '(buf-move-up :wk "Buffer Move Up")
+    "w L" '(buf-move-right :wk "Buffer Move Right")
+    ;; New Window
+    "w N" '(make-frame-command :wk "New Frame")
+    )
+
+  (leader-key "," '(ace-window :which-key "Switch Window"))
+  (leader-key "<" '(ace-window-with-help :which-key "Switch Window"))
+  (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
+
+  (leader-key
+    "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
+
+  (general-define-key
+   :states 'normal
+   :keymaps 'override
+   "zo" #'kirigami-open-fold
+   "zO" #'kirigami-open-fold-rec
+   "zc" #'kirigami-close-fold
+   "za" #'kirigami-toggle-fold
+   "zr" #'kirigami-open-folds
+   "zm" #'kirigami-close-folds))
 
 (global-set-key (kbd "C-x h") 'previous-buffer)
 (global-set-key (kbd "C-x l") 'next-buffer)
 #+END_SRC
+
 
 ** HYDRA
 #+begin_src emacs-lisp
@@ -3018,7 +3074,7 @@ Preserves existing entries to avoid overwriting."
   :after general
   :config
   (defhydra hydra-window-resize (:hint nil :timeout 5)
-"
+    "
 Resize window   
 _=_: grow horiz    _-_: shrink horiz
 _[_: grow vert     _]_: shrink vert
@@ -3042,7 +3098,7 @@ _q_: quit
     ("q" nil "quit"))
 
   (defhydra hydra-org-babel/navigate (:hint nil :timeout 5)
-"
+    "
 Org Babel Naviagtionwindow
 _j_: next block    _k_: previous block 
 "
@@ -3050,8 +3106,11 @@ _j_: next block    _k_: previous block
     ("k" org-previous-block)
     ("q" nil "quit"))
 
-)
+  )
 #+end_src
+
+#+RESULTS:
+: [nil 27108 10658 356968 nil elpaca-process-queues nil nil 755000 nil]
 
 ** TRANSIENT
 Its a built-in emacs package, its here only so that elpaca can manage it instead of emacs package manager
@@ -3059,6 +3118,16 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
 (use-package transient
   :ensure t)
 #+end_src
+
+
+** CASUAL
+
+#+begin_src emacs-lisp
+(use-package casual
+  :ensure t
+  :config)
+#+end_src
+
 
 * Stuff I havent Used in a while
 
@@ -3133,6 +3202,4 @@ Neotree is a file tree viewer.  When you open neotree, it jumps to the current f
 * TODO
 https://github.com/emacs-vs/codemetrics
 https://github.com/rougier/nano-mu4e
-https://github.com/rougier/notebook-mode
-
 * TODO NANO ELFEED
