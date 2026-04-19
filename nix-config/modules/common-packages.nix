@@ -97,6 +97,9 @@ in
       #misc    
       home-manager
       languagetool
+
+      claude-code
+      opencode
       
       #misc     
       firefox

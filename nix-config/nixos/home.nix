@@ -141,24 +141,26 @@
     };
   
 
-    services.emacs = {
-      enable = true;
-    };
+  services.emacs = {
+    enable = true;
+  };
   
-    programs.emacs = {
-      enable = true;
-      package = pkgs.emacs-pgtk;
-      extraPackages = (
-        epkgs: with pkgs.emacsPackages;   
-          [ 
-            vterm 
-            zmq 
-            treesit-auto
-            treesit-grammars.with-all-grammars
-            pdf-tools
-          ]
-      );
-    };
+  programs.emacs = {
+    enable = true;
+    package = pkgs.emacs-pgtk;
+  extraConfig = builtins.readFile /home/nixos/.dotfiles/emacs/init.el;
+    extraPackages = (
+      epkgs: with pkgs.emacsPackages;   
+        [ 
+          vterm 
+          zmq 
+          treesit-auto
+          treesit-grammars.with-all-grammars
+          pdf-tools
+        ]
+    
+    );
+  };
   gtk = 
     {
       enable = true;
