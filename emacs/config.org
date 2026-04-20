@@ -21,11 +21,12 @@
   - [[#display-line-numbers-and-truncated-lines][Display Line Numbers and Truncated Lines]]
   - [[#backups][Backups]]
   - [[#minibuffer-escape][Minibuffer escape]]
-  - [[#gnupg][GNUPG]]
+  - [[#api-keys][API Keys]]
   - [[#electric][Electric]]
   - [[#undo-fu][UNDO-FU]]
   - [[#helpful][Helpful]]
   - [[#zooming-inout][Zooming In/Out]]
+  - [[#shell-inherit-params][Shell inherit params]]
   - [[#minor-optimisations][Minor Optimisations]]
 - [[#org-mode][ORG MODE]]
   - [[#evil-org][EVIL ORG]]
@@ -42,6 +43,7 @@
   - [[#ansi-support][ANSI SUPPORT]]
   - [[#org-appear][ORG Appear]]
   - [[#org-kanban][ORG KANBAN]]
+- [[#markdown][MARKDOWN]]
 - [[#which-key][WHICH-KEY]]
 - [[#pretty-visuals][PRETTY VISUALS]]
   - [[#spacious-padding][Spacious Padding]]
@@ -171,11 +173,13 @@
 ** Benchmarking
 
 #+begin_src emacs-lisp
-(use-package benchmark-init
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+;; (use-package benchmark-init
+;;   :ensure t
+;;   :config
+;;   ;; To disable collection of benchmark data after init is done.
+;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
+;; (setq use-package-compute-statistics t)
 #+end_src
 
 
@@ -555,6 +559,10 @@
 #+begin_src emacs-lisp
 (use-package evil-nerd-commenter
   :ensure t
+  :commands (evilnc-comment-or-uncomment-lines
+             evilnc-comment-operator
+             evilnc-inner-comment
+             evilnc-outer-commenter)
   )
 #+end_src
 
@@ -576,6 +584,7 @@
 #+begin_src emacs-lisp
 (use-package flash
   :ensure (:host github :repo "Prgebish/flash")
+  :defer t
   :commands (flash-jump flash-jump-continue
              flash-treesitter)
   :bind ("s-j" . flash-jump)
@@ -591,9 +600,6 @@
   (require 'flash-isearch)
   (flash-isearch-mode 1))
 #+end_src
-
-#+RESULTS:
-: [nil 27103 56653 114903 nil elpaca-process-queues nil nil 451000 nil]
 
 
 ** Scroll On Jump
@@ -739,7 +745,8 @@ one, an error is signaled."
 * POSFRAME
 #+begin_src emacs-lisp
 (use-package posframe
-  :ensure t)
+  :ensure t
+  )
 #+end_src
 
 
@@ -752,7 +759,7 @@ one, an error is signaled."
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   (ace-window-posframe-mode t)
   (aw-scope 'frame)
-  (aw-dispatch-always t)
+  (aw-dispatch-always nil)
   (aw-background t)
   (aw-minibuffer-flag t)
   :config
@@ -783,6 +790,7 @@ one, an error is signaled."
     (aw-show-dispatch-help)
     (ace-window current-prefix-arg)))
 #+end_src
+
 
 * FONTS
 Defining the fonts
@@ -821,14 +829,14 @@ Defining the fonts
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package emojify
-  :ensure t
-  :config
-  (when (member "Noto Color Emoji" (font-family-list))
-    (set-fontset-font t 'symbol (font-spec :family "Noto Color Emoji") nil 'prepend))
-  (setq emojify-display-style 'unicode)
-  (setq emojify-emoji-styles '(unicode))
-  (global-emojify-mode 1))
+;; (use-package emojify
+;;   :ensure t
+;;   :config
+;;   (when (member "Noto Color Emoji" (font-family-list))
+;;     (set-fontset-font t 'symbol (font-spec :family "Noto Color Emoji") nil 'prepend))
+;;   (setq emojify-display-style 'unicode)
+;;   (setq emojify-emoji-styles '(unicode))
+;;   (global-emojify-mode 1))
 #+end_src
 
 
@@ -890,22 +898,10 @@ Defining the fonts
 (global-set-key [escape] 'keyboard-escape-quit)
 #+end_src
 
-** GNUPG
+** API Keys
 #+begin_src emacs-lisp
 ;;this is going to bite me in the ass someday isnt it
 (load "~/.secrets/authinfo.el")
-#+end_src
-
-#+begin_src emacs-lisp
-(require 'epg)
-(setq epg-debug t)
-(setq plstore-encrypt-to "omangbaheti@pm.me")
-(use-package pinentry
-  :ensure t
-  :init
-  (setq epg-pinentry-mode 'loopback)
-  :config
-  (pinentry-start))
 #+end_src
 
 ** Electric
@@ -933,7 +929,8 @@ Defining the fonts
 
 #+begin_src emacs-lisp
 (use-package helpful
-  :ensure t)
+  :ensure t
+  :commands (helpful-callable helpful-variable helpful-key helpful-command))
 #+end_src
 
 ** Zooming In/Out
@@ -946,6 +943,11 @@ Using Ctrl plus =/- for zooming in and out. Also ctrl plus scroll wheel
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 #+end_src
 
+** Shell inherit params
+
+#+begin_src emacs-lisp
+(setq shell-command-switch "-ic")
+#+end_src
 
 ** Minor Optimisations
 https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
@@ -981,6 +983,8 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 
 (use-package org
   :ensure nil
+  :mode ("\\.org\\'" . org-mode)
+  :commands (org-agenda org-capture org-store-link)
   :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
   (setq org-startup-folded t)              
@@ -1013,6 +1017,7 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 #+begin_src emacs-lisp
 (use-package toc-org
   :ensure t
+  :hook (org-mode . toc-org-mode)
   :commands toc-org-enable
   :init (add-hook 'org-mode-hook 'toc-org-enable))
 #+end_src
@@ -1127,6 +1132,7 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 
 (use-package org-modern-indent
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
+  :hook (org-mode . org-modern-indent-mode)
   :config ; add late to hook
   (org-modern-indent-mode 1)
   (add-hook 'org-mode-hook #'org-modern-indent-mode t))
@@ -1232,15 +1238,16 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 #+begin_src emacs-lisp
 (use-package org-roam
   :ensure t
+  ;; :defer 5
+  :commands
+  (org-roam-buffer-toggle
+   org-roam-node-find
+   org-roam-graph
+   org-roam-node-insert
+   org-roam-capture
+   org-roam-dailies-capture-today)
   :custom
   (org-roam-directory (file-truename "~/Notes"))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n g" . org-roam-graph)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n c" . org-roam-capture)
-         ;; Dailies
-         ("C-c n j" . org-roam-dailies-capture-today))
   :config
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
@@ -1406,13 +1413,13 @@ DEADLINE: %^t
   ("C-c n r" . consult-org-roam-search))
 
 (defun consult-org-roam-find-by-title ()
-  "Find an Org Roam node by searching titles only.
-This gives preference to exact title matches by temporarily excluding
-tags from the candidate string presented to the completion framework."
+  "Find an Org Roam node by searching titles only."
   (interactive)
+  (unless (bound-and-true-p org-roam-db-autosync-mode)
+    (require 'org-roam)
+    (org-roam-db-autosync-mode 1))
   (let ((org-roam-node-display-template "${title}"))
     (org-roam-node-visit (consult-org-roam-node-read))))
-
 #+end_src
 
 *** ORG-ROAM-TAGS
@@ -1528,8 +1535,7 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 
 #+begin_src emacs-lisp
 (use-package org-roam-ui
-  :ensure
-  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :ensure (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
   :after org-roam
   ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
   ;;         a hookable mode anymore, you're advised to pick something yourself
@@ -1590,18 +1596,29 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 ** ORG KANBAN
 
 #+begin_src emacs-lisp
-(use-package org-kanban
-  :ensure t
-  :after org
-  :commands (org-kanban/initialize
-             org-kanban/initialize-at-end
-             org-kanban/shift)
-  :config
-  ;; Optional: Set mirrored to nil if you want the board the other way around
-  (setq org-kanban/mirrored nil)
-  )
+;; (use-package org-kanban
+;;   :ensure t
+;;   :after org
+;;   :commands (org-kanban/initialize
+;;              org-kanban/initialize-at-end
+;;              org-kanban/shift)
+;;   :config
+;;   ;; Optional: Set mirrored to nil if you want the board the other way around
+;;   (setq org-kanban/mirrored nil)
+;;   )
 #+end_src
 
+
+* MARKDOWN
+#+begin_src emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :hook (markdown-mode . (lambda () (setq markdown-hide-markup t)))
+  :init (setq markdown-command "multimarkdown")
+  :bind (:map markdown-mode-map
+         ("C-c C-e" . markdown-do)))
+#+end_src
 
 * WHICH-KEY
 
@@ -1751,9 +1768,6 @@ Package to highlight when switching buffer
   (setq winpulse-duration 0.15)
   )
 #+end_src
-
-#+RESULTS:
-: [nil 27104 5403 439827 nil elpaca-process-queues nil nil 637000 nil]
 
 ** Nerd Icons  
 #+begin_src emacs-lisp
@@ -2024,6 +2038,7 @@ Language Modes that I need to install manually
 ;; Nix integration
 (use-package nix-ts-mode
   :ensure t
+  :mode "\\.nix\\'"
 )
 
 (use-package ess
@@ -2047,12 +2062,21 @@ Language Modes that I need to install manually
 Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
+;; (use-package flycheck
+;;   :ensure t
+;;   :init
+;;   (global-flycheck-mode)
+;;   :config
+;;   (setq flycheck-global-modes '(not org-mode))
+;;   (setq-default flycheck-disabled-checkers
+;;                 (append flycheck-disabled-checkers '(proselint)))
+;;   )
+
 (use-package flycheck
   :ensure t
-  :init
-  (global-flycheck-mode)
-  :config
-  (setq flycheck-global-modes '(not org-mode)))
+  :hook ((prog-mode . flycheck-mode)
+         (sh-mode . flycheck-mode)
+         (yaml-mode . flycheck-mode)))
 
 (use-package flyover
   :ensure (:host github :repo "https://github.com/konrad1977/flyover")
@@ -2096,36 +2120,46 @@ Modern on-the-fly syntax checking extension for GNU Emacs
                        :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  :defer 1
-  :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
+  ;; :defer 1
+  ;; :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
+  :hook ((python-mode . lsp-bridge-mode)
+         (java-mode . lsp-bridge-mode)
+         (js-mode . lsp-bridge-mode)
+         (typescript-mode . lsp-bridge-mode)
+         (org-src-mode . lsp-bridge-mode)
+         (LaTeX-mode . lsp-bridge-mode))
   :init
   (setq lsp-bridge-user-multiserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
   (setq lsp-bridge-user-langserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
   ;; ;; java stuff
-  (require 'lsp-bridge-jdtls)
+
+  (add-hook 'java-mode-hook
+            (lambda ()
+              (require 'lsp-bridge-jdtls nil t)))
+  ;; (require 'lsp-bridge-jdtls)
   (setq lsp-bridge-jdtls-jvm-args
-      (list (concat "-javaagent:" (getenv "LOMBOK_JAR"))))
+	(list (concat "-javaagent:" (getenv "LOMBOK_JAR"))))
   (setq lsp-bridge-enable-auto-import t)
   (setq lsp-bridge-enable-diagnostics nil 
-        lsp-bridge-enable-signature-help nil
-        lsp-bridge-enable-hover-diagnostic nil
-        lsp-bridge-enable-auto-format-code nil
-        lsp-bridge-enable-completion-in-minibuffer nil
-        lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
-        lsp-bridge-use-popup t
-        lsp-bridge-python-lsp-server "basedpyright"
+	lsp-bridge-enable-signature-help nil
+	lsp-bridge-enable-hover-diagnostic nil
+	lsp-bridge-enable-auto-format-code nil
+	lsp-bridge-enable-completion-in-minibuffer nil
+	lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
+	lsp-bridge-use-popup t
+	lsp-bridge-python-lsp-server "basedpyright"
 	lsp-bridge-nix-lsp-server "nil"
-        lsp-bridge-csharp-lsp-server "csharp-ls"
-        )
+	lsp-bridge-csharp-lsp-server "csharp-ls"
+	)
   ;; (setq lsp-bridge-enable-debug t) 
   ;; (setq lsp-bridge-log-level 'debug)
   (setq acm-enable-jupyter t
-        acm-enable-yas t
+	acm-enable-yas t
 	acm-enable-org-roam t
-        acm-enable-elisp t
-        )
+	acm-enable-elisp t
+	)
   :config
   ;; (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
@@ -2135,7 +2169,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode))
   (add-to-list 'org-src-lang-modes '("nix" . nix))
-)
+  )
 
 (with-eval-after-load 'lsp-bridge
   (require 'acm-backend-elisp)
@@ -2146,7 +2180,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 (use-package yasnippet
   :ensure t
-  :defer 4
   :config
   (yas-global-mode 1)
   )
@@ -2184,22 +2217,11 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 (use-package jupyter
   :ensure t
+  :defer t
   :init
   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
-  (with-eval-after-load 'org
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp . t)
-       (python . t)
-       (shell . t)
-       (jupyter . t)
-       (R . t)
-       )
-     )
-    )
-  (require 'ob-jupyter)
-  (org-babel-jupyter-aliases-from-kernelspecs)
+  :config
   (setq org-confirm-babel-evaluate nil
         org-src-fontify-natively t
         org-src-tab-acts-natively t
@@ -2207,8 +2229,18 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq org-babel-default-header-args:jupyter-R '((:session . "R")
                                                   (:kernel . "ir")
                                                   (:exports . "both")
-                                                  (:results . "output")))
-  )
+                                                  (:results . "output"))))
+
+(with-eval-after-load 'org
+  (with-eval-after-load 'jupyter
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (python . t)
+       (shell . t)
+       (jupyter . t)
+       (R . t)))
+    (org-babel-jupyter-aliases-from-kernelspecs)))
 #+end_src
 
 ** Rainbow mode
@@ -2246,8 +2278,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (outline-indent-ellipsis " ..."))
 #+end_src
 
-
-
 * PROJECTILE
 [[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.
  
@@ -2257,7 +2287,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :config
   (projectile-mode 1))
 #+end_src
-
 
 * DASHBOARD
 
@@ -2275,10 +2304,11 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq dashboard-image-banner-max-height 200)
   (setq dashboard-image-banner-max-width 200)
   (setq dashboard-projects-backend 'projectile)
+  (setq dashboard-footer-messages '(""))
   (setq dashboard-center-content t) ;; set to 't' for centered content
   (setq dashboard-items '((recents . 5)
-                          (agenda . 5 )
-                          (projects . 3)
+                          (agenda . 5)
+                          ;; (projects . 3)
                           ))
   
   :custom
@@ -2287,7 +2317,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :config
   (dashboard-setup-startup-hook))
 #+end_src
-
 
 * LATEX
 
@@ -2488,15 +2517,16 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 (use-package git-gutter
   :ensure t
+  :hook ((prog-mode text-mode conf-mode) . git-gutter-mode)
   :config
   (setq git-gutter:added-sign "+")
   (setq git-gutter:deleted-sign "-")
   (setq git-gutter:modified-sign "~")
-
   (set-face-foreground 'git-gutter:added "green")
   (set-face-foreground 'git-gutter:deleted "red")
   (set-face-foreground 'git-gutter:modified "yellow")
-  (global-git-gutter-mode +1))
+  ;; (global-git-gutter-mode +1)
+  )
 
 (use-package git-gutter-fringe
   :ensure t
@@ -2520,21 +2550,53 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 * AI 
 ** GPTEL
 #+begin_src emacs-lisp
+;; (use-package gptel
+;;   :ensure (:host github :repo "karthink/gptel" :branch "master" :depth nil)
+;;   :defer t
+;;   :init
+;;   (setq gptel-log-level 'debug)
+;;   (setq gptel-include-reasoning t)
+;;   (setq gptel-max-tokens nil) ;; disable old param
+;;   (defvar azure
+;;     (gptel-make-openai "Azure"
+;;       :host "emacs-resource.services.ai.azure.com"
+;;       :protocol "https"
+;;       :endpoint "/openai/v1/chat/completions"
+;;       :stream t
+;;       ;; :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
+;;       :models '((gpt-5.4-nano :capabilities (reasoning))
+;; 		(DeepSeek-V3.2-Speciale :capabilities (reasoning)))
+;;       :key azure-api))
+
+;;   (defvar azure-responses
+;;     (gptel-make-openai-responses "Azure-Responses"
+;;       :host "emacs-resource.services.ai.azure.com"
+;;       :endpoint "/openai/v1/responses"
+;;       :stream t
+;;       :models '((gpt-5.4-nano)
+;; 		(gpt-5.4-pro))
+;;       :key azure-api))
+;;   (setq gptel-backend azure-responses)
+;;   (setq gptel-model 'gpt-5.4-nano)
+;;   )
+
 (use-package gptel
   :ensure (:host github :repo "karthink/gptel" :branch "master" :depth nil)
-  :init
-  (setq gptel-log-level 'debug)
-  (setq gptel-include-reasoning t)
-  (setq gptel-max-tokens nil) ;; disable old param
+  :defer t
+  :commands (gptel gptel-send gptel-menu gptel-rewrite)
+  :config
+  (setq gptel-log-level 'debug
+        gptel-include-reasoning t
+        gptel-max-tokens nil)
+
   (defvar azure
     (gptel-make-openai "Azure"
       :host "emacs-resource.services.ai.azure.com"
       :protocol "https"
       :endpoint "/openai/v1/chat/completions"
       :stream t
-      ;; :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
       :models '((gpt-5.4-nano :capabilities (reasoning))
-		(DeepSeek-V3.2-Speciale :capabilities (reasoning)))
+                (DeepSeek-V3.2-Speciale :capabilities (reasoning)))
       :key azure-api))
 
   (defvar azure-responses
@@ -2542,21 +2604,30 @@ Modern on-the-fly syntax checking extension for GNU Emacs
       :host "emacs-resource.services.ai.azure.com"
       :endpoint "/openai/v1/responses"
       :stream t
-      :models '((gpt-5.4-nano))
+      :models '((gpt-5.4-nano)
+                (gpt-5.4-pro))
       :key azure-api))
-  
-  (setq gptel-backend azure-responses)
-  (setq gptel-model 'gpt-5.4-nano)
-  )
+
+  (defvar azure-responses-2
+    (gptel-make-openai-responses "Azure-Responses-2"
+      :host "emacs-setup.services.ai.azure.com/api/projects/emacs"
+      :endpoint "/openai/v1/responses"
+      :stream t
+      :models '((gpt-5.4-nano)
+                (gpt-5.4-pro))
+      :key azure-api-2))
+
+  (setq gptel-backend azure-responses
+        gptel-model 'gpt-5.4-nano))
+
 #+end_src
-
-
 
 ** GPTEL AGENT
 
 #+begin_src emacs-lisp
 (use-package gptel-agent
-  :ensure t 
+  :ensure (:host github :repo "karthink/gptel-agent" :branch "master" :depth nil)
+  :after gptel
   :config (gptel-agent-update))         
 #+end_src
 
@@ -2581,7 +2652,23 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ** MCP
 
 #+begin_src emacs-lisp
-
+(use-package mcp
+  :ensure t
+  :after gptel
+  ;; :hook (after-init . mcp-hub-start-all-server)
+  :custom
+  (mcp-hub-servers
+   `(("tavily" . (:command "npx"
+                           :args ("-y" "tavily-mcp")
+                           :env (:TAVILY_API_KEY ,tavily-api)))
+     ("exa" . (:url "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa,web_search_advanced_exa"
+               :env (:x-api-key ,exa-api)))
+     ))
+  :config
+  (setq-local jsonrpc-default-request-timeout 200)
+  :init
+  (require 'gptel-integrations)
+  )
 #+end_src
 
 ** Minuet
@@ -2592,7 +2679,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 
 
-* NANO CALENDAR
+* TODO NANO CALENDAR
 
 
 * DIRENV MODE
@@ -2822,7 +2909,16 @@ Preserves existing entries to avoid overwriting."
         (process-send-string
          (get-buffer-process (current-buffer))
          "lazygit\n")))))
+
+(defun shell-command-open-explorer()
+  "Run the shell alias `exp` using an interactive shell."
+  (interactive)
+  (let ((shell-command-switch "-ic"))
+    (shell-command "exp")))
 #+end_src
+
+#+RESULTS:
+: shell-command-open-explorer
 
 
 * General Keybindings
@@ -2903,16 +2999,13 @@ Preserves existing entries to avoid overwriting."
   (leader-key
     "g" '(:ignore t :wk "GPTEL")
     "g a" '(gptel-add :wk "Add to Context")
+    "g q" '(gptel-agent :wk "Add to Context")
     "g c" '(gptel-context-remove-all :wk "Open Gptel")
     "g f" '(gptel-add-file :wk "Add file to Context")
     "g g" '(gptel-split :wk "Open Gptel")
     "g m" '(gptel-menu :wk "Open Transient Menu")
     "g r" '(gptel-rewrite :wk "Rewrite")
-    "g A" '(gptel--rewrite-accept    :wk "accept rewrite" :predicate '(bound-and-true-p gptel--rewrite-overlays) )
-    "g Q" '(gptel--rewrite-reject    :wk "reject rewrite")
-    "g R" '(gptel--rewrite-rewrite   :wk "reiterate rewrite")
-    "g D" '(gptel--rewrite-diff      :wk "diff rewrite")
-    "g E" '(gptel--rewrite-ediff     :wk "ediff rewrite"))
+    )
 
   (leader-key
     "m" '(:ignore t :wk "Org")
@@ -3019,6 +3112,7 @@ Preserves existing entries to avoid overwriting."
     "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
     "t p" '(open-lazygit :wk "Open Lazygit")
     "t v" '(ghostel-split :wk "Toggle Vterm")
+    "t w" '(shell-command-open-explorer :wk "Open Windows Explorer in pwd")
     "t t" '(visual-line-mode :wk "Toggle truncated lines")
     )
 
@@ -3065,6 +3159,9 @@ Preserves existing entries to avoid overwriting."
 (global-set-key (kbd "C-x h") 'previous-buffer)
 (global-set-key (kbd "C-x l") 'next-buffer)
 #+END_SRC
+
+#+RESULTS:
+: next-buffer
 
 
 ** HYDRA
@@ -3198,6 +3295,7 @@ Neotree is a file tree viewer.  When you open neotree, it jumps to the current f
 ;;                   (make-local-variable 'auto-hscroll-mode)
 ;;                   (setq auto-hscroll-mode nil)))))
 #+end_src
+
 
 * TODO
 https://github.com/emacs-vs/codemetrics

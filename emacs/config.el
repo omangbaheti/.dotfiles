@@ -57,11 +57,13 @@
 ;;Useful for configuring built-in emacs features.
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
-(use-package benchmark-init
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+;; (use-package benchmark-init
+;;   :ensure t
+;;   :config
+;;   ;; To disable collection of benchmark data after init is done.
+;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
+;; (setq use-package-compute-statistics t)
 
 (use-package doom-themes
   :ensure t
@@ -413,6 +415,10 @@
 
 (use-package evil-nerd-commenter
   :ensure t
+  :commands (evilnc-comment-or-uncomment-lines
+             evilnc-comment-operator
+             evilnc-inner-comment
+             evilnc-outer-commenter)
   )
 
 (use-package evil-mc
@@ -426,6 +432,7 @@
 
 (use-package flash
   :ensure (:host github :repo "Prgebish/flash")
+  :defer t
   :commands (flash-jump flash-jump-continue
              flash-treesitter)
   :bind ("s-j" . flash-jump)
@@ -552,7 +559,8 @@ one, an error is signaled."
       (select-window other-win))))
 
 (use-package posframe
-  :ensure t)
+  :ensure t
+  )
 
 (use-package ace-window
   :ensure t
@@ -560,7 +568,7 @@ one, an error is signaled."
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   (ace-window-posframe-mode t)
   (aw-scope 'frame)
-  (aw-dispatch-always t)
+  (aw-dispatch-always nil)
   (aw-background t)
   (aw-minibuffer-flag t)
   :config
@@ -619,14 +627,14 @@ one, an error is signaled."
 (add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-11"))
 (setq-default line-spacing 0.12)
 
-(use-package emojify
-  :ensure t
-  :config
-  (when (member "Noto Color Emoji" (font-family-list))
-    (set-fontset-font t 'symbol (font-spec :family "Noto Color Emoji") nil 'prepend))
-  (setq emojify-display-style 'unicode)
-  (setq emojify-emoji-styles '(unicode))
-  (global-emojify-mode 1))
+;; (use-package emojify
+;;   :ensure t
+;;   :config
+;;   (when (member "Noto Color Emoji" (font-family-list))
+;;     (set-fontset-font t 'symbol (font-spec :family "Noto Color Emoji") nil 'prepend))
+;;   (setq emojify-display-style 'unicode)
+;;   (setq emojify-emoji-styles '(unicode))
+;;   (global-emojify-mode 1))
 
 (setq frame-title-format "%b")
 (scroll-bar-mode -1)               ; disable scrollbar
@@ -672,16 +680,6 @@ one, an error is signaled."
 ;;this is going to bite me in the ass someday isnt it
 (load "~/.secrets/authinfo.el")
 
-(require 'epg)
-(setq epg-debug t)
-(setq plstore-encrypt-to "omangbaheti@pm.me")
-(use-package pinentry
-  :ensure t
-  :init
-  (setq epg-pinentry-mode 'loopback)
-  :config
-  (pinentry-start))
-
 (delete-selection-mode 1)
 (electric-indent-mode 1)
 (electric-pair-mode 1)
@@ -696,13 +694,20 @@ one, an error is signaled."
   :ensure t
   )
 
+;; (use-package helpful
+;;   :ensure t
+;;   )
+
 (use-package helpful
-  :ensure t)
+  :ensure t
+  :commands (helpful-callable helpful-variable helpful-key helpful-command))
 
 (global-set-key (kbd "C-=") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
+
+(setq shell-command-switch "-ic")
 
 (setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right)
@@ -730,6 +735,8 @@ one, an error is signaled."
 
 (use-package org
   :ensure nil
+  :mode ("\\.org\\'" . org-mode)
+  :commands (org-agenda org-capture org-store-link)
   :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
   (setq org-startup-folded t)              
@@ -752,6 +759,7 @@ one, an error is signaled."
 
 (use-package toc-org
   :ensure t
+  :hook (org-mode . toc-org-mode)
   :commands toc-org-enable
   :init (add-hook 'org-mode-hook 'toc-org-enable))
 
@@ -839,6 +847,7 @@ one, an error is signaled."
 
 (use-package org-modern-indent
   :ensure (:host github :repo "jdtsmith/org-modern-indent")
+  :hook (org-mode . org-modern-indent-mode)
   :config ; add late to hook
   (org-modern-indent-mode 1)
   (add-hook 'org-mode-hook #'org-modern-indent-mode t))
@@ -925,15 +934,23 @@ one, an error is signaled."
 
 (use-package org-roam
   :ensure t
+  ;; :defer 5
+  :commands
+  (org-roam-buffer-toggle
+   org-roam-node-find
+   org-roam-graph
+   org-roam-node-insert
+   org-roam-capture
+   org-roam-dailies-capture-today)
   :custom
   (org-roam-directory (file-truename "~/Notes"))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n g" . org-roam-graph)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n c" . org-roam-capture)
-         ;; Dailies
-         ("C-c n j" . org-roam-dailies-capture-today))
+  ;; :bind (("C-c n l" . org-roam-buffer-toggle)
+  ;;        ("C-c n f" . org-roam-node-find)
+  ;;        ("C-c n g" . org-roam-graph)
+  ;;        ("C-c n i" . org-roam-node-insert)
+  ;;        ("C-c n c" . org-roam-capture)
+  ;;        ;; Dailies
+  ;;        ("C-c n j" . org-roam-dailies-capture-today))
   :config
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
@@ -1086,11 +1103,19 @@ DEADLINE: %^t
   ("C-c n l" . consult-org-roam-forward-links)
   ("C-c n r" . consult-org-roam-search))
 
+;; (defun consult-org-roam-find-by-title ()
+;;   "Find an Org Roam node by searching titles only.
+;; This gives preference to exact title matches by temporarily excluding
+;; tags from the candidate string presented to the completion framework."
+;;   (interactive)
+;;   (let ((org-roam-node-display-template "${title}"))
+;;     (org-roam-node-visit (consult-org-roam-node-read))))
 (defun consult-org-roam-find-by-title ()
-  "Find an Org Roam node by searching titles only.
-This gives preference to exact title matches by temporarily excluding
-tags from the candidate string presented to the completion framework."
+  "Find an Org Roam node by searching titles only."
   (interactive)
+  (unless (bound-and-true-p org-roam-db-autosync-mode)
+    (require 'org-roam)
+    (org-roam-db-autosync-mode 1))
   (let ((org-roam-node-display-template "${title}"))
     (org-roam-node-visit (consult-org-roam-node-read))))
 
@@ -1183,8 +1208,7 @@ tags from the candidate string presented to the completion framework."
 )
 
 (use-package org-roam-ui
-  :ensure
-  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :ensure (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
   :after org-roam
   ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
   ;;         a hookable mode anymore, you're advised to pick something yourself
@@ -1226,16 +1250,24 @@ tags from the candidate string presented to the completion framework."
 ;;   :custom
 ;;   (org-appear-autolinks t))
 
-(use-package org-kanban
+;; (use-package org-kanban
+;;   :ensure t
+;;   :after org
+;;   :commands (org-kanban/initialize
+;;              org-kanban/initialize-at-end
+;;              org-kanban/shift)
+;;   :config
+;;   ;; Optional: Set mirrored to nil if you want the board the other way around
+;;   (setq org-kanban/mirrored nil)
+;;   )
+
+(use-package markdown-mode
   :ensure t
-  :after org
-  :commands (org-kanban/initialize
-             org-kanban/initialize-at-end
-             org-kanban/shift)
-  :config
-  ;; Optional: Set mirrored to nil if you want the board the other way around
-  (setq org-kanban/mirrored nil)
-  )
+  :mode ("README\\.md\\'" . gfm-mode)
+  :hook (markdown-mode . (lambda () (setq markdown-hide-markup t)))
+  :init (setq markdown-command "multimarkdown")
+  :bind (:map markdown-mode-map
+         ("C-c C-e" . markdown-do)))
 
 (use-package which-key
   :ensure t
@@ -1570,6 +1602,7 @@ tags from the candidate string presented to the completion framework."
 ;; Nix integration
 (use-package nix-ts-mode
   :ensure t
+  :mode "\\.nix\\'"
 )
 
 (use-package ess
@@ -1585,12 +1618,21 @@ tags from the candidate string presented to the completion framework."
   (global-treesit-auto-mode)
 )
 
+;; (use-package flycheck
+;;   :ensure t
+;;   :init
+;;   (global-flycheck-mode)
+;;   :config
+;;   (setq flycheck-global-modes '(not org-mode))
+;;   (setq-default flycheck-disabled-checkers
+;;                 (append flycheck-disabled-checkers '(proselint)))
+;;   )
+
 (use-package flycheck
   :ensure t
-  :init
-  (global-flycheck-mode)
-  :config
-  (setq flycheck-global-modes '(not org-mode)))
+  :hook ((prog-mode . flycheck-mode)
+         (sh-mode . flycheck-mode)
+         (yaml-mode . flycheck-mode)))
 
 (use-package flyover
   :ensure (:host github :repo "https://github.com/konrad1977/flyover")
@@ -1631,36 +1673,46 @@ tags from the candidate string presented to the completion framework."
                        :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  :defer 1
-  :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
+  ;; :defer 1
+  ;; :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
+  :hook ((python-mode . lsp-bridge-mode)
+         (java-mode . lsp-bridge-mode)
+         (js-mode . lsp-bridge-mode)
+         (typescript-mode . lsp-bridge-mode)
+         (org-src-mode . lsp-bridge-mode)
+         (LaTeX-mode . lsp-bridge-mode))
   :init
   (setq lsp-bridge-user-multiserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
   (setq lsp-bridge-user-langserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
   ;; ;; java stuff
-  (require 'lsp-bridge-jdtls)
+
+  (add-hook 'java-mode-hook
+            (lambda ()
+              (require 'lsp-bridge-jdtls nil t)))
+  ;; (require 'lsp-bridge-jdtls)
   (setq lsp-bridge-jdtls-jvm-args
-      (list (concat "-javaagent:" (getenv "LOMBOK_JAR"))))
+	(list (concat "-javaagent:" (getenv "LOMBOK_JAR"))))
   (setq lsp-bridge-enable-auto-import t)
   (setq lsp-bridge-enable-diagnostics nil 
-        lsp-bridge-enable-signature-help nil
-        lsp-bridge-enable-hover-diagnostic nil
-        lsp-bridge-enable-auto-format-code nil
-        lsp-bridge-enable-completion-in-minibuffer nil
-        lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
-        lsp-bridge-use-popup t
-        lsp-bridge-python-lsp-server "basedpyright"
+	lsp-bridge-enable-signature-help nil
+	lsp-bridge-enable-hover-diagnostic nil
+	lsp-bridge-enable-auto-format-code nil
+	lsp-bridge-enable-completion-in-minibuffer nil
+	lsp-bridge-enable-org-babel t   ;; enable completion in org-babel src blocks
+	lsp-bridge-use-popup t
+	lsp-bridge-python-lsp-server "basedpyright"
 	lsp-bridge-nix-lsp-server "nil"
-        lsp-bridge-csharp-lsp-server "csharp-ls"
-        )
+	lsp-bridge-csharp-lsp-server "csharp-ls"
+	)
   ;; (setq lsp-bridge-enable-debug t) 
   ;; (setq lsp-bridge-log-level 'debug)
   (setq acm-enable-jupyter t
-        acm-enable-yas t
+	acm-enable-yas t
 	acm-enable-org-roam t
-        acm-enable-elisp t
-        )
+	acm-enable-elisp t
+	)
   :config
   ;; (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(latex-mode . "latex_ltex2"))
   (add-to-list 'lsp-bridge-multi-lang-server-mode-list '(LaTeX-mode . "latex_ltex2"))
@@ -1670,7 +1722,7 @@ tags from the candidate string presented to the completion framework."
   (add-to-list 'org-src-lang-modes '("jupyter-python" . python))
   (add-to-list 'org-src-lang-modes '("jupyter-R" . ess-r-mode))
   (add-to-list 'org-src-lang-modes '("nix" . nix))
-)
+  )
 
 (with-eval-after-load 'lsp-bridge
   (require 'acm-backend-elisp)
@@ -1706,22 +1758,11 @@ tags from the candidate string presented to the completion framework."
 
 (use-package jupyter
   :ensure t
+  :defer t
   :init
   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
-  (with-eval-after-load 'org
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp . t)
-       (python . t)
-       (shell . t)
-       (jupyter . t)
-       (R . t)
-       )
-     )
-    )
-  (require 'ob-jupyter)
-  (org-babel-jupyter-aliases-from-kernelspecs)
+  :config
   (setq org-confirm-babel-evaluate nil
         org-src-fontify-natively t
         org-src-tab-acts-natively t
@@ -1729,8 +1770,50 @@ tags from the candidate string presented to the completion framework."
   (setq org-babel-default-header-args:jupyter-R '((:session . "R")
                                                   (:kernel . "ir")
                                                   (:exports . "both")
-                                                  (:results . "output")))
-  )
+                                                  (:results . "output"))))
+
+(with-eval-after-load 'org
+  (with-eval-after-load 'jupyter
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (python . t)
+       (shell . t)
+       (jupyter . t)
+       (R . t)))
+    (org-babel-jupyter-aliases-from-kernelspecs)))
+
+
+;; (use-package jupyter
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
+;;   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
+;;   :config
+;;   (org-babel-jupyter-aliases-from-kernelspecs)
+;;   (setq org-confirm-babel-evaluate nil
+;;         org-src-fontify-natively t
+;;         org-src-tab-acts-natively t
+;;         org-src-preserve-indentation t)
+;;   (setq org-babel-default-header-args:jupyter-R '((:session . "R")
+;;                                                   (:kernel . "ir")
+;;                                                   (:exports . "both")
+;;                                                   (:results . "output")))
+;;   )
+
+
+;; (with-eval-after-load 'org
+;;   (org-babel-do-load-languages
+;;    'org-babel-load-languages
+;;    '((emacs-lisp . t)
+;;      (python . t)
+;;      (shell . t)
+;;      (jupyter . t)
+;;      (R . t)
+;;      )
+;;    )
+;;   )
 
 (use-package rainbow-delimiters
   :ensure t
@@ -1773,10 +1856,11 @@ tags from the candidate string presented to the completion framework."
   (setq dashboard-image-banner-max-height 200)
   (setq dashboard-image-banner-max-width 200)
   (setq dashboard-projects-backend 'projectile)
+  (setq dashboard-footer-messages '(""))
   (setq dashboard-center-content t) ;; set to 't' for centered content
   (setq dashboard-items '((recents . 5)
-                          (agenda . 5 )
-                          (projects . 3)
+                          (agenda . 5)
+                          ;; (projects . 3)
                           ))
   
   :custom
@@ -1953,15 +2037,16 @@ tags from the candidate string presented to the completion framework."
 
 (use-package git-gutter
   :ensure t
+  :hook ((prog-mode text-mode conf-mode) . git-gutter-mode)
   :config
   (setq git-gutter:added-sign "+")
   (setq git-gutter:deleted-sign "-")
   (setq git-gutter:modified-sign "~")
-
   (set-face-foreground 'git-gutter:added "green")
   (set-face-foreground 'git-gutter:deleted "red")
   (set-face-foreground 'git-gutter:modified "yellow")
-  (global-git-gutter-mode +1))
+  ;; (global-git-gutter-mode +1)
+  )
 
 (use-package git-gutter-fringe
   :ensure t
@@ -1975,21 +2060,53 @@ tags from the candidate string presented to the completion framework."
   :hook ((csv-mode . rainbow-csv-mode)
          (tsv-mode . rainbow-csv-mode)))
 
+;; (use-package gptel
+;;   :ensure (:host github :repo "karthink/gptel" :branch "master" :depth nil)
+;;   :defer t
+;;   :init
+;;   (setq gptel-log-level 'debug)
+;;   (setq gptel-include-reasoning t)
+;;   (setq gptel-max-tokens nil) ;; disable old param
+;;   (defvar azure
+;;     (gptel-make-openai "Azure"
+;;       :host "emacs-resource.services.ai.azure.com"
+;;       :protocol "https"
+;;       :endpoint "/openai/v1/chat/completions"
+;;       :stream t
+;;       ;; :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
+;;       :models '((gpt-5.4-nano :capabilities (reasoning))
+;; 		(DeepSeek-V3.2-Speciale :capabilities (reasoning)))
+;;       :key azure-api))
+
+;;   (defvar azure-responses
+;;     (gptel-make-openai-responses "Azure-Responses"
+;;       :host "emacs-resource.services.ai.azure.com"
+;;       :endpoint "/openai/v1/responses"
+;;       :stream t
+;;       :models '((gpt-5.4-nano)
+;; 		(gpt-5.4-pro))
+;;       :key azure-api))
+;;   (setq gptel-backend azure-responses)
+;;   (setq gptel-model 'gpt-5.4-nano)
+;;   )
+
 (use-package gptel
   :ensure (:host github :repo "karthink/gptel" :branch "master" :depth nil)
-  :init
-  (setq gptel-log-level 'debug)
-  (setq gptel-include-reasoning t)
-  (setq gptel-max-tokens nil) ;; disable old param
+  :defer t
+  :commands (gptel gptel-send gptel-menu gptel-rewrite)
+  :config
+  (setq gptel-log-level 'debug
+        gptel-include-reasoning t
+        gptel-max-tokens nil)
+
   (defvar azure
     (gptel-make-openai "Azure"
       :host "emacs-resource.services.ai.azure.com"
       :protocol "https"
       :endpoint "/openai/v1/chat/completions"
       :stream t
-      ;; :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
       :models '((gpt-5.4-nano :capabilities (reasoning))
-		(DeepSeek-V3.2-Speciale :capabilities (reasoning)))
+                (DeepSeek-V3.2-Speciale :capabilities (reasoning)))
       :key azure-api))
 
   (defvar azure-responses
@@ -1997,15 +2114,25 @@ tags from the candidate string presented to the completion framework."
       :host "emacs-resource.services.ai.azure.com"
       :endpoint "/openai/v1/responses"
       :stream t
-      :models '((gpt-5.4-nano))
+      :models '((gpt-5.4-nano)
+                (gpt-5.4-pro))
       :key azure-api))
-  
-  (setq gptel-backend azure-responses)
-  (setq gptel-model 'gpt-5.4-nano)
-  )
+
+  (defvar azure-responses-2
+    (gptel-make-openai-responses "Azure-Responses-2"
+      :host "emacs-setup.services.ai.azure.com/api/projects/emacs"
+      :endpoint "/openai/v1/responses"
+      :stream t
+      :models '((gpt-5.4-nano)
+                (gpt-5.4-pro))
+      :key azure-api-2))
+
+  (setq gptel-backend azure-responses
+        gptel-model 'gpt-5.4-nano))
 
 (use-package gptel-agent
-  :ensure t 
+  :ensure (:host github :repo "karthink/gptel-agent" :branch "master" :depth nil)
+  :after gptel
   :config (gptel-agent-update))
 
 ;; (use-package ob-gptel
@@ -2021,7 +2148,23 @@ tags from the candidate string presented to the completion framework."
 ;;     :ensure t
 ;; )
 
-
+(use-package mcp
+  :ensure t
+  :after gptel
+  ;; :hook (after-init . mcp-hub-start-all-server)
+  :custom
+  (mcp-hub-servers
+   `(("tavily" . (:command "npx"
+                           :args ("-y" "tavily-mcp")
+                           :env (:TAVILY_API_KEY ,tavily-api)))
+     ("exa" . (:url "https://mcp.exa.ai/mcp?tools=web_search_exa,web_fetch_exa,web_search_advanced_exa"
+               :env (:x-api-key ,exa-api)))
+     ))
+  :config
+  (setq-local jsonrpc-default-request-timeout 200)
+  :init
+  (require 'gptel-integrations)
+  )
 
 
 
@@ -2229,6 +2372,12 @@ Preserves existing entries to avoid overwriting."
          (get-buffer-process (current-buffer))
          "lazygit\n")))))
 
+(defun shell-command-open-explorer()
+  "Run the shell alias `exp` using an interactive shell."
+  (interactive)
+  (let ((shell-command-switch "-ic"))
+    (shell-command "exp")))
+
 (use-package general
   :ensure t
   :after evil
@@ -2241,7 +2390,7 @@ Preserves existing entries to avoid overwriting."
     :prefix "SPC" ;; set leader
     :global-prefix "M-SPC") ;; access leader in insert mode
 
- ;; (setq evil-want-keybinding nil)
+  ;; (setq evil-want-keybinding nil)
   
   (general-define-key
    :states 'normal
@@ -2304,165 +2453,162 @@ Preserves existing entries to avoid overwriting."
   (leader-key
     "g" '(:ignore t :wk "GPTEL")
     "g a" '(gptel-add :wk "Add to Context")
+    "g q" '(gptel-agent :wk "Add to Context")
     "g c" '(gptel-context-remove-all :wk "Open Gptel")
     "g f" '(gptel-add-file :wk "Add file to Context")
     "g g" '(gptel-split :wk "Open Gptel")
     "g m" '(gptel-menu :wk "Open Transient Menu")
     "g r" '(gptel-rewrite :wk "Rewrite")
-    "g A" '(gptel--rewrite-accept    :wk "accept rewrite" :predicate '(bound-and-true-p gptel--rewrite-overlays) )
-    "g Q" '(gptel--rewrite-reject    :wk "reject rewrite")
-    "g R" '(gptel--rewrite-rewrite   :wk "reiterate rewrite")
-    "g D" '(gptel--rewrite-diff      :wk "diff rewrite")
-    "g E" '(gptel--rewrite-ediff     :wk "ediff rewrite"))
+    )
 
-(leader-key
-  "m" '(:ignore t :wk "Org")
-  "m e" '(org-export-dispatch :wk "Org export dispatch")
-  "m i" '(org-toggle-item :wk "Org toggle item")
-  "m t" '(org-todo :wk "Org todo")
-  "m B" '(org-babel-tangle :wk "Org babel tangle")
-  "m T" '(org-todo-list :wk "Org todo list")
-  )
+  (leader-key
+    "m" '(:ignore t :wk "Org")
+    "m e" '(org-export-dispatch :wk "Org export dispatch")
+    "m i" '(org-toggle-item :wk "Org toggle item")
+    "m t" '(org-todo :wk "Org todo")
+    "m B" '(org-babel-tangle :wk "Org babel tangle")
+    "m T" '(org-todo-list :wk "Org todo list")
+    )
 
-(leader-key
-  :states '(normal)
-  "m n" '(org-babel-next-src-block :wk "Next src block")
-  "m p" '(org-babel-previous-src-block :wk "Previous src block")
-  )
+  (leader-key
+    :states '(normal)
+    "m n" '(org-babel-next-src-block :wk "Next src block")
+    "m p" '(org-babel-previous-src-block :wk "Previous src block")
+    )
 
-(leader-key
-  "m b" '(:ignore t :wk "Tables")
-  "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
+  (leader-key
+    "m b" '(:ignore t :wk "Tables")
+    "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
 
-(leader-key
-  "m d" '(:ignore t :wk "Date/deadline")
-  "m d t" '(org-time-stamp :wk "Org time stamp")
-  )
+  (leader-key
+    "m d" '(:ignore t :wk "Date/deadline")
+    "m d t" '(org-time-stamp :wk "Org time stamp")
+    )
 
-(leader-key
-  "m c" '(:ignore t :wk "Org Capture")
-  "m c s" '(org-roam-capture :wk "Org Capture")
-  )
+  (leader-key
+    "m c" '(:ignore t :wk "Org Capture")
+    "m c s" '(org-roam-capture :wk "Org Capture")
+    )
 
-(leader-key
-  :states '(normal visual)
-  "o" '(:ignore t :wk "More Org")
-  
-  "o j" '(consult-org-heading :wk "Org Jump")   
-  
-  "o t" '(:ignore t :wk "Transclusion")
-  "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
-  "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
-  "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
-  "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
+  (leader-key
+    :states '(normal visual)
+    "o" '(:ignore t :wk "More Org")
+    
+    "o j" '(consult-org-heading :wk "Org Jump")   
+    
+    "o t" '(:ignore t :wk "Transclusion")
+    "o t t" '(org-transclusion-make-from-link :wk "Transcl. Atomic Note")
+    "o t o" '(org-transclusion-open-source :wk "Open Transcl. in Buffer")
+    "o t e" '(org-transclusion-live-sync-start :wk "Live Edit Transcl.")
+    "o t r" '(org-transclusion-refresh :wk "Refresh Transcl.")
 
-  "o r" '(:ignore t :wk "Org Roam")
-  "o r i" '(org-roam-node-insert :wk "Link Node")
-  "o r f" '(consult-org-roam-find-by-title :wk "Find Node")
-  "o r s" '(org-roam-buffer-toggle-and-focus :wk "Show Backlink")
-  "o r t" '(org-roam-tag-node-insert :wk "Roam Tag")
-  "o r b" '(consult-org-roam-backlinks :wk "Backlinks")
-  "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
-  "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
-  
-  "o n" '(:ignore t :wk "Research Note")
-  "o n n" '(citar-create-note :wk "New Research Note")
-  "o n o" '(citar-open-note :wk "Open Note")
-  "o n s" '(citar-org-noter-open :wk "Noter Session")
-  "o n i" '(org-noter :wk "Noter Session Immediate")
-  "o n f" '(citar-org-roam-open-current-refs :wk "Open Paper")
-  
-  "o s" '(:ignore t :wk "Insert Source Block Templates")
-  "o s r" '(tempo-template-jupyter-R :wk "Insert Jupyter R block")
-  "o s n" '(tempo-template-nix :wk "Insert Nix block")
-  "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
-  "o s p" '(tempo-template-python :wk "Insert Python block")
-  "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
+    "o r" '(:ignore t :wk "Org Roam")
+    "o r i" '(org-roam-node-insert :wk "Link Node")
+    "o r f" '(consult-org-roam-find-by-title :wk "Find Node")
+    "o r s" '(org-roam-buffer-toggle-and-focus :wk "Show Backlink")
+    "o r t" '(org-roam-tag-node-insert :wk "Roam Tag")
+    "o r b" '(consult-org-roam-backlinks :wk "Backlinks")
+    "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
+    "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
+    
+    "o n" '(:ignore t :wk "Research Note")
+    "o n n" '(citar-create-note :wk "New Research Note")
+    "o n o" '(citar-open-note :wk "Open Note")
+    "o n s" '(citar-org-noter-open :wk "Noter Session")
+    "o n i" '(org-noter :wk "Noter Session Immediate")
+    "o n f" '(citar-org-roam-open-current-refs :wk "Open Paper")
+    
+    "o s" '(:ignore t :wk "Insert Source Block Templates")
+    "o s r" '(tempo-template-jupyter-R :wk "Insert Jupyter R block")
+    "o s n" '(tempo-template-nix :wk "Insert Nix block")
+    "o s j" '(tempo-template-jupyter-python :wk "Insert Jupyter Python block")
+    "o s p" '(tempo-template-python :wk "Insert Python block")
+    "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
 
-  "o o" '(:ignore t :wk "Insert Source Block Templates")
-  "o o e" '(olivetti-expand :wk "Expand")
-  "o o s" '(olivetti-shrink :wk "Shrink")
-  "o o o" '(olivetti-mode :wk "Toggle Olivetti")
+    "o o" '(:ignore t :wk "Insert Source Block Templates")
+    "o o e" '(olivetti-expand :wk "Expand")
+    "o o s" '(olivetti-shrink :wk "Shrink")
+    "o o o" '(olivetti-mode :wk "Toggle Olivetti")
 
-  "o c" '(:ignore t :wk "Org Capture")
-  "o c s" '(org-roam-capture :wk "Org Capture"))  
+    "o c" '(:ignore t :wk "Org Capture")
+    "o c s" '(org-roam-capture :wk "Org Capture"))  
 
-(leader-key
-  "fu" '(sudo-edit-find-file :wk "Sudo find file")
-  "fU" '(sudo-edit :wk "Sudo Edit File"))
+  (leader-key
+    "fu" '(sudo-edit-find-file :wk "Sudo find file")
+    "fU" '(sudo-edit :wk "Sudo Edit File"))
 
-(leader-key
-  "p" '(projectile-command-map :wk "Projectile"))
+  (leader-key
+    "p" '(projectile-command-map :wk "Projectile"))
 
-(leader-key
-  "h" '(:ignore t :wk "Help")
-  "h p" '(describe-package :wk "Describe Package")
-  "h f" '(helpful-function :wk "Describe function")
-  "h v" '(helpful-variable :wk "Describe Variable")
-  "h k" '(helpful-key :wk "Describe Key")
-  "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
-  "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
+  (leader-key
+    "h" '(:ignore t :wk "Help")
+    "h p" '(describe-package :wk "Describe Package")
+    "h f" '(helpful-function :wk "Describe function")
+    "h v" '(helpful-variable :wk "Describe Variable")
+    "h k" '(helpful-key :wk "Describe Key")
+    "h r r" '((lambda() (interactive) (load-file "~/.dotfiles/emacs/init.el") (ignore (elpaca-process-queues))) :wk "Reload emacs config")
+    "h r R" '((lambda() (interactive) (restart-emacs)) :wk "Complete restart emacs"))
 
-(leader-key
-  "j" '(:ignore t :wk "Jupyter / Org Babel")
-  "j c" '(org-ctrl-c-ctrl-c :wk "Execute Cell")
-  "j k" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
-  "j j" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
-  "j h" '(consult-org-heading :wk "Describe Key"))
+  (leader-key
+    "j" '(:ignore t :wk "Jupyter / Org Babel")
+    "j c" '(org-ctrl-c-ctrl-c :wk "Execute Cell")
+    "j k" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
+    "j j" '(hydra-org-babel/navigate/body :which-key "Babel Naviagte")
+    "j h" '(consult-org-heading :wk "Describe Key"))
 
-(leader-key
-  "t" '(:ignore t :wk "Toggle")
-  "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
-  "t h" '(open-lazygit :wk "Open Lazygit")
-  "t g" '(grease-here :wk "Open Grease here")
-  "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-  "t m" '(open-messages-buffer :wk "Toggle Message Buffer ")
-  "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
-  "t p" '(open-lazygit :wk "Open Lazygit")
-  "t v" '(ghostel-split :wk "Toggle Vterm")
-  "t t" '(visual-line-mode :wk "Toggle truncated lines")
-  )
+  (leader-key
+    "t" '(:ignore t :wk "Toggle")
+    "t e" '(direnv-update-directory-environment :wk "Toggle/Update Direnv Environment")
+    "t h" '(open-lazygit :wk "Open Lazygit")
+    "t g" '(grease-here :wk "Open Grease here")
+    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+    "t m" '(open-messages-buffer :wk "Toggle Message Buffer ")
+    "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
+    "t p" '(open-lazygit :wk "Open Lazygit")
+    "t v" '(ghostel-split :wk "Toggle Vterm")
+    "t w" '(shell-command-open-explorer :wk "Open Windows Explorer in pwd")
+    "t t" '(visual-line-mode :wk "Toggle truncated lines")
+    )
 
-(leader-key
-  "w" '(:ignore t :wk "Windows")
-  ;; Window splits
-  "w c" '(evil-window-delete :wk "Close window")
-  "w C" '(delete-other-windows :wk "Close all windows")
-  "w n" '(evil-window-new :wk "New window")
-  "w s" '(evil-window-split :wk "Horizontal split window")
-  "w v" '(evil-window-vsplit :wk "Vertical split window")
-  ;; Window motions
-  ;; "w h" '(evil-window-left :wk "Window Left")
-  ;; "w j" '(evil-window-down :wk "Window Down")
-  ;; "w k" '(evil-window-up :wk "Window Up")
-  ;; "w l" '(evil-window-right :wk "Window Right")
-  "w w" '(ace-window :wk "Switch Window")
-  ;; Move Windows
-  "w H" '(buf-move-left :wk "Buffer Move Left")
-  "w J" '(buf-move-down :wk "Buffer Move Down")
-  "w K" '(buf-move-up :wk "Buffer Move Up")
-  "w L" '(buf-move-right :wk "Buffer Move Right")
-  ;; New Window
-  "w N" '(make-frame-command :wk "New Frame")
-  )
+  (leader-key
+    "w" '(:ignore t :wk "Windows")
+    ;; Window splits
+    "w c" '(evil-window-delete :wk "Close window")
+    "w C" '(delete-other-windows :wk "Close all windows")
+    "w n" '(evil-window-new :wk "New window")
+    "w s" '(evil-window-split :wk "Horizontal split window")
+    "w v" '(evil-window-vsplit :wk "Vertical split window")
+    ;; Window motions
+    ;; "w h" '(evil-window-left :wk "Window Left")
+    ;; "w j" '(evil-window-down :wk "Window Down")
+    ;; "w k" '(evil-window-up :wk "Window Up")
+    ;; "w l" '(evil-window-right :wk "Window Right")
+    "w w" '(ace-window :wk "Switch Window")
+    ;; Move Windows
+    "w H" '(buf-move-left :wk "Buffer Move Left")
+    "w J" '(buf-move-down :wk "Buffer Move Down")
+    "w K" '(buf-move-up :wk "Buffer Move Up")
+    "w L" '(buf-move-right :wk "Buffer Move Right")
+    ;; New Window
+    "w N" '(make-frame-command :wk "New Frame")
+    )
 
-(leader-key "," '(ace-window :which-key "Switch Window"))
-(leader-key "<" '(ace-window-with-help :which-key "Switch Window"))
+  (leader-key "," '(ace-window :which-key "Switch Window"))
+  (leader-key "<" '(ace-window-with-help :which-key "Switch Window"))
+  (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
 
-(leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
+  (leader-key
+    "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
 
-(leader-key
-  "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
-
-(general-define-key
- :states 'normal
- :keymaps 'override
- "zo" #'kirigami-open-fold
- "zO" #'kirigami-open-fold-rec
- "zc" #'kirigami-close-fold
- "za" #'kirigami-toggle-fold
- "zr" #'kirigami-open-folds
- "zm" #'kirigami-close-folds))
+  (general-define-key
+   :states 'normal
+   :keymaps 'override
+   "zo" #'kirigami-open-fold
+   "zO" #'kirigami-open-fold-rec
+   "zc" #'kirigami-close-fold
+   "za" #'kirigami-toggle-fold
+   "zr" #'kirigami-open-folds
+   "zm" #'kirigami-close-folds))
 
 (global-set-key (kbd "C-x h") 'previous-buffer)
 (global-set-key (kbd "C-x l") 'next-buffer)
@@ -2472,7 +2618,7 @@ Preserves existing entries to avoid overwriting."
   :after general
   :config
   (defhydra hydra-window-resize (:hint nil :timeout 5)
-"
+    "
 Resize window   
 _=_: grow horiz    _-_: shrink horiz
 _[_: grow vert     _]_: shrink vert
@@ -2496,7 +2642,7 @@ _q_: quit
     ("q" nil "quit"))
 
   (defhydra hydra-org-babel/navigate (:hint nil :timeout 5)
-"
+    "
 Org Babel Naviagtionwindow
 _j_: next block    _k_: previous block 
 "
@@ -2504,7 +2650,7 @@ _j_: next block    _k_: previous block
     ("k" org-previous-block)
     ("q" nil "quit"))
 
-)
+  )
 
 (use-package transient
   :ensure t)
