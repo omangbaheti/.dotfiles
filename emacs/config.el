@@ -57,13 +57,112 @@
 ;;Useful for configuring built-in emacs features.
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
-;; (use-package benchmark-init
-;;   :ensure t
-;;   :config
-;;   ;; To disable collection of benchmark data after init is done.
-;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
-;; (setq use-package-compute-statistics t)
+(setq use-package-compute-statistics t)
+
+(setq evil-want-keybinding nil)
+(setq evil-want-integration t)
+
+(use-package evil
+  :ensure t
+  :init
+  (setq evil-vsplit-window-right t)
+  (setq evil-split-window-below t)
+  (setq evil-search-module 'evil-search)
+  (setq evil-undo-system 'undo-fu)
+  (evil-mode)
+)
+
+(use-package evil-collection
+  :ensure t
+  :after evil
+  :config
+  (setq evil-collection-mode-list '(dashboard dired ibuffer))
+  (evil-collection-init)) 
+
+(use-package evil-tutor
+  :ensure t
+  :commands (evil-tutor-start evil-tutor-resume)
+  )
+
+(with-eval-after-load 'evil-maps
+  (define-key evil-motion-state-map (kbd "SPC") nil)
+  (define-key evil-motion-state-map (kbd "RET") nil)
+  (define-key evil-motion-state-map (kbd "TAB") nil))
+
+;;setting RETURN key in org-mode to follow links
+(setq org-return-follows-link t)
+
+(use-package evil-snipe
+  :ensure t
+  :after evil
+  :demand t
+  :config
+  (setq evil-snipe-scope 'line
+        evil-snipe-repeat-scope 'whole-visible
+        evil-snipe-smart-case t)
+  (evil-snipe-mode 1)
+  (evil-snipe-override-mode 1))
+
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
+
+(use-package evil-goggles
+  :ensure t
+  :config
+  (evil-goggles-mode)
+  (setq evil-goggles-enable-paste t)
+  (setq evil-goggles-enable-yank t)
+  (setq evil-goggles-duration 0.100) 
+  ;; Define custom colors instead of using diff faces
+  (custom-set-faces
+   '(evil-goggles-delete-face ((t (:background "#ff6c6b" :foreground "white"))))
+   '(evil-goggles-paste-face ((t (:background "#98be65" :foreground "black"))))
+   '(evil-goggles-yank-face ((t (:background "#ECBE7B" :foreground "black"))))
+   '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
+   '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
+
+(use-package evil-nerd-commenter
+  :ensure t
+  :commands (evilnc-comment-or-uncomment-lines
+             evilnc-comment-operator
+             evilnc-inner-comment
+             evilnc-outer-commenter)
+  )
+
+(use-package evil-mc
+  :ensure t
+  :after evil
+  :config
+  (global-evil-mc-mode 1)
+  (evil-define-key 'visual evil-mc-key-map
+    "A" #'evil-mc-make-cursor-in-visual-selection-end
+    "I" #'evil-mc-make-cursor-in-visual-selection-beg))
+
+(use-package flash
+  :ensure (:host github :repo "Prgebish/flash")
+  :defer t
+  :commands (flash-jump flash-jump-continue
+             flash-treesitter)
+  :bind ("s-j" . flash-jump)
+  :custom
+  (flash-multi-window t)
+  :init
+  ;; Evil integration (simple setup)
+  (with-eval-after-load 'evil
+    (require 'flash-evil)
+    (flash-evil-setup t))  ; t = also set up f/t/F/T char motions
+  :config
+  ;; Search integration (labels during C-s, /, ?)
+  (require 'flash-isearch)
+  (flash-isearch-mode 1))
 
 (use-package doom-themes
   :ensure t
@@ -352,102 +451,6 @@
 (setq doom-modeline-before-update-env-hook nil)
 (setq doom-modeline-after-update-env-hook nil)
 
-(setq evil-want-keybinding nil)
-(setq evil-want-integration t)
-
-(use-package evil
-  :ensure t
-  :init
-  (setq evil-vsplit-window-right t)
-  (setq evil-split-window-below t)
-  (setq evil-search-module 'evil-search)
-  (setq evil-undo-system 'undo-fu)
-  (evil-mode)
-)
-
-(use-package evil-collection
-  :ensure t
-  :after evil
-  :config
-  (setq evil-collection-mode-list '(dashboard dired ibuffer))
-  (evil-collection-init)) 
-
-(use-package evil-tutor :ensure t)
-
-(with-eval-after-load 'evil-maps
-  (define-key evil-motion-state-map (kbd "SPC") nil)
-  (define-key evil-motion-state-map (kbd "RET") nil)
-  (define-key evil-motion-state-map (kbd "TAB") nil))
-
-;;setting RETURN key in org-mode to follow links
-(setq org-return-follows-link t)
-
-(use-package evil-snipe
-  :ensure t
-  :after evil
-  :demand t
-  :config
-  (setq evil-snipe-scope 'line
-        evil-snipe-repeat-scope 'whole-visible
-        evil-snipe-smart-case t)
-  (evil-snipe-mode 1)
-  (evil-snipe-override-mode 1))
-
-(use-package evil-surround
-  :ensure t
-  :config
-  (global-evil-surround-mode 1))
-
-(use-package evil-goggles
-  :ensure t
-  :config
-  (evil-goggles-mode)
-  (setq evil-goggles-enable-paste t)
-  (setq evil-goggles-enable-yank t)
-  (setq evil-goggles-duration 0.100) 
-  ;; Define custom colors instead of using diff faces
-  (custom-set-faces
-   '(evil-goggles-delete-face ((t (:background "#ff6c6b" :foreground "white"))))
-   '(evil-goggles-paste-face ((t (:background "#98be65" :foreground "black"))))
-   '(evil-goggles-yank-face ((t (:background "#ECBE7B" :foreground "black"))))
-   '(evil-goggles-indent-face ((t (:background "#FFFFFF" :foreground "black"))))
-   '(evil-goggles-change-face ((t (:background "#c678dd" :foreground "white"))))))
-
-(use-package evil-nerd-commenter
-  :ensure t
-  :commands (evilnc-comment-or-uncomment-lines
-             evilnc-comment-operator
-             evilnc-inner-comment
-             evilnc-outer-commenter)
-  )
-
-(use-package evil-mc
-  :ensure t
-  :after evil
-  :config
-  (global-evil-mc-mode 1)
-  (evil-define-key 'visual evil-mc-key-map
-    "A" #'evil-mc-make-cursor-in-visual-selection-end
-    "I" #'evil-mc-make-cursor-in-visual-selection-beg))
-
-(use-package flash
-  :ensure (:host github :repo "Prgebish/flash")
-  :defer t
-  :commands (flash-jump flash-jump-continue
-             flash-treesitter)
-  :bind ("s-j" . flash-jump)
-  :custom
-  (flash-multi-window t)
-  :init
-  ;; Evil integration (simple setup)
-  (with-eval-after-load 'evil
-    (require 'flash-evil)
-    (flash-evil-setup t))  ; t = also set up f/t/F/T char motions
-  :config
-  ;; Search integration (labels during C-s, /, ?)
-  (require 'flash-isearch)
-  (flash-isearch-mode 1))
-
 (use-package scroll-on-jump
     :after evil
     :ensure t
@@ -694,10 +697,6 @@ one, an error is signaled."
   :ensure t
   )
 
-;; (use-package helpful
-;;   :ensure t
-;;   )
-
 (use-package helpful
   :ensure t
   :commands (helpful-callable helpful-variable helpful-key helpful-command))
@@ -732,7 +731,7 @@ one, an error is signaled."
 (setq font-lock-multiline t)
 ;; (setq jit-lock-defer-time 0) ; Immediate fontification
 (setq fast-but-imprecise-scrolling nil)
-
+(setq org-hide-emphasis-markers t)
 (use-package org
   :ensure nil
   :mode ("\\.org\\'" . org-mode)
@@ -944,13 +943,6 @@ one, an error is signaled."
    org-roam-dailies-capture-today)
   :custom
   (org-roam-directory (file-truename "~/Notes"))
-  ;; :bind (("C-c n l" . org-roam-buffer-toggle)
-  ;;        ("C-c n f" . org-roam-node-find)
-  ;;        ("C-c n g" . org-roam-graph)
-  ;;        ("C-c n i" . org-roam-node-insert)
-  ;;        ("C-c n c" . org-roam-capture)
-  ;;        ;; Dailies
-  ;;        ("C-c n j" . org-roam-dailies-capture-today))
   :config
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
@@ -1103,13 +1095,6 @@ DEADLINE: %^t
   ("C-c n l" . consult-org-roam-forward-links)
   ("C-c n r" . consult-org-roam-search))
 
-;; (defun consult-org-roam-find-by-title ()
-;;   "Find an Org Roam node by searching titles only.
-;; This gives preference to exact title matches by temporarily excluding
-;; tags from the candidate string presented to the completion framework."
-;;   (interactive)
-;;   (let ((org-roam-node-display-template "${title}"))
-;;     (org-roam-node-visit (consult-org-roam-node-read))))
 (defun consult-org-roam-find-by-title ()
   "Find an Org Roam node by searching titles only."
   (interactive)
@@ -1202,6 +1187,7 @@ DEADLINE: %^t
 (use-package org-noter
   :ensure t
   :defer t
+  :commands (org-noter)
   :config
   (setq org-noter-notes-search-path '("~/Notes/ResearchNotes"))
   (setq org-noter-highlight-selected-text t)
@@ -1242,13 +1228,13 @@ DEADLINE: %^t
 ;;                         (end (org-babel-result-end)))
 ;;                     (ansi-color-apply-on-region beg end)))))))
 
-;; (use-package org-appear
-;;   :ensure t
-;;   :after org
-;;   :hook
-;;   (org-mode . org-appear-mode)
-;;   :custom
-;;   (org-appear-autolinks t))
+(use-package org-appear
+  :ensure t
+  :after org
+  :hook
+  (org-mode . org-appear-mode)
+  :custom
+  (org-appear-autolinks t))
 
 ;; (use-package org-kanban
 ;;   :ensure t
@@ -1610,6 +1596,8 @@ DEADLINE: %^t
   :defer t
 )
 
+;; (add-to-list 'major-mode-remap-alist '(nix-mode . nix-ts-mode))
+
 (use-package treesit-auto
   :custom
   (treesit-auto-install 'prompt)
@@ -1730,7 +1718,7 @@ DEADLINE: %^t
 
 (use-package yasnippet
   :ensure t
-  :defer 4
+  :defer t
   :config
   (yas-global-mode 1)
   )
@@ -1783,38 +1771,6 @@ DEADLINE: %^t
        (R . t)))
     (org-babel-jupyter-aliases-from-kernelspecs)))
 
-
-;; (use-package jupyter
-;;   :ensure t
-;;   :defer t
-;;   :init
-;;   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
-;;   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
-;;   :config
-;;   (org-babel-jupyter-aliases-from-kernelspecs)
-;;   (setq org-confirm-babel-evaluate nil
-;;         org-src-fontify-natively t
-;;         org-src-tab-acts-natively t
-;;         org-src-preserve-indentation t)
-;;   (setq org-babel-default-header-args:jupyter-R '((:session . "R")
-;;                                                   (:kernel . "ir")
-;;                                                   (:exports . "both")
-;;                                                   (:results . "output")))
-;;   )
-
-
-;; (with-eval-after-load 'org
-;;   (org-babel-do-load-languages
-;;    'org-babel-load-languages
-;;    '((emacs-lisp . t)
-;;      (python . t)
-;;      (shell . t)
-;;      (jupyter . t)
-;;      (R . t)
-;;      )
-;;    )
-;;   )
-
 (use-package rainbow-delimiters
   :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -1840,8 +1796,8 @@ DEADLINE: %^t
 
 (use-package projectile
   :ensure t
-  :config
-  (projectile-mode 1))
+  :defer t
+  :hook (after-init . projectile-mode))
 
 (use-package dashboard
   :ensure t 
@@ -1963,6 +1919,8 @@ DEADLINE: %^t
   :hook (pdf-view-mode . (lambda ()
                            (display-line-numbers-mode 0))))
 
+
+
 (use-package citar
   :ensure t
   :bind (("C-c b" . citar-insert-citation)
@@ -2060,36 +2018,6 @@ DEADLINE: %^t
   :hook ((csv-mode . rainbow-csv-mode)
          (tsv-mode . rainbow-csv-mode)))
 
-;; (use-package gptel
-;;   :ensure (:host github :repo "karthink/gptel" :branch "master" :depth nil)
-;;   :defer t
-;;   :init
-;;   (setq gptel-log-level 'debug)
-;;   (setq gptel-include-reasoning t)
-;;   (setq gptel-max-tokens nil) ;; disable old param
-;;   (defvar azure
-;;     (gptel-make-openai "Azure"
-;;       :host "emacs-resource.services.ai.azure.com"
-;;       :protocol "https"
-;;       :endpoint "/openai/v1/chat/completions"
-;;       :stream t
-;;       ;; :models '("DeepSeek-V3.2-Speciale" "gpt-5.4-nano")
-;;       :models '((gpt-5.4-nano :capabilities (reasoning))
-;; 		(DeepSeek-V3.2-Speciale :capabilities (reasoning)))
-;;       :key azure-api))
-
-;;   (defvar azure-responses
-;;     (gptel-make-openai-responses "Azure-Responses"
-;;       :host "emacs-resource.services.ai.azure.com"
-;;       :endpoint "/openai/v1/responses"
-;;       :stream t
-;;       :models '((gpt-5.4-nano)
-;; 		(gpt-5.4-pro))
-;;       :key azure-api))
-;;   (setq gptel-backend azure-responses)
-;;   (setq gptel-model 'gpt-5.4-nano)
-;;   )
-
 (use-package gptel
   :ensure (:host github :repo "karthink/gptel" :branch "master" :depth nil)
   :defer t
@@ -2126,8 +2054,8 @@ DEADLINE: %^t
       :models '((gpt-5.4-nano)
                 (gpt-5.4-pro))
       :key azure-api-2))
-
-  (setq gptel-backend azure-responses
+  
+  (setq gptel-backend azure-responses 
         gptel-model 'gpt-5.4-nano))
 
 (use-package gptel-agent
@@ -2657,7 +2585,7 @@ _j_: next block    _k_: previous block
 
 (use-package casual
   :ensure t
-  :config)
+  )
 
 ;; (use-package deadgrep
 ;;   :ensure t
