@@ -15,6 +15,11 @@ inputs =
         url = "github:nix-community/home-manager/master";
         inputs.nixpkgs.follows = "nixpkgs";
       };
+    emacs-reader = {
+        url = "git+https://codeberg.org/divyaranjan/emacs-reader";
+        flake = false;
+    };
+
   };
 outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs: 
   let
@@ -103,6 +108,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                 ({ ... }: {
                   home-manager.extraSpecialArgs = {
                     inherit machine;
+                    inherit inputs;
                     stable = stableFor machine.system;
                     host = machine.host;
                     username = machine.username;
@@ -129,6 +135,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
         pkgs = nixpkgs.legacyPackages.${machine.system};
         extraSpecialArgs = 
           {
+            inherit inputs;
             machine = machine;
             stable = stableFor machine.system;
             host = machine.host;

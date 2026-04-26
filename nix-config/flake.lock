@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "emacs-reader": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776250696,
+        "narHash": "sha256-84v8NzAjH0djD98RKElzy3dIkSSh1c3OyjrHXR8cQrY=",
+        "ref": "refs/heads/master",
+        "rev": "9824fc91eb51bec0edb8c3634a74d73226d26525",
+        "revCount": 867,
+        "type": "git",
+        "url": "https://codeberg.org/divyaranjan/emacs-reader"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://codeberg.org/divyaranjan/emacs-reader"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -92,6 +108,7 @@
     },
     "root": {
       "inputs": {
+        "emacs-reader": "emacs-reader",
         "home-manager": "home-manager",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs",

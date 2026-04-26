@@ -1,4 +1,4 @@
-{ config, pkgs, stable, machine, ... }:
+{ config, pkgs, stable, machine, inputs, ... }:
 {
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
@@ -145,10 +145,11 @@
     enable = true;
   };
   
+  
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;
-  extraConfig = builtins.readFile /home/nixos/.dotfiles/emacs/init.el;
+    extraConfig = builtins.readFile /home/nixos/.dotfiles/emacs/init.el;
     extraPackages = (
       epkgs: with pkgs.emacsPackages;   
         [ 
@@ -158,7 +159,7 @@
           treesit-grammars.with-all-grammars
           pdf-tools
         ]
-    
+          
     );
   };
   gtk = 
@@ -179,6 +180,7 @@
     };
   
   home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
+  home.file.".emacs.d/early-init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/early-init.el;
   # home.file.".emacs.d/init.el".source = ../emacs/init.el;
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
 

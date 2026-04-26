@@ -56,6 +56,11 @@ inputs =
         url = "github:nix-community/home-manager/master";
         inputs.nixpkgs.follows = "nixpkgs";
       };
+    emacs-reader = {
+        url = "git+https://codeberg.org/divyaranjan/emacs-reader";
+        flake = false;
+    };
+
   };
 #+end_src 
 
@@ -177,6 +182,7 @@ mkSystem = machine:
             ({ ... }: {
               home-manager.extraSpecialArgs = {
                 inherit machine;
+                inherit inputs;
                 stable = stableFor machine.system;
                 host = machine.host;
                 username = machine.username;
@@ -207,6 +213,7 @@ mkHome = machine:
     pkgs = nixpkgs.legacyPackages.${machine.system};
     extraSpecialArgs = 
       {
+        inherit inputs;
         machine = machine;
         stable = stableFor machine.system;
         host = machine.host;
@@ -367,26 +374,27 @@ in
 ** Emacs Configuration
 #+name:emacs-config-wayland
 #+begin_src nix
-  services.emacs = {
-    enable = true;
-  };
+services.emacs = {
+  enable = true;
+};
 
-  programs.emacs = {
-    enable = true;
-    package = pkgs.emacs-pgtk;
+
+programs.emacs = {
+  enable = true;
+  package = pkgs.emacs-pgtk;
   extraConfig = builtins.readFile /home/nixos/.dotfiles/emacs/init.el;
-    extraPackages = (
-      epkgs: with pkgs.emacsPackages;   
-        [ 
-          vterm 
-          zmq 
-          treesit-auto
-          treesit-grammars.with-all-grammars
-          pdf-tools
-        ]
-    
-    );
-  };
+  extraPackages = (
+    epkgs: with pkgs.emacsPackages;   
+      [ 
+        vterm 
+        zmq 
+        treesit-auto
+        treesit-grammars.with-all-grammars
+        pdf-tools
+      ]
+        
+  );
+};
 #+end_src
 
 ** Common Home Manager Configuration
@@ -527,7 +535,7 @@ in
 
 *** Home.nix
 #+begin_src nix :tangle ./nixos/home.nix :noweb yes   
-{ config, pkgs, stable, machine, ... }:
+{ config, pkgs, stable, machine, inputs, ... }:
 {
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
@@ -585,6 +593,7 @@ in
     };
   
   home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
+  home.file.".emacs.d/early-init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/early-init.el;
   # home.file.".emacs.d/init.el".source = ../emacs/init.el;
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
 

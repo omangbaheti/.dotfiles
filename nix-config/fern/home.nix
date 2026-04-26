@@ -149,10 +149,11 @@ eval "$(direnv hook zsh)"
     enable = true;
   };
   
+  
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;
-  extraConfig = builtins.readFile /home/nixos/.dotfiles/emacs/init.el;
+    extraConfig = builtins.readFile /home/nixos/.dotfiles/emacs/init.el;
     extraPackages = (
       epkgs: with pkgs.emacsPackages;   
         [ 
@@ -162,7 +163,7 @@ eval "$(direnv hook zsh)"
           treesit-grammars.with-all-grammars
           pdf-tools
         ]
-    
+          
     );
   };
   home.sessionVariables = 
