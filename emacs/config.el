@@ -57,13 +57,13 @@
 ;;Useful for configuring built-in emacs features.
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
-(use-package benchmark-init
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+;; (use-package benchmark-init
+;;   :ensure t
+;;   :config
+;;   ;; To disable collection of benchmark data after init is done.
+;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
-(setq use-package-compute-statistics t)
+;; (setq use-package-compute-statistics t)
 
 (setq evil-want-keybinding nil)
 (setq evil-want-integration t)
@@ -93,7 +93,9 @@
 (with-eval-after-load 'evil-maps
   (define-key evil-motion-state-map (kbd "SPC") nil)
   (define-key evil-motion-state-map (kbd "RET") nil)
-  (define-key evil-motion-state-map (kbd "TAB") nil))
+  (define-key evil-motion-state-map (kbd "TAB") nil)
+  (define-key evil-normal-state-map (kbd "C-b") #'evil-scroll-up )
+  )
 
 ;;setting RETURN key in org-mode to follow links
 (setq org-return-follows-link t)
@@ -451,32 +453,31 @@
 (setq doom-modeline-before-update-env-hook nil)
 (setq doom-modeline-after-update-env-hook nil)
 
-(use-package scroll-on-jump
-    :after evil
-    :ensure t
-    :config
-    (setq scroll-on-jump-duration 0.25
-          scroll-on-jump-smooth t
-          scroll-on-jump-curve 'smooth-out
-          scroll-on-jump-curve-power 4.0)
-      (scroll-on-jump-advice-add evil-undo)
-      (scroll-on-jump-advice-add evil-redo)
-      (scroll-on-jump-advice-add evil-jump-item)
-      (scroll-on-jump-advice-add evil-jump-forward)
-      (scroll-on-jump-advice-add evil-jump-backward)
-      (scroll-on-jump-advice-add evil-ex-search-next)
-      (scroll-on-jump-advice-add evil-ex-search-previous)
-      (scroll-on-jump-advice-add evil-forward-paragraph)
-      (scroll-on-jump-advice-add evil-backward-paragraph)
-      (scroll-on-jump-advice-add evil-goto-mark)
-      (scroll-on-jump-with-scroll-advice-add evil-goto-line)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-down)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-up)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-center)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom)
-      (scroll-on-jump-with-scroll-advice-add consult-org-heading)
-)
+(use-package dashboard
+  :ensure t 
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  (setq dashboard-set-heading-icons t)
+  ;; (setq dashboard-footer-messages nil)
+  (setq dashboard-set-footer nil)
+  (setq dashboard-set-navigator t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
+  (setq dashboard-image-banner-max-height 200)
+  (setq dashboard-image-banner-max-width 200)
+  (setq dashboard-projects-backend 'projectile)
+  (setq dashboard-footer-messages '(""))
+  (setq dashboard-center-content t) ;; set to 't' for centered content
+  (setq dashboard-items '((recents . 10)
+                          ;; (agenda . 5)
+                          (projects . 3)
+                          ))
+  
+  :custom
+  (dashboard-modify-heading-icons '((recents . "file-text")
+                                    (bookmarks . "book")))
+  :config
+  (dashboard-setup-startup-hook))
 
 (defun keyboard-quit-dwim ()
   (interactive)
@@ -640,23 +641,17 @@ one, an error is signaled."
 ;;   (global-emojify-mode 1))
 
 (setq frame-title-format "%b")
-(scroll-bar-mode -1)               ; disable scrollbar
-(window-divider-mode 1)
-(custom-set-faces
-'(vertical-border ((t (:foreground "gray")))))
 (setq window-divider-default-bottom-width 1)
 (setq window-divider-default-right-width 1)
-(tool-bar-mode -1)                 ; disable toolbar
-(tooltip-mode -1)                  ; disable tooltips
 (set-fringe-mode 10)               ; give some breathing room
-(menu-bar-mode -1)                 ; disable menubar
 (blink-cursor-mode 0)              ; disable blinking cursor
 (pixel-scroll-precision-mode 1)
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
-;; WHy am i havin to do this
-(setq enable-local-variables t)
+
+;; ;; WHy am i havin to do this
+;; (setq enable-local-variables t)
 ;; solves the font lock 
 (add-hook 'org-mode-hook #'font-lock-fontify-buffer)
 ;;opens window in fullscreen
@@ -933,7 +928,6 @@ one, an error is signaled."
 
 (use-package org-roam
   :ensure t
-  ;; :defer 5
   :commands
   (org-roam-buffer-toggle
    org-roam-node-find
@@ -1275,7 +1269,8 @@ DEADLINE: %^t
 
 (use-package spacious-padding
   :ensure t
-  :defer 1
+  ;; :hook (after-init . spacious-padding-mode)
+  :defer 3
   :config
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
@@ -1361,6 +1356,7 @@ DEADLINE: %^t
      evil-yank
      evil-yank-line
      evil-delete
+     evil-scroll-up
      evil-delete-line
      evil-jump-item
      flymake-goto-next-error
@@ -1371,6 +1367,7 @@ DEADLINE: %^t
 
 (use-package winpulse
   :ensure (:host github :repo "xenodium/winpulse")
+  :defer t
   :config
   (winpulse-mode +1)
   :init
@@ -1396,6 +1393,33 @@ DEADLINE: %^t
   :ensure t
   :hook
   (dired-mode . nerd-icons-dired-mode))
+
+(use-package scroll-on-jump
+    :after evil
+    :ensure t
+    :config
+    (setq scroll-on-jump-duration 0.25
+          scroll-on-jump-smooth t
+          scroll-on-jump-curve 'smooth-out
+          scroll-on-jump-curve-power 4.0)
+      (scroll-on-jump-advice-add evil-undo)
+      (scroll-on-jump-advice-add evil-redo)
+      (scroll-on-jump-advice-add evil-jump-item)
+      (scroll-on-jump-advice-add evil-jump-forward)
+      (scroll-on-jump-advice-add evil-jump-backward)
+      (scroll-on-jump-advice-add evil-ex-search-next)
+      (scroll-on-jump-advice-add evil-ex-search-previous)
+      (scroll-on-jump-advice-add evil-forward-paragraph)
+      (scroll-on-jump-advice-add evil-backward-paragraph)
+      (scroll-on-jump-advice-add evil-goto-mark)
+      (scroll-on-jump-with-scroll-advice-add evil-goto-line)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-down)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-up)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-center)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom)
+      (scroll-on-jump-with-scroll-advice-add consult-org-heading)
+)
 
 (use-package vertico
   :ensure t
@@ -1514,7 +1538,7 @@ DEADLINE: %^t
 
 (use-package consult-omni
   :ensure (consult-omni :type git :host github :repo "armindarvish/consult-omni" :branch "main" :files (:defaults "sources/*.el"))
-  :after consut
+  :after consult
   :config
   ;; Load Sources Core code
   (require 'consult-omni-sources)
@@ -1566,10 +1590,12 @@ DEADLINE: %^t
 
 (use-package ghostel
   :ensure (:host github :repo "dakra/ghostel")
+  :commands (ghostel)
   :hook ((ghostel-mode . (lambda () (display-line-numbers-mode 0))))
 )
+
 (use-package evil-ghostel
-  :after (ghostel evil)
+  :after (ghostel)
   :hook (ghostel-mode . evil-ghostel-mode))
 
 (use-package dirvish
@@ -1589,6 +1615,11 @@ DEADLINE: %^t
 (use-package nix-ts-mode
   :ensure t
   :mode "\\.nix\\'"
+)
+
+(use-package nix-mode
+  :ensure t
+  :defer t
 )
 
 (use-package ess
@@ -1661,13 +1692,12 @@ DEADLINE: %^t
                        :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  ;; :defer 1
-  ;; :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
   :hook ((python-mode . lsp-bridge-mode)
          (java-mode . lsp-bridge-mode)
          (js-mode . lsp-bridge-mode)
          (typescript-mode . lsp-bridge-mode)
          (org-src-mode . lsp-bridge-mode)
+         (org-mode . lsp-bridge-mode)
          (LaTeX-mode . lsp-bridge-mode))
   :init
   (setq lsp-bridge-user-multiserver-dir
@@ -1675,7 +1705,6 @@ DEADLINE: %^t
   (setq lsp-bridge-user-langserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
   ;; ;; java stuff
-
   (add-hook 'java-mode-hook
             (lambda ()
               (require 'lsp-bridge-jdtls nil t)))
@@ -1799,34 +1828,9 @@ DEADLINE: %^t
   :defer t
   :hook (after-init . projectile-mode))
 
-(use-package dashboard
-  :ensure t 
-  :init
-  (setq initial-buffer-choice 'dashboard-open)
-  (setq dashboard-set-heading-icons t)
-  ;; (setq dashboard-footer-messages nil)
-  (setq dashboard-set-footer nil)
-  (setq dashboard-set-navigator t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
-  (setq dashboard-image-banner-max-height 200)
-  (setq dashboard-image-banner-max-width 200)
-  (setq dashboard-projects-backend 'projectile)
-  (setq dashboard-footer-messages '(""))
-  (setq dashboard-center-content t) ;; set to 't' for centered content
-  (setq dashboard-items '((recents . 5)
-                          (agenda . 5)
-                          ;; (projects . 3)
-                          ))
-  
-  :custom
-  (dashboard-modify-heading-icons '((recents . "file-text")
-                                    (bookmarks . "book")))
-  :config
-  (dashboard-setup-startup-hook))
-
 (use-package auctex
   :ensure t
+  :hook (latex-mode LaTeX-mode)
   :config
   ;; Basic AUCTeX settings
   (setq TeX-save-query nil)
@@ -1918,8 +1922,6 @@ DEADLINE: %^t
   
   :hook (pdf-view-mode . (lambda ()
                            (display-line-numbers-mode 0))))
-
-
 
 (use-package citar
   :ensure t
@@ -2042,7 +2044,7 @@ DEADLINE: %^t
       :host "emacs-resource.services.ai.azure.com"
       :endpoint "/openai/v1/responses"
       :stream t
-      :models '((gpt-5.4-nano)
+      :models '((gpt-5.4-nano) (Kimi-K2.6-1)
                 (gpt-5.4-pro))
       :key azure-api))
 
@@ -2581,10 +2583,13 @@ _j_: next block    _k_: previous block
   )
 
 (use-package transient
-  :ensure t)
+  :ensure t
+  :defer t
+  )
 
 (use-package casual
   :ensure t
+  :defer t
   )
 
 ;; (use-package deadgrep

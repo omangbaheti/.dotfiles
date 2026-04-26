@@ -9,7 +9,7 @@
   - [[#benchmarking][Benchmarking]]
   - [[#load-evil-mode][Load Evil Mode]]
   - [[#theming][Theming]]
-  - [[#scroll-on-jump][Scroll On Jump]]
+  - [[#dashboard][DASHBOARD]]
 - [[#closing-minibuffer][CLOSING MINIBUFFER]]
 - [[#buffer-move][BUFFER-MOVE]]
 - [[#posframe][POSFRAME]]
@@ -37,7 +37,7 @@
   - [[#olivetti-centering][OLIVETTI (Centering)]]
   - [[#org-agenda][ORG-AGENDA]]
   - [[#org-supertag][ORG-SUPERTAG]]
-  - [[#org-roam][ORG ROAM]]
+  - [[#org-roam][ORG-ROAM]]
   - [[#org-noter][ORG NOTER]]
   - [[#org-transclusion][ORG TRANSCLUSION]]
   - [[#ansi-support][ANSI SUPPORT]]
@@ -52,6 +52,7 @@
   - [[#pulsar][Pulsar]]
   - [[#winpulse][Winpulse]]
   - [[#nerd-icons][Nerd Icons]]
+  - [[#scroll-on-jump][Scroll On Jump]]
 - [[#vertico][VERTICO]]
 - [[#marginalia][MARGINALIA]]
 - [[#orderless][ORDERLESS]]
@@ -74,10 +75,8 @@
   - [[#jupyter][Jupyter]]
   - [[#rainbow-mode][Rainbow mode]]
 - [[#projectile][PROJECTILE]]
-- [[#dashboard][DASHBOARD]]
 - [[#latex][LATEX]]
   - [[#pdf-tools][Pdf-Tools]]
-  - [[#emacs-reader][Emacs reader]]
   - [[#citar][Citar]]
   - [[#misc-writing-tools][Misc writing tools]]
 - [[#git][GIT]]
@@ -174,13 +173,13 @@
 ** Benchmarking
 
 #+begin_src emacs-lisp
-(use-package benchmark-init
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+;; (use-package benchmark-init
+;;   :ensure t
+;;   :config
+;;   ;; To disable collection of benchmark data after init is done.
+;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
-(setq use-package-compute-statistics t)
+;; (setq use-package-compute-statistics t)
 #+end_src
 
 ** Load Evil Mode
@@ -214,12 +213,17 @@
 (with-eval-after-load 'evil-maps
   (define-key evil-motion-state-map (kbd "SPC") nil)
   (define-key evil-motion-state-map (kbd "RET") nil)
-  (define-key evil-motion-state-map (kbd "TAB") nil))
+  (define-key evil-motion-state-map (kbd "TAB") nil)
+  (define-key evil-normal-state-map (kbd "C-b") #'evil-scroll-up )
+  )
 
 ;;setting RETURN key in org-mode to follow links
 (setq org-return-follows-link t)
 
 #+END_SRC
+
+#+RESULTS:
+: t
 
 *** TODO Evil-Snipe
 #+begin_src emacs-lisp
@@ -307,8 +311,6 @@
   (require 'flash-isearch)
   (flash-isearch-mode 1))
 #+end_src
-
-
 
 ** Theming
 *** Doom Themes
@@ -606,35 +608,34 @@
 #+end_src
 
 
-** Scroll On Jump
+** DASHBOARD
 
 #+begin_src emacs-lisp
-(use-package scroll-on-jump
-    :after evil
-    :ensure t
-    :config
-    (setq scroll-on-jump-duration 0.25
-          scroll-on-jump-smooth t
-          scroll-on-jump-curve 'smooth-out
-          scroll-on-jump-curve-power 4.0)
-      (scroll-on-jump-advice-add evil-undo)
-      (scroll-on-jump-advice-add evil-redo)
-      (scroll-on-jump-advice-add evil-jump-item)
-      (scroll-on-jump-advice-add evil-jump-forward)
-      (scroll-on-jump-advice-add evil-jump-backward)
-      (scroll-on-jump-advice-add evil-ex-search-next)
-      (scroll-on-jump-advice-add evil-ex-search-previous)
-      (scroll-on-jump-advice-add evil-forward-paragraph)
-      (scroll-on-jump-advice-add evil-backward-paragraph)
-      (scroll-on-jump-advice-add evil-goto-mark)
-      (scroll-on-jump-with-scroll-advice-add evil-goto-line)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-down)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-up)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-center)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
-      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom)
-      (scroll-on-jump-with-scroll-advice-add consult-org-heading)
-)
+(use-package dashboard
+  :ensure t 
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  (setq dashboard-set-heading-icons t)
+  ;; (setq dashboard-footer-messages nil)
+  (setq dashboard-set-footer nil)
+  (setq dashboard-set-navigator t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
+  (setq dashboard-image-banner-max-height 200)
+  (setq dashboard-image-banner-max-width 200)
+  (setq dashboard-projects-backend 'projectile)
+  (setq dashboard-footer-messages '(""))
+  (setq dashboard-center-content t) ;; set to 't' for centered content
+  (setq dashboard-items '((recents . 10)
+                          ;; (agenda . 5)
+                          (projects . 3)
+                          ))
+  
+  :custom
+  (dashboard-modify-heading-icons '((recents . "file-text")
+                                    (bookmarks . "book")))
+  :config
+  (dashboard-setup-startup-hook))
 #+end_src
 
 
@@ -850,36 +851,30 @@ Defining the fonts
 
 #+begin_src emacs-lisp
 (setq frame-title-format "%b")
-(scroll-bar-mode -1)               ; disable scrollbar
-(window-divider-mode 1)
-(custom-set-faces
-'(vertical-border ((t (:foreground "gray")))))
 (setq window-divider-default-bottom-width 1)
 (setq window-divider-default-right-width 1)
-(tool-bar-mode -1)                 ; disable toolbar
-(tooltip-mode -1)                  ; disable tooltips
 (set-fringe-mode 10)               ; give some breathing room
-(menu-bar-mode -1)                 ; disable menubar
 (blink-cursor-mode 0)              ; disable blinking cursor
 (pixel-scroll-precision-mode 1)
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
-;; WHy am i havin to do this
-(setq enable-local-variables t)
+
+;; ;; WHy am i havin to do this
+;; (setq enable-local-variables t)
 ;; solves the font lock 
 (add-hook 'org-mode-hook #'font-lock-fontify-buffer)
 ;;opens window in fullscreen
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (setq savehist-additional-variables
-      '(search-ring regexp-search-ring kill-ring))
+      '(search-ring regexp-search-ring kill-ring))
 
 (add-hook 'savehist-save-hook
           (lambda ()
             (setq kill-ring
                   (mapcar #'substring-no-properties
-                          (cl-remove-if-not #'stringp kill-ring)))))
+                          (cl-remove-if-not #'stringp kill-ring)))))
 #+end_src
 
 ** Display Line Numbers and Truncated Lines
@@ -1236,12 +1231,11 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 #+end_src
 
 
-** ORG ROAM
+** ORG-ROAM
 
 #+begin_src emacs-lisp
 (use-package org-roam
   :ensure t
-  ;; :defer 5
   :commands
   (org-roam-buffer-toggle
    org-roam-node-find
@@ -1652,7 +1646,8 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 #+begin_src emacs-lisp
 (use-package spacious-padding
   :ensure t
-  :defer 1
+  ;; :hook (after-init . spacious-padding-mode)
+  :defer 3
   :config
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
@@ -1752,6 +1747,7 @@ Package to highlight a line when jumping to different places
      evil-yank
      evil-yank-line
      evil-delete
+     evil-scroll-up
      evil-delete-line
      evil-jump-item
      flymake-goto-next-error
@@ -1761,11 +1757,13 @@ Package to highlight a line when jumping to different places
   )
 #+end_src
 
+
 ** Winpulse
 Package to highlight when switching buffer
 #+begin_src emacs-lisp
 (use-package winpulse
   :ensure (:host github :repo "xenodium/winpulse")
+  :defer t
   :config
   (winpulse-mode +1)
   :init
@@ -1794,6 +1792,38 @@ Package to highlight when switching buffer
   :ensure t
   :hook
   (dired-mode . nerd-icons-dired-mode))
+#+end_src
+
+
+** Scroll On Jump
+
+#+begin_src emacs-lisp
+(use-package scroll-on-jump
+    :after evil
+    :ensure t
+    :config
+    (setq scroll-on-jump-duration 0.25
+          scroll-on-jump-smooth t
+          scroll-on-jump-curve 'smooth-out
+          scroll-on-jump-curve-power 4.0)
+      (scroll-on-jump-advice-add evil-undo)
+      (scroll-on-jump-advice-add evil-redo)
+      (scroll-on-jump-advice-add evil-jump-item)
+      (scroll-on-jump-advice-add evil-jump-forward)
+      (scroll-on-jump-advice-add evil-jump-backward)
+      (scroll-on-jump-advice-add evil-ex-search-next)
+      (scroll-on-jump-advice-add evil-ex-search-previous)
+      (scroll-on-jump-advice-add evil-forward-paragraph)
+      (scroll-on-jump-advice-add evil-backward-paragraph)
+      (scroll-on-jump-advice-add evil-goto-mark)
+      (scroll-on-jump-with-scroll-advice-add evil-goto-line)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-down)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-up)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-center)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
+      (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom)
+      (scroll-on-jump-with-scroll-advice-add consult-org-heading)
+)
 #+end_src
 
 
@@ -1942,7 +1972,7 @@ Enabling Frequency + Recency Sorting of options in vertico
 #+begin_src emacs-lisp
 (use-package consult-omni
   :ensure (consult-omni :type git :host github :repo "armindarvish/consult-omni" :branch "main" :files (:defaults "sources/*.el"))
-  :after consut
+  :after consult
   :config
   ;; Load Sources Core code
   (require 'consult-omni-sources)
@@ -2004,10 +2034,12 @@ Enabling Frequency + Recency Sorting of options in vertico
 #+begin_src emacs-lisp
 (use-package ghostel
   :ensure (:host github :repo "dakra/ghostel")
+  :commands (ghostel)
   :hook ((ghostel-mode . (lambda () (display-line-numbers-mode 0))))
 )
+
 (use-package evil-ghostel
-  :after (ghostel evil)
+  :after (ghostel)
   :hook (ghostel-mode . evil-ghostel-mode))
 #+end_src
 
@@ -2043,6 +2075,11 @@ Language Modes that I need to install manually
 (use-package nix-ts-mode
   :ensure t
   :mode "\\.nix\\'"
+)
+
+(use-package nix-mode
+  :ensure t
+  :defer t
 )
 
 (use-package ess
@@ -2127,13 +2164,12 @@ Modern on-the-fly syntax checking extension for GNU Emacs
                        :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  ;; :defer 1
-  ;; :hook ((prog-mode org-mode org-src-mode LaTeX-mode) . lsp-bridge-mode)
   :hook ((python-mode . lsp-bridge-mode)
          (java-mode . lsp-bridge-mode)
          (js-mode . lsp-bridge-mode)
          (typescript-mode . lsp-bridge-mode)
          (org-src-mode . lsp-bridge-mode)
+         (org-mode . lsp-bridge-mode)
          (LaTeX-mode . lsp-bridge-mode))
   :init
   (setq lsp-bridge-user-multiserver-dir
@@ -2141,7 +2177,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq lsp-bridge-user-langserver-dir
         (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
   ;; ;; java stuff
-
   (add-hook 'java-mode-hook
             (lambda ()
               (require 'lsp-bridge-jdtls nil t)))
@@ -2297,42 +2332,12 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 
-* DASHBOARD
-
-#+begin_src emacs-lisp
-(use-package dashboard
-  :ensure t 
-  :init
-  (setq initial-buffer-choice 'dashboard-open)
-  (setq dashboard-set-heading-icons t)
-  ;; (setq dashboard-footer-messages nil)
-  (setq dashboard-set-footer nil)
-  (setq dashboard-set-navigator t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-startup-banner "~/.dotfiles/emacs/NixOS.png")  ;; use custom image as banner
-  (setq dashboard-image-banner-max-height 200)
-  (setq dashboard-image-banner-max-width 200)
-  (setq dashboard-projects-backend 'projectile)
-  (setq dashboard-footer-messages '(""))
-  (setq dashboard-center-content t) ;; set to 't' for centered content
-  (setq dashboard-items '((recents . 5)
-                          (agenda . 5)
-                          ;; (projects . 3)
-                          ))
-  
-  :custom
-  (dashboard-modify-heading-icons '((recents . "file-text")
-                                    (bookmarks . "book")))
-  :config
-  (dashboard-setup-startup-hook))
-#+end_src
-
-
 * LATEX
 
 #+begin_src emacs-lisp
 (use-package auctex
   :ensure t
+  :hook (latex-mode LaTeX-mode)
   :config
   ;; Basic AUCTeX settings
   (setq TeX-save-query nil)
@@ -2428,11 +2433,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   
   :hook (pdf-view-mode . (lambda ()
                            (display-line-numbers-mode 0))))
-#+end_src
-
-** Emacs reader
-#+begin_src emacs-lisp
-
 #+end_src
 
 
@@ -2590,7 +2590,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
       :host "emacs-resource.services.ai.azure.com"
       :endpoint "/openai/v1/responses"
       :stream t
-      :models '((gpt-5.4-nano)
+      :models '((gpt-5.4-nano) (Kimi-K2.6-1)
                 (gpt-5.4-pro))
       :key azure-api))
 
@@ -2609,8 +2609,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 #+RESULTS:
-: #s(hash-table data (:use-package (27111 4388 7523 888000) :use-package-secs (0 0 311 449000) :init (27111 4336 5223 498000) :init-secs (0 0 27 372000) :config (27111 4336 5203 110000) :config-secs (0 0 5 300000)))
-
+: [nil 27117 53979 76286 nil elpaca-process-queues nil nil 422000 nil]
 
 ** GPTEL AGENT
 
@@ -3149,10 +3148,6 @@ Preserves existing entries to avoid overwriting."
 (global-set-key (kbd "C-x l") 'next-buffer)
 #+END_SRC
 
-#+RESULTS:
-: next-buffer
-
-
 ** HYDRA
 #+begin_src emacs-lisp
 (use-package hydra
@@ -3202,7 +3197,9 @@ _j_: next block    _k_: previous block
 Its a built-in emacs package, its here only so that elpaca can manage it instead of emacs package manager
 #+begin_src emacs-lisp
 (use-package transient
-  :ensure t)
+  :ensure t
+  :defer t
+  )
 #+end_src
 
 
@@ -3211,9 +3208,9 @@ Its a built-in emacs package, its here only so that elpaca can manage it instead
 #+begin_src emacs-lisp
 (use-package casual
   :ensure t
+  :defer t
   )
 #+end_src
-
 
 * Stuff I havent Used in a while
 
