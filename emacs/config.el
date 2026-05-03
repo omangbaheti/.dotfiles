@@ -57,13 +57,13 @@
 ;;Useful for configuring built-in emacs features.
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
-;; (use-package benchmark-init
-;;   :ensure t
-;;   :config
-;;   ;; To disable collection of benchmark data after init is done.
-;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
-;; (setq use-package-compute-statistics t)
+(setq use-package-compute-statistics t)
 
 (setq evil-want-keybinding nil)
 (setq evil-want-integration t)
@@ -148,23 +148,23 @@
     "A" #'evil-mc-make-cursor-in-visual-selection-end
     "I" #'evil-mc-make-cursor-in-visual-selection-beg))
 
-(use-package flash
-  :ensure (:host github :repo "Prgebish/flash")
-  :defer t
-  :commands (flash-jump flash-jump-continue
-             flash-treesitter)
-  :bind ("s-j" . flash-jump)
-  :custom
-  (flash-multi-window t)
-  :init
-  ;; Evil integration (simple setup)
-  (with-eval-after-load 'evil
-    (require 'flash-evil)
-    (flash-evil-setup t))  ; t = also set up f/t/F/T char motions
-  :config
-  ;; Search integration (labels during C-s, /, ?)
-  (require 'flash-isearch)
-  (flash-isearch-mode 1))
+;; (use-package flash
+;;   :ensure (:host github :repo "Prgebish/flash")
+;;   :defer t
+;;   :commands (flash-jump flash-jump-continue
+;;              flash-treesitter)
+;;   :bind ("s-j" . flash-jump)
+;;   :custom
+;;   (flash-multi-window t)
+;;   :init
+;;   ;; Evil integration (simple setup)
+;;   (with-eval-after-load 'evil
+;;     (require 'flash-evil)
+;;     (flash-evil-setup t))  ; t = also set up f/t/F/T char motions
+;;   :config
+;;   ;; Search integration (labels during C-s, /, ?)
+;;   (require 'flash-isearch)
+;;   (flash-isearch-mode 1))
 
 (use-package doom-themes
   :ensure t
@@ -733,6 +733,7 @@ one, an error is signaled."
   :commands (org-agenda org-capture org-store-link)
   :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
+  (setq org-ellipsis "  ")
   (setq org-startup-folded t)              
   (setq org-cycle-hide-drawers 'all)
   (setq org-src-fontify-natively t)
@@ -831,7 +832,6 @@ one, an error is signaled."
           ("" . "")))
   (setq ;;org-modern-star '("◉" "○" "✸" "✿")
    org-modern-table t 
-   org-ellipsis " "
    org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
    org-modern-block-fringe nil 
    org-modern-priority
@@ -1198,7 +1198,7 @@ DEADLINE: %^t
   (setq org-roam-ui-sync-theme t
         org-roam-ui-follow t
         org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t)
+        org-roam-ui-open-on-start nil)
   )
 
 (use-package org-transclusion
@@ -1269,8 +1269,6 @@ DEADLINE: %^t
 
 (use-package spacious-padding
   :ensure t
-  ;; :hook (after-init . spacious-padding-mode)
-  :defer 3
   :config
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
@@ -1342,8 +1340,8 @@ DEADLINE: %^t
 
 (use-package pulsar
   :ensure t
-  :hook
-  (after-init . pulsar-global-mode)
+  :config
+  (pulsar-global-mode)
   :custom
   (pulsar-pulse t)
   (pulsar-delay 0.01)
@@ -1367,7 +1365,6 @@ DEADLINE: %^t
 
 (use-package winpulse
   :ensure (:host github :repo "xenodium/winpulse")
-  :defer t
   :config
   (winpulse-mode +1)
   :init
@@ -1418,7 +1415,6 @@ DEADLINE: %^t
       (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-center)
       (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
       (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom)
-      (scroll-on-jump-with-scroll-advice-add consult-org-heading)
 )
 
 (use-package vertico
@@ -1627,6 +1623,16 @@ DEADLINE: %^t
   :defer t
 )
 
+(use-package dart-mode
+  :ensure t
+  :mode "\\.dart\\'")
+
+(use-package flutter
+  :ensure t
+  :after dart-mode
+  :bind (:map dart-mode-map
+              ("C-M-x" . #'flutter-run-or-hot-reload))
+  )
 ;; (add-to-list 'major-mode-remap-alist '(nix-mode . nix-ts-mode))
 
 (use-package treesit-auto
@@ -1687,6 +1693,16 @@ DEADLINE: %^t
   ;; Performance
   (flyover-debounce-interval 0.2))
 
+(use-package yasnippet
+  :ensure t
+  :after lsp-bridge
+  :config
+  (yas-global-mode 1))
+
+(use-package yasnippet-snippets
+  :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
+  :after yasnippet)
+
 (use-package lsp-bridge
   :ensure '(lsp-bridge :type git 
                        :host github :repo "manateelazycat/lsp-bridge"
@@ -1695,15 +1711,17 @@ DEADLINE: %^t
   :hook ((python-mode . lsp-bridge-mode)
          (java-mode . lsp-bridge-mode)
          (js-mode . lsp-bridge-mode)
+         (dart-mode . lsp-bridge-mode)
          (typescript-mode . lsp-bridge-mode)
          (org-src-mode . lsp-bridge-mode)
          (org-mode . lsp-bridge-mode)
+	 (latex-mode . lsp-bridge-mode)
          (LaTeX-mode . lsp-bridge-mode))
   :init
-  (setq lsp-bridge-user-multiserver-dir
-        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
-  (setq lsp-bridge-user-langserver-dir
-        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
+  ;; (setq lsp-bridge-user-multiserver-dir
+  ;;       (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
+  ;; (setq lsp-bridge-user-langserver-dir
+  ;;       (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
   ;; ;; java stuff
   (add-hook 'java-mode-hook
             (lambda ()
@@ -1745,16 +1763,7 @@ DEADLINE: %^t
   (require 'acm-backend-elisp)
   (setq acm-enable-elisp t))
 
-(use-package yasnippet
-  :ensure t
-  :defer t
-  :config
-  (yas-global-mode 1)
-  )
 
-(use-package yasnippet-snippets
-  :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
-  :after yasnippet)
 
 (use-package indent-bars
   :ensure t
@@ -1830,7 +1839,6 @@ DEADLINE: %^t
 
 (use-package auctex
   :ensure t
-  :hook (latex-mode LaTeX-mode)
   :config
   ;; Basic AUCTeX settings
   (setq TeX-save-query nil)
@@ -2029,23 +2037,45 @@ DEADLINE: %^t
         gptel-include-reasoning t
         gptel-max-tokens nil)
 
+  (setq gptel-default-mode 'org-mode)
+
+  (setq gptel-agent-skill-dirs "~/dotfiles/skills/.agents/skills/")
+  
   (defvar azure
     (gptel-make-openai "Azure"
       :host "emacs-resource.services.ai.azure.com"
       :protocol "https"
       :endpoint "/openai/v1/chat/completions"
       :stream t
-      :models '((gpt-5.4-nano :capabilities (reasoning))
-                (DeepSeek-V3.2-Speciale :capabilities (reasoning)))
+      :models '((Kimi-K2.6-1) (DeepSeek-V4-Flash))
       :key azure-api))
+
+
+  (defvar openrouter 
+    (gptel-make-openai "OpenRouter"
+      :host "openrouter.ai"
+      ;; :protocol "https"
+      :endpoint "/api/v1/chat/completions"
+      :stream t
+      :models '((google/gemma-4-31b-it:free) (deepseek/deepseek-v4-flash))
+      :key openrouter-api))
+  
+    (gptel-make-openai "Azure-2"
+      :host "emacs-2-resource.openai.azure.com"
+      :protocol "https"
+      :endpoint "/openai/v1/chat/completions"
+      :stream t
+      :models '((Kimi-K2.6-1))
+      :key azure-api-2)
 
   (defvar azure-responses
     (gptel-make-openai-responses "Azure-Responses"
       :host "emacs-resource.services.ai.azure.com"
       :endpoint "/openai/v1/responses"
       :stream t
-      :models '((gpt-5.4-nano) (Kimi-K2.6-1)
-                (gpt-5.4-pro))
+      :models '((gpt-5.4-nano) 
+                (gpt-5.4-pro)
+		(gpt-5.5))
       :key azure-api))
 
   (defvar azure-responses-2
@@ -2415,10 +2445,6 @@ Preserves existing entries to avoid overwriting."
     "m d t" '(org-time-stamp :wk "Org time stamp")
     )
 
-  (leader-key
-    "m c" '(:ignore t :wk "Org Capture")
-    "m c s" '(org-roam-capture :wk "Org Capture")
-    )
 
   (leader-key
     :states '(normal visual)

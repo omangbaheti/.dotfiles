@@ -69,8 +69,9 @@
   - [[#language-modes][Language Modes]]
   - [[#syntax-parsing---treesitter][Syntax Parsing - Treesitter]]
   - [[#syntax-checking---flycheck][Syntax Checking - Flycheck]]
-  - [[#lsps][LSPs]]
   - [[#yasnippet][Yasnippet]]
+  - [[#lsps][LSPs]]
+  - [[#corfu][Corfu]]
   - [[#indent-bars][Indent Bars]]
   - [[#jupyter][Jupyter]]
   - [[#rainbow-mode][Rainbow mode]]
@@ -173,13 +174,13 @@
 ** Benchmarking
 
 #+begin_src emacs-lisp
-;; (use-package benchmark-init
-;;   :ensure t
-;;   :config
-;;   ;; To disable collection of benchmark data after init is done.
-;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
-;; (setq use-package-compute-statistics t)
+(setq use-package-compute-statistics t)
 #+end_src
 
 ** Load Evil Mode
@@ -293,23 +294,23 @@
 
 *** Flash
 #+begin_src emacs-lisp
-(use-package flash
-  :ensure (:host github :repo "Prgebish/flash")
-  :defer t
-  :commands (flash-jump flash-jump-continue
-             flash-treesitter)
-  :bind ("s-j" . flash-jump)
-  :custom
-  (flash-multi-window t)
-  :init
-  ;; Evil integration (simple setup)
-  (with-eval-after-load 'evil
-    (require 'flash-evil)
-    (flash-evil-setup t))  ; t = also set up f/t/F/T char motions
-  :config
-  ;; Search integration (labels during C-s, /, ?)
-  (require 'flash-isearch)
-  (flash-isearch-mode 1))
+;; (use-package flash
+;;   :ensure (:host github :repo "Prgebish/flash")
+;;   :defer t
+;;   :commands (flash-jump flash-jump-continue
+;;              flash-treesitter)
+;;   :bind ("s-j" . flash-jump)
+;;   :custom
+;;   (flash-multi-window t)
+;;   :init
+;;   ;; Evil integration (simple setup)
+;;   (with-eval-after-load 'evil
+;;     (require 'flash-evil)
+;;     (flash-evil-setup t))  ; t = also set up f/t/F/T char motions
+;;   :config
+;;   ;; Search integration (labels during C-s, /, ?)
+;;   (require 'flash-isearch)
+;;   (flash-isearch-mode 1))
 #+end_src
 
 ** Theming
@@ -986,6 +987,7 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
   :commands (org-agenda org-capture org-store-link)
   :config
   ;; Fold all drawers (e.g., PROPERTIES, LOGBOOK) by default
+  (setq org-ellipsis "  ")
   (setq org-startup-folded t)              
   (setq org-cycle-hide-drawers 'all)
   (setq org-src-fontify-natively t)
@@ -1120,7 +1122,6 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
           ("" . "")))
   (setq ;;org-modern-star '("◉" "○" "✸" "✿")
    org-modern-table t 
-   org-ellipsis " "
    org-modern-checkbox '((?X . "") (?- . "❍") (\s . "☐"))
    org-modern-block-fringe nil 
    org-modern-priority
@@ -1543,7 +1544,7 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
   (setq org-roam-ui-sync-theme t
         org-roam-ui-follow t
         org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t)
+        org-roam-ui-open-on-start nil)
   )
 #+end_src
 
@@ -1646,8 +1647,6 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 #+begin_src emacs-lisp
 (use-package spacious-padding
   :ensure t
-  ;; :hook (after-init . spacious-padding-mode)
-  :defer 3
   :config
   (setq spacious-padding-widths
 	'(;; Adjust other padding values as you see fit
@@ -1663,7 +1662,6 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
   (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
   )
 #+end_src
-
 
 ** Prettifying text to icons
 Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bosio]]
@@ -1733,8 +1731,8 @@ Package to highlight a line when jumping to different places
 #+begin_src emacs-lisp
 (use-package pulsar
   :ensure t
-  :hook
-  (after-init . pulsar-global-mode)
+  :config
+  (pulsar-global-mode)
   :custom
   (pulsar-pulse t)
   (pulsar-delay 0.01)
@@ -1757,13 +1755,11 @@ Package to highlight a line when jumping to different places
   )
 #+end_src
 
-
 ** Winpulse
 Package to highlight when switching buffer
 #+begin_src emacs-lisp
 (use-package winpulse
   :ensure (:host github :repo "xenodium/winpulse")
-  :defer t
   :config
   (winpulse-mode +1)
   :init
@@ -1822,7 +1818,6 @@ Package to highlight when switching buffer
       (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-center)
       (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
       (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom)
-      (scroll-on-jump-with-scroll-advice-add consult-org-heading)
 )
 #+end_src
 
@@ -2087,8 +2082,21 @@ Language Modes that I need to install manually
   :defer t
 )
 
+(use-package dart-mode
+  :ensure t
+  :mode "\\.dart\\'")
+
+(use-package flutter
+  :ensure t
+  :after dart-mode
+  :bind (:map dart-mode-map
+              ("C-M-x" . #'flutter-run-or-hot-reload))
+  )
 ;; (add-to-list 'major-mode-remap-alist '(nix-mode . nix-ts-mode))
 #+end_src
+
+#+RESULTS:
+: #s(hash-table data (:use-package (27126 62609 858609 985000) :use-package-secs (0 0 119 16000)))
 
 
 ** Syntax Parsing - Treesitter
@@ -2157,7 +2165,24 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (flyover-debounce-interval 0.2))
 #+end_src
 
+
+** Yasnippet
+#+begin_src emacs-lisp
+(use-package yasnippet
+  :ensure t
+  :after lsp-bridge
+  :config
+  (yas-global-mode 1))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package yasnippet-snippets
+  :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
+  :after yasnippet)
+#+end_src
+
 ** LSPs
+*** LSP Bridge
 #+begin_src emacs-lisp
 (use-package lsp-bridge
   :ensure '(lsp-bridge :type git 
@@ -2167,15 +2192,17 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :hook ((python-mode . lsp-bridge-mode)
          (java-mode . lsp-bridge-mode)
          (js-mode . lsp-bridge-mode)
+         (dart-mode . lsp-bridge-mode)
          (typescript-mode . lsp-bridge-mode)
          (org-src-mode . lsp-bridge-mode)
          (org-mode . lsp-bridge-mode)
+	 (latex-mode . lsp-bridge-mode)
          (LaTeX-mode . lsp-bridge-mode))
   :init
-  (setq lsp-bridge-user-multiserver-dir
-        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
-  (setq lsp-bridge-user-langserver-dir
-        (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
+  ;; (setq lsp-bridge-user-multiserver-dir
+  ;;       (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
+  ;; (setq lsp-bridge-user-langserver-dir
+  ;;       (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
   ;; ;; java stuff
   (add-hook 'java-mode-hook
             (lambda ()
@@ -2218,24 +2245,14 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq acm-enable-elisp t))
 #+end_src
 
-** Yasnippet
+
+*** LSP Mode
 #+begin_src emacs-lisp
-(use-package yasnippet
-  :ensure t
-  :defer t
-  :config
-  (yas-global-mode 1)
-  )
+
 #+end_src
 
-#+begin_src emacs-lisp
-(use-package yasnippet-snippets
-  :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
-  :after yasnippet)
-#+end_src
-
+** Corfu
 ** Indent Bars
-
 #+begin_src emacs-lisp
 (use-package indent-bars
   :ensure t
@@ -2337,7 +2354,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 (use-package auctex
   :ensure t
-  :hook (latex-mode LaTeX-mode)
   :config
   ;; Basic AUCTeX settings
   (setq TeX-save-query nil)
@@ -2575,23 +2591,45 @@ Modern on-the-fly syntax checking extension for GNU Emacs
         gptel-include-reasoning t
         gptel-max-tokens nil)
 
+  (setq gptel-default-mode 'org-mode)
+
+  (setq gptel-agent-skill-dirs "~/dotfiles/skills/.agents/skills/")
+  
   (defvar azure
     (gptel-make-openai "Azure"
       :host "emacs-resource.services.ai.azure.com"
       :protocol "https"
       :endpoint "/openai/v1/chat/completions"
       :stream t
-      :models '((gpt-5.4-nano :capabilities (reasoning))
-                (DeepSeek-V3.2-Speciale :capabilities (reasoning)))
+      :models '((Kimi-K2.6-1) (DeepSeek-V4-Flash))
       :key azure-api))
+
+
+  (defvar openrouter 
+    (gptel-make-openai "OpenRouter"
+      :host "openrouter.ai"
+      ;; :protocol "https"
+      :endpoint "/api/v1/chat/completions"
+      :stream t
+      :models '((google/gemma-4-31b-it:free) (deepseek/deepseek-v4-flash))
+      :key openrouter-api))
+  
+    (gptel-make-openai "Azure-2"
+      :host "emacs-2-resource.openai.azure.com"
+      :protocol "https"
+      :endpoint "/openai/v1/chat/completions"
+      :stream t
+      :models '((Kimi-K2.6-1))
+      :key azure-api-2)
 
   (defvar azure-responses
     (gptel-make-openai-responses "Azure-Responses"
       :host "emacs-resource.services.ai.azure.com"
       :endpoint "/openai/v1/responses"
       :stream t
-      :models '((gpt-5.4-nano) (Kimi-K2.6-1)
-                (gpt-5.4-pro))
+      :models '((gpt-5.4-nano) 
+                (gpt-5.4-pro)
+		(gpt-5.5))
       :key azure-api))
 
   (defvar azure-responses-2
@@ -2609,7 +2647,8 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+end_src
 
 #+RESULTS:
-: [nil 27117 53979 76286 nil elpaca-process-queues nil nil 422000 nil]
+: #s(hash-table data (:use-package (27126 60948 351262 279000) :use-package-secs (0 0 22394 971000) :init (27126 60411 927356 34000) :init-secs (0 0 3 166000) :config (27126 60413 363059 683000) :config-secs (0 0 3387 194000)))
+
 
 ** GPTEL AGENT
 
@@ -2905,9 +2944,6 @@ Preserves existing entries to avoid overwriting."
     (shell-command "exp")))
 #+end_src
 
-#+RESULTS:
-: shell-command-open-explorer
-
 
 * General Keybindings
 
@@ -3019,10 +3055,6 @@ Preserves existing entries to avoid overwriting."
     "m d t" '(org-time-stamp :wk "Org time stamp")
     )
 
-  (leader-key
-    "m c" '(:ignore t :wk "Org Capture")
-    "m c s" '(org-roam-capture :wk "Org Capture")
-    )
 
   (leader-key
     :states '(normal visual)
@@ -3148,6 +3180,7 @@ Preserves existing entries to avoid overwriting."
 (global-set-key (kbd "C-x l") 'next-buffer)
 #+END_SRC
 
+
 ** HYDRA
 #+begin_src emacs-lisp
 (use-package hydra
@@ -3190,8 +3223,6 @@ _j_: next block    _k_: previous block
   )
 #+end_src
 
-#+RESULTS:
-: [nil 27108 10658 356968 nil elpaca-process-queues nil nil 755000 nil]
 
 ** TRANSIENT
 Its a built-in emacs package, its here only so that elpaca can manage it instead of emacs package manager
@@ -3251,7 +3282,6 @@ Vterm is a terminal emulator within Emacs.  The 'shell-file-name' setting sets t
 ;;   (setq vterm-toggle-fullscreen-p t))
 
 #+end_src
-
 
 ** NEOTREE 
 Neotree is a file tree viewer.  When you open neotree, it jumps to the current file thanks to neo-smart-open.  The neo-window-fixed-size setting makes the neotree width be adjustable.  NeoTree provides following themes: classic, ascii, arrow, icons, and nerd.  Theme can be config'd by setting "two" themes for neo-theme: one for the GUI and one for the terminal.  I like to use 'SPC t' for 'toggle' keybindings, so I have used 'SPC t n' for toggle-neotree.
