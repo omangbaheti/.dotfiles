@@ -57,13 +57,13 @@
 ;;Useful for configuring built-in emacs features.
 (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
 
-(use-package benchmark-init
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+;; (use-package benchmark-init
+;;   :ensure t
+;;   :config
+;;   ;; To disable collection of benchmark data after init is done.
+;;   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
-(setq use-package-compute-statistics t)
+;; (setq use-package-compute-statistics t)
 
 (setq evil-want-keybinding nil)
 (setq evil-want-integration t)
@@ -76,6 +76,9 @@
   (setq evil-search-module 'evil-search)
   (setq evil-undo-system 'undo-fu)
   (evil-mode)
+  :config
+  (define-key evil-insert-state-map (kbd "C-n") nil)
+  (define-key evil-insert-state-map (kbd "C-p") nil)
 )
 
 (use-package evil-collection
@@ -144,6 +147,9 @@
   :after evil
   :config
   (global-evil-mc-mode 1)
+  (evil-define-key '(normal visual) evil-mc-key-map
+    (kbd "C-n") nil
+    (kbd "C-p") nil)
   (evil-define-key 'visual evil-mc-key-map
     "A" #'evil-mc-make-cursor-in-visual-selection-end
     "I" #'evil-mc-make-cursor-in-visual-selection-beg))
@@ -174,7 +180,7 @@
   (load-theme 'doom-nord-aurora t)
   (setq doom-themes-enable-bold t)
   (setq doom-themes-enable-italic t)
-  (setq doom-themes-treemacs-theme "doom-nord")
+  ;; (setq doom-themes-treemacs-theme "doom-nord")
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
   ;; Enable custom neotree theme (nerd-icons must be installed!)
@@ -860,16 +866,61 @@ one, an error is signaled."
   (olivetti-recall-visual-line-mode-entry-state t)
   :hook
   ((markdown-mode . olivetti-mode)
-   (org-mode . olivetti-mode)))
-
-(defun my/olivetti-only-when-single-window ()
-  "Enable Olivetti mode only when there is a single window."
-  (if (= (count-windows) 1)
-      (olivetti-mode 1)
-    (olivetti-mode -1)))
-
-;; (add-hook 'window-configuration-change-hook
-;;           #'my/olivetti-only-when-single-window)
+   (org-mode . olivetti-mode)
+   (prog-mode . olivetti-mode))
+  :init
+  
+  (defvar my/olivetti-manual-override nil
+    "When non-nil, disables auto olivetti toggling. Can be 'on or 'off.")
+  
+  (defun my/olivetti-toggle-manual ()
+    "Manually toggle olivetti-mode and set override so auto-toggle won't interfere.
+Calling again while in override mode turns off the override and resumes auto behavior."
+    (interactive)
+    (if my/olivetti-manual-override
+        ;; Second call: clear override and let auto-toggle take over again
+        (progn
+          (setq my/olivetti-manual-override nil)
+          (my/olivetti-auto-toggle)
+          (message "Olivetti: auto mode resumed"))
+      ;; First call: toggle and lock it in
+      (if olivetti-mode
+          (progn (olivetti-mode -1)
+                 (setq my/olivetti-manual-override 'off)
+                 (message "Olivetti: manually disabled"))
+        (progn (olivetti-mode 1)
+               (setq my/olivetti-manual-override 'on)
+               (message "Olivetti: manually enabled")))))
+  
+  ;; (defun my/olivetti-auto-toggle ()
+  ;; (unless my/olivetti-manual-override
+  ;;   (walk-windows
+  ;;    (lambda (win)
+  ;;      (with-current-buffer (window-buffer win)
+  ;;        ;; text-mode natively covers org-mode and markdown-mode
+  ;;        (when (derived-mode-p 'text-mode 'prog-mode)
+  ;;          (if (one-window-p t)
+  ;;              (olivetti-mode 1)
+  ;;            (olivetti-mode -1))))))))
+  
+  (defun my/olivetti-auto-toggle ()
+    (unless my/olivetti-manual-override
+      ;; Only run if which-key popup is NOT active
+      ;; (unless (and (featurep 'which-key)
+      ;;              (bound-and-true-p which-key--popup-showing))
+      (unless (and (featurep 'which-key)
+                   (get-buffer " *which-key*")
+                   (get-buffer-window " *which-key*"))
+        (walk-windows
+         (lambda (win)
+           (with-current-buffer (window-buffer win)
+             (when (derived-mode-p 'text-mode 'prog-mode)
+               ;; Check if there is only one regular window (ignoring side windows/minibuffer)
+               (if (= 1 (length (window-list-1 nil 'nomini 'visible)))
+                   (olivetti-mode 1)
+                 (olivetti-mode -1)))))))))
+  (add-hook 'window-configuration-change-hook #'my/olivetti-auto-toggle)
+  )
 
 (with-eval-after-load 'org
   (setq org-agenda-files (directory-files-recursively "~/Notes/Agenda" "\\.org$"))
@@ -1643,86 +1694,78 @@ DEADLINE: %^t
   (global-treesit-auto-mode)
 )
 
-;; (use-package flycheck
-;;   :ensure t
-;;   :init
-;;   (global-flycheck-mode)
-;;   :config
-;;   (setq flycheck-global-modes '(not org-mode))
-;;   (setq-default flycheck-disabled-checkers
-;;                 (append flycheck-disabled-checkers '(proselint)))
-;;   )
-
 (use-package flycheck
   :ensure t
   :hook ((prog-mode . flycheck-mode)
          (sh-mode . flycheck-mode)
          (yaml-mode . flycheck-mode)))
 
-(use-package flyover
-  :ensure (:host github :repo "https://github.com/konrad1977/flyover")
-  :hook ((flycheck-mode . flyover-mode))
-  :config
-  (setq flyover-show-at-eol nil)
-  :custom
-  ;; Checker settings
-  (flyover-checkers '(flycheck flymake))
-  (flyover-levels '(error warning info))
-
-  ;; Appearance
-  (flyover-use-theme-colors t)
-  (flyover-background-lightness 45)
-  (flyover-percent-darker 40)
-  (flyover-text-tint 'lighter)
-  (flyover-text-tint-percent 50)
-  ;; Icons
-  (flyover-info-icon " ")
-  (flyover-warning-icon " ")
-  (flyover-error-icon " ")
-
-  ;; Display settings
-  (flyover-hide-checker-name t)
-  (flyover-show-virtual-line t)
-  (flyover-virtual-line-type 'curved-dotted-arrow)
-  (flyover-line-position-offset 1)
-
-  ;; Message wrapping
-  (flyover-wrap-messages t)
-  (flyover-max-line-length 80)
-
-  ;; Performance
-  (flyover-debounce-interval 0.2))
-
 (use-package yasnippet
   :ensure t
-  :after lsp-bridge
+  :hook (prog-mode . yas-minor-mode)
   :config
-  (yas-global-mode 1))
+  (yas-reload-all)
+  ;; (yas-global-mode 1)
+  )
 
 (use-package yasnippet-snippets
   :ensure (:host github :repo "AndreaCrotti/yasnippet-snippets")
   :after yasnippet)
+
+;; Completion frontend: Corfu (used for LSP completion-at-point)
+;; LSP backend: lsp-mode + lsp-pyright + flutter tools
+(use-package lsp-mode
+  :ensure t
+  :commands (lsp lsp-deferred)
+  :hook ((python-mode . lsp-deferred)
+         (dart-mode . lsp-deferred)
+         (lsp-completion-mode . corfu-setup-lsp))
+  :custom
+  (lsp-completion-provider :none)
+  (lsp-enable-symbol-highlighting t)
+  (lsp-headerline-breadcrumb-enable nil)
+  :init
+  ;; Define BEFORE hooks run
+  (defun corfu-setup-lsp ()
+    "Use orderless completion style with lsp-capf."
+    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+          '(orderless)))
+  :config
+  (when (require 'corfu-capf nil t)))
+
+(use-package lsp-ui
+  :ensure t
+  :after lsp-mode)
+
+;;python
+(use-package lsp-pyright
+  :ensure t
+  :after lsp-mode
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright nil t)
+                         (lsp-deferred)))
+  :custom
+  (lsp-pyright-type-check-on-save t)
+  (lsp-pyright-use-library-code-for-types t))
+
+;;dart
+(use-package lsp-dart
+  :ensure t
+  :after lsp-mode
+  :hook (dart-mode . lsp-deferred)
+  :custom
+  (lsp-dart-project-root-detection-files ["pubspec.yaml" "pubspec.yml"])
+  )
 
 (use-package lsp-bridge
   :ensure '(lsp-bridge :type git 
                        :host github :repo "manateelazycat/lsp-bridge"
 		       :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
 		       :build (:not compile))
-  :hook ((python-mode . lsp-bridge-mode)
-         (java-mode . lsp-bridge-mode)
-         (js-mode . lsp-bridge-mode)
-         (dart-mode . lsp-bridge-mode)
-         (typescript-mode . lsp-bridge-mode)
-         (org-src-mode . lsp-bridge-mode)
+  :hook (
          (org-mode . lsp-bridge-mode)
-	 (latex-mode . lsp-bridge-mode)
-         (LaTeX-mode . lsp-bridge-mode))
+	 )
   :init
-  ;; (setq lsp-bridge-user-multiserver-dir
-  ;;       (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/multiserver/"))
-  ;; (setq lsp-bridge-user-langserver-dir
-  ;;       (expand-file-name "~/.dotfiles/emacs/lsp-bridge-config/langserver/"))
-  ;; ;; java stuff
   (add-hook 'java-mode-hook
             (lambda ()
               (require 'lsp-bridge-jdtls nil t)))
@@ -1763,7 +1806,43 @@ DEADLINE: %^t
   (require 'acm-backend-elisp)
   (setq acm-enable-elisp t))
 
+(use-package corfu
+  :ensure (:host github :repo "minad/corfu" :ref "856171ac98c3aaa629caa011be7cd3a9405e6e0f")
+  :custom
+  (corfu-cycle t)
+  (corfu-auto t)
+  (corfu-auto-delay 0.0)
+  (corfu-quit-at-boundary 'separator)
+  (corfu-auto-prefix 2)
+  :bind
+  (:map corfu-map
+   ("C-n"   . corfu-next)
+   ("C-p"   . corfu-previous)
+   ("TAB"   . corfu-next)       ; tab to cycle forward
+   ("<tab>" . corfu-next)
+   ("RET"   . corfu-insert)
+   ("M-SPC" . corfu-insert-separator)  ; insert orderless separator
+   ("M-d"   . corfu-info-documentation) ; show docs for candidate
+   ("M-l"   . corfu-info-location)      ; jump to definition of candidate
+   ("C-g"   . corfu-quit))
+  ;; Prefer capf-based completion, which lsp-mode provides via :capf
+  ;; (completion-at-point-functions '(corfu-capf-completion-at-point))
+  :init
+  (global-corfu-mode 1)
+  (corfu-popupinfo-mode 1)
+  )
 
+(use-package cape
+  :ensure (:host github :repo "minad/cape" :ref "2e15e1909754752f66096dde1b8d639d6eb25f35")
+  :after corfu
+  :init
+  (setopt text-mode-ispell-word-completion nil)
+  (setq completion-at-point-functions
+        (delq 'ispell-completion-at-point completion-at-point-functions))
+  :config
+  ;; Add cape-dict for dictionary completions
+  (add-hook 'completion-at-point-functions 'cape-dict)
+  )
 
 (use-package indent-bars
   :ensure t
@@ -1825,6 +1904,7 @@ DEADLINE: %^t
    (python-ts-mode . outline-indent-minor-mode)
    (java-mode . outline-indent-minor-mode)
    (java-ts-mode . outline-indent-minor-mode)
+   (dart-mode . outline-indent-minor-mode)
    (yaml-mode . outline-indent-minor-mode)
    (yaml-ts-mode . outline-indent-minor-mode) 
    (nix-mode . outline-indent-minor-mode)
@@ -2036,10 +2116,16 @@ DEADLINE: %^t
   (setq gptel-log-level 'debug
         gptel-include-reasoning t
         gptel-max-tokens nil)
-
+  (setq gptel-log-level 'debug)
   (setq gptel-default-mode 'org-mode)
 
   (setq gptel-agent-skill-dirs "~/dotfiles/skills/.agents/skills/")
+
+  (setq gptel-curl-extra-args
+        '("--retry" "5"
+          "--retry-delay" "2"
+          "--retry-max-time" "60"
+          "--retry-all-errors"))
   
   (defvar azure
     (gptel-make-openai "Azure"
@@ -2060,13 +2146,13 @@ DEADLINE: %^t
       :models '((google/gemma-4-31b-it:free) (deepseek/deepseek-v4-flash))
       :key openrouter-api))
   
-    (gptel-make-openai "Azure-2"
-      :host "emacs-2-resource.openai.azure.com"
-      :protocol "https"
-      :endpoint "/openai/v1/chat/completions"
-      :stream t
-      :models '((Kimi-K2.6-1))
-      :key azure-api-2)
+  (gptel-make-openai "Azure-2"
+    :host "emacs-2-resource.openai.azure.com"
+    :protocol "https"
+    :endpoint "/openai/v1/chat/completions"
+    :stream t
+    :models '((Kimi-K2.6-1))
+    :key azure-api-2)
 
   (defvar azure-responses
     (gptel-make-openai-responses "Azure-Responses"
@@ -2481,10 +2567,7 @@ Preserves existing entries to avoid overwriting."
     "o s p" '(tempo-template-python :wk "Insert Python block")
     "o s e" '(tempo-template-emacs-lisp :wk "Insert Emacs Lisp block")
 
-    "o o" '(:ignore t :wk "Insert Source Block Templates")
-    "o o e" '(olivetti-expand :wk "Expand")
-    "o o s" '(olivetti-shrink :wk "Shrink")
-    "o o o" '(olivetti-mode :wk "Toggle Olivetti")
+    "o o" '(my/olivetti-toggle-manual :wk "Toggle Olivetti")
 
     "o c" '(:ignore t :wk "Org Capture")
     "o c s" '(org-roam-capture :wk "Org Capture"))  
@@ -2556,15 +2639,9 @@ Preserves existing entries to avoid overwriting."
   (leader-key
     "s" '(:keymap smudge-command-map :package smudge :wk "Spotify"))
 
-  (general-define-key
-   :states 'normal
-   :keymaps 'override
-   "zo" #'kirigami-open-fold
-   "zO" #'kirigami-open-fold-rec
-   "zc" #'kirigami-close-fold
-   "za" #'kirigami-toggle-fold
-   "zr" #'kirigami-open-folds
-   "zm" #'kirigami-close-folds))
+  )
+
+
 
 (global-set-key (kbd "C-x h") 'previous-buffer)
 (global-set-key (kbd "C-x l") 'next-buffer)
