@@ -95,7 +95,7 @@
     };  
   programs.zsh.initContent = 
     ''
- PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
+ # PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
  function isWinDir 
  {
      case "$PWD/" in
@@ -141,15 +141,15 @@
     };
   
 
-  services.emacs = {
-    enable = true;
-  };
+  # services.emacs = {
+  #   enable = true;
+  # };
   
   
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;
-    extraConfig = builtins.readFile /home/nixos/.dotfiles/emacs/init.el;
+    # extraConfig = builtins.readFile /home/nixos/.dotfiles/emacs/init.el;
     extraPackages = (
       epkgs: with pkgs.emacsPackages;   
         [ 
@@ -179,8 +179,8 @@
       LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
     };
   
-  home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
-  home.file.".emacs.d/early-init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/early-init.el;
+home.file.".emacs.d/init.el".source = ../../emacs/init.el;
+home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
   # home.file.".emacs.d/init.el".source = ../emacs/init.el;
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
 

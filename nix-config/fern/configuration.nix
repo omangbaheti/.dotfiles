@@ -97,7 +97,10 @@ in
       fira-mono
       dejavu-sans-mono
       symbols-only
-    ];
+    ]++ (with pkgs;[
+      noto-fonts-monochrome-emoji
+    ]);
+  fonts.fontconfig.defaultFonts.emoji = [ "Noto Emoji" ];
   
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;

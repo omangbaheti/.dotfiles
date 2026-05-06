@@ -93,10 +93,14 @@ in
       nixfmt
       statix
       nil
+
+      #flutter
+      flutter
       
       #misc    
       home-manager
       languagetool
+      
 
       claude-code
       opencode

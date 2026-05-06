@@ -30,7 +30,10 @@ in
       fira-mono
       dejavu-sans-mono
       symbols-only
-    ];
+    ]++ (with pkgs;[
+      noto-fonts-monochrome-emoji
+    ]);
+  fonts.fontconfig.defaultFonts.emoji = [ "Noto Emoji" ];
   
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
@@ -38,6 +41,7 @@ in
   environment.systemPackages = with pkgs;
     [
       gtk4
+      exercism
     ];
 
   # This value determines the NixOS release from which the default
