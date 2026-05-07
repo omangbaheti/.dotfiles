@@ -691,7 +691,6 @@ one, an error is signaled."
 (defun my-org-electric-pair-hook ()
   (add-function :before-until (local 'electric-pair-inhibit-predicate)
                 (lambda (c) (eq c ?<))))
-
 (add-hook 'org-mode-hook #'my-org-electric-pair-hook)
 
 (use-package undo-fu
@@ -891,17 +890,6 @@ Calling again while in override mode turns off the override and resumes auto beh
         (progn (olivetti-mode 1)
                (setq my/olivetti-manual-override 'on)
                (message "Olivetti: manually enabled")))))
-  
-  ;; (defun my/olivetti-auto-toggle ()
-  ;; (unless my/olivetti-manual-override
-  ;;   (walk-windows
-  ;;    (lambda (win)
-  ;;      (with-current-buffer (window-buffer win)
-  ;;        ;; text-mode natively covers org-mode and markdown-mode
-  ;;        (when (derived-mode-p 'text-mode 'prog-mode)
-  ;;          (if (one-window-p t)
-  ;;              (olivetti-mode 1)
-  ;;            (olivetti-mode -1))))))))
   
   (defun my/olivetti-auto-toggle ()
     (unless my/olivetti-manual-override
@@ -1684,7 +1672,6 @@ DEADLINE: %^t
   :bind (:map dart-mode-map
               ("C-M-x" . #'flutter-run-or-hot-reload))
   )
-;; (add-to-list 'major-mode-remap-alist '(nix-mode . nix-ts-mode))
 
 (use-package treesit-auto
   :custom
@@ -1719,7 +1706,10 @@ DEADLINE: %^t
   :commands (lsp lsp-deferred)
   :hook ((python-mode . lsp-deferred)
          (dart-mode . lsp-deferred)
-         (lsp-completion-mode . corfu-setup-lsp))
+	 (LaTeX-mode . lsp-deferred)
+	 (latex-mode . lsp-deferred)
+         (lsp-completion-mode . corfu-setup-lsp)
+	 (lsp-mode . my/lsp-leader-keys))
   :custom
   (lsp-completion-provider :none)
   (lsp-enable-symbol-highlighting t)
@@ -1731,7 +1721,21 @@ DEADLINE: %^t
     (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
           '(orderless)))
   :config
-  (when (require 'corfu-capf nil t)))
+  (when (require 'corfu-capf nil t))
+  (defun my/lsp-leader-keys ()
+    (general-define-key
+     :states '(normal visual)
+     :keymaps 'local
+     :prefix "SPC"
+     "l r" '(lsp-rename :wk "Rename")
+     "l c" '(lsp-execute-code-action :wk "Rename")
+     "l d" '(lsp-ui-doc-show :wk "Doc Show")
+     "l D" '(lsp-ui-doc-glance :wk "Doc Glance")
+     "l R" '(lsp-workspace-restart :wk "Restart")
+     "l f" '(lsp-ui-doc-focus-frame :wk "Doc Focus")
+     "l u" '(lsp-ui-doc-unfocus-frame :wk "Doc Unfocus")
+     "l h" '(lsp-ui-doc-hide :wk "Doc Hide")))
+  )
 
 (use-package lsp-ui
   :ensure t
@@ -1766,12 +1770,6 @@ DEADLINE: %^t
          (org-mode . lsp-bridge-mode)
 	 )
   :init
-  (add-hook 'java-mode-hook
-            (lambda ()
-              (require 'lsp-bridge-jdtls nil t)))
-  ;; (require 'lsp-bridge-jdtls)
-  (setq lsp-bridge-jdtls-jvm-args
-	(list (concat "-javaagent:" (getenv "LOMBOK_JAR"))))
   (setq lsp-bridge-enable-auto-import t)
   (setq lsp-bridge-enable-diagnostics nil 
 	lsp-bridge-enable-signature-help nil
@@ -2136,7 +2134,6 @@ DEADLINE: %^t
       :models '((Kimi-K2.6-1) (DeepSeek-V4-Flash))
       :key azure-api))
 
-
   (defvar openrouter 
     (gptel-make-openai "OpenRouter"
       :host "openrouter.ai"
@@ -2173,8 +2170,8 @@ DEADLINE: %^t
                 (gpt-5.4-pro))
       :key azure-api-2))
   
-  (setq gptel-backend azure-responses 
-        gptel-model 'gpt-5.4-nano))
+  (setq gptel-backend azure 
+        gptel-model 'DeepSeek-V4-Flash ))
 
 (use-package gptel-agent
   :ensure (:host github :repo "karthink/gptel-agent" :branch "master" :depth nil)
@@ -2436,8 +2433,6 @@ Preserves existing entries to avoid overwriting."
     :prefix "SPC" ;; set leader
     :global-prefix "M-SPC") ;; access leader in insert mode
 
-  ;; (setq evil-want-keybinding nil)
-  
   (general-define-key
    :states 'normal
    :keymaps 'override
@@ -2447,6 +2442,7 @@ Preserves existing entries to avoid overwriting."
    "za" #'kirigami-toggle-fold
    "zr" #'kirigami-open-folds
    "zm" #'kirigami-close-folds)
+
   
   (general-define-key
    :states 'normal
@@ -2462,6 +2458,7 @@ Preserves existing entries to avoid overwriting."
     "f r" '(consult-recent-file :wk "Find Recent Files")
     "f /" '(consult-line :wk "Find Line")
     "TAB TAB" '(evilnc-comment-or-uncomment-lines :wk "Comment lines"))
+
 
   (leader-key
     "a" '(:ignore t :wk "Agenda")
@@ -2531,7 +2528,6 @@ Preserves existing entries to avoid overwriting."
     "m d t" '(org-time-stamp :wk "Org time stamp")
     )
 
-
   (leader-key
     :states '(normal visual)
     "o" '(:ignore t :wk "More Org")
@@ -2553,7 +2549,7 @@ Preserves existing entries to avoid overwriting."
     "o r r" '(consult-org-roam-backlinks-recursive :wk "Backlinks Recursive")
     "o r l" '(consult-org-roam-forward-links :wk "Forward Links")
     
-    "o n" '(:ignore t :wk "Research Note")
+
     "o n n" '(citar-create-note :wk "New Research Note")
     "o n o" '(citar-open-note :wk "Open Note")
     "o n s" '(citar-org-noter-open :wk "Noter Session")
@@ -2632,6 +2628,7 @@ Preserves existing entries to avoid overwriting."
     "w N" '(make-frame-command :wk "New Frame")
     )
 
+
   (leader-key "," '(ace-window :which-key "Switch Window"))
   (leader-key "<" '(ace-window-with-help :which-key "Switch Window"))
   (leader-key "W" '(hydra-window-resize/body :which-key "resize window"))
@@ -2645,6 +2642,8 @@ Preserves existing entries to avoid overwriting."
 
 (global-set-key (kbd "C-x h") 'previous-buffer)
 (global-set-key (kbd "C-x l") 'next-buffer)
+
+
 
 (use-package hydra
   :ensure t
@@ -2683,6 +2682,13 @@ _j_: next block    _k_: previous block
     ("k" org-previous-block)
     ("q" nil "quit"))
 
+  )
+
+(use-package hydra-posframe
+  :ensure (:host github :repo "Ladicle/hydra-posframe")
+  :after general
+  :init
+  (hydra-posframe-mode)
   )
 
 (use-package transient
