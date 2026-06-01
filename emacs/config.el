@@ -459,6 +459,24 @@
 (setq doom-modeline-before-update-env-hook nil)
 (setq doom-modeline-after-update-env-hook nil)
 
+(use-package anzu
+  :ensure t
+  :config (global-anzu-mode +1))
+
+;; evil integration
+(use-package evil-anzu
+  :ensure t
+  :after (evil anzu))
+
+;; (use-package telephone-line
+;;   :ensure t
+;;   :init
+;;   (telephone-line-mode 1)
+;;   :config
+
+;;   (setq telephone-line-height 24)
+;;   (setq telephone-line-evil-use-short-tag nil))
+
 (use-package dashboard
   :ensure t 
   :init
@@ -578,6 +596,7 @@ one, an error is signaled."
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   (ace-window-posframe-mode t)
   (aw-scope 'frame)
+  ;; (aw-scope 'global)
   (aw-dispatch-always nil)
   (aw-background t)
   (aw-minibuffer-flag t)
@@ -611,7 +630,7 @@ one, an error is signaled."
 
 ;; Setting the default font
 (set-face-attribute 'default nil
-		    :font "JetBrainsMono Nerd Font"
+		    :font "JetBrainsMono Nerd Font Mono"
 		    :height 110
 		    :weight 'medium)
 ;; Setting font for variable pitch
@@ -623,7 +642,7 @@ one, an error is signaled."
                     :height 140)
 ;;Setting font for fixed pitch
 (set-face-attribute 'fixed-pitch nil
-		    :font "JetBrainsMono Nerd Font"
+		    :font "JetBrainsMono Nerd Font Mono"
 		    :height 110
 		    :weight 'medium)
 (set-fontset-font t 'emoji (font-spec :family "Noto Color Emoji") nil 'prepend)
@@ -673,7 +692,7 @@ one, an error is signaled."
                           (cl-remove-if-not #'stringp kill-ring)))))
 
 (global-display-line-numbers-mode 1)
-(global-visual-line-mode t)
+;; (global-visual-line-mode t)
 (setq truncate-lines nil)
 (setq display-line-numbers-type 'relative)
 
@@ -1002,7 +1021,7 @@ Calling again while in override mode turns off the override and resumes auto beh
 	   (
 	    file+head "TopLevelTopics/${slug}.org"
 	    "#+TITLE: ${title}
-#+filetags: roam-tag %^{Tags}
+#+filetags: roam-tag 
 #+STARTUP: showall
 "
 	    )
@@ -1017,11 +1036,16 @@ Calling again while in override mode turns off the override and resumes auto beh
 :PROPERTIES:
 :ROAM_ALIASES: \"${fullname}\"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
+:EMAIL: 
+:PHONE: 
+:COMPANY:  
+:FIELD: 
 :END:
 #+TITLE: ${title}
-#+filetags: %^{Tags}
+#+filetags: People
 #+OPTIONS: toc:2
 #+STARTUP: showall
+[[id:1afccf8b-2a17-4704-bbda-1dfe60f05b24][:People:]]
 * TABLE OF CONTENTS :toc:
 "
 	    )
@@ -1326,16 +1350,16 @@ DEADLINE: %^t
 (defun my/prettify-symbols-setup ()
 
   ;; Drawers
-  (push '(":PROPERTIES:" . " ") prettify-symbols-alist)
-  (push '(":ROAM_ALIASES:" . " ") prettify-symbols-alist)
-  (push '(":ID:" . " ") prettify-symbols-alist)
-  (push '(":DATE:" . " ") prettify-symbols-alist)
-  (push '(":DATE_PUBLISHED:" . " ") prettify-symbols-alist)
-  (push '(":AUTHOR:" . " ") prettify-symbols-alist)
-  (push '(":ROAM_REFS:" . " ") prettify-symbols-alist)
-  (push '(":PRIORITY:" . "󰁝 ") prettify-symbols-alist)
-  (push '(":END:" . " ") prettify-symbols-alist)
-  (push '(":RESULTS:" . " ") prettify-symbols-alist)
+  (push '(":PROPERTIES:" . "") prettify-symbols-alist)
+  (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
+  (push '(":ID:" . "") prettify-symbols-alist)
+  (push '(":DATE:" . "") prettify-symbols-alist)
+  (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
+  (push '(":AUTHOR:" . "") prettify-symbols-alist)
+  (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
+  (push '(":PRIORITY:" . "󰁝") prettify-symbols-alist)
+  (push '(":END:" . "") prettify-symbols-alist)
+  (push '(":RESULTS:" . "") prettify-symbols-alist)
   ;; Tags
   (push '(":projects:" . "  Projects") prettify-symbols-alist)
   (push '(":work:"     . "  Work") prettify-symbols-alist)
@@ -1345,8 +1369,8 @@ DEADLINE: %^t
   (push '(":learn:"    . "  Learn") prettify-symbols-alist)
   (push '(":code:"     . "  Code") prettify-symbols-alist)
 
-  (set-face-attribute 'org-drawer nil :height 1.3)
-  (set-face-attribute 'org-special-keyword nil :height 1.3)
+  (set-face-attribute 'org-drawer nil :height 1.6)
+  (set-face-attribute 'org-special-keyword nil :height 1.6)
   (prettify-symbols-mode))
 
 (add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
@@ -1455,6 +1479,15 @@ DEADLINE: %^t
       (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-top)
       (scroll-on-jump-with-scroll-advice-add evil-scroll-line-to-bottom)
 )
+
+(use-package symbol-overlay
+  :ensure t
+  :config
+  (setq symbol-overlay-idle-time 0.2)
+  (set-face-background 'symbol-overlay-default-face "#694b35")
+  (define-globalized-minor-mode global-symbol-overlay-mode
+    symbol-overlay-mode symbol-overlay-mode)
+  (global-symbol-overlay-mode 1))
 
 (use-package vertico
   :ensure t
@@ -1636,7 +1669,8 @@ DEADLINE: %^t
 (use-package dirvish
   :ensure t
   :after evil
-  :init (dirvish-override-dired-mode))
+  ;; :init (dirvish-override-dired-mode)
+  )
 
 (use-package grease
   :ensure (:host github :repo "https://github.com/mwac-dev/grease.el")
@@ -1645,6 +1679,14 @@ DEADLINE: %^t
   ;; Sorting defaults to 'type (directories first, then files)
   ;; Hidden files are hidden by default
   )
+
+(defun my/find-file-open-dir-in-grease (orig-fn filename &optional wildcards)
+  "Open directories in grease instead of dired."
+  (if (file-directory-p filename)
+      (grease-open filename)
+    (funcall orig-fn filename wildcards)))
+
+(advice-add 'find-file :around #'my/find-file-open-dir-in-grease)
 
 ;; Nix integration
 (use-package nix-ts-mode
@@ -1659,7 +1701,6 @@ DEADLINE: %^t
 
 (use-package ess
   :ensure t
-  :defer t
 )
 
 (use-package dart-mode
@@ -1861,19 +1902,21 @@ DEADLINE: %^t
 
 (use-package jupyter
   :ensure t
-  :defer t
+  :demand t
   :init
+  (require 'ob-jupyter)
   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
+  (setq org-babel-default-header-args:jupyter-R '((:session . "R")
+                                                  (:kernel . "ir")
+                                                  (:exports . "both")
+                                                  (:results . "output")))
   :config
   (setq org-confirm-babel-evaluate nil
         org-src-fontify-natively t
         org-src-tab-acts-natively t
         org-src-preserve-indentation t)
-  (setq org-babel-default-header-args:jupyter-R '((:session . "R")
-                                                  (:kernel . "ir")
-                                                  (:exports . "both")
-                                                  (:results . "output"))))
+  )
 
 (with-eval-after-load 'org
   (with-eval-after-load 'jupyter
@@ -1882,8 +1925,9 @@ DEADLINE: %^t
      '((emacs-lisp . t)
        (python . t)
        (shell . t)
+       (R . t)
        (jupyter . t)
-       (R . t)))
+       ))
     (org-babel-jupyter-aliases-from-kernelspecs)))
 
 (use-package rainbow-delimiters
@@ -1926,7 +1970,8 @@ DEADLINE: %^t
   
   ;; PDF viewer configuration
   (setq TeX-view-program-selection '((output-pdf "PDF Tools")))
-  (setq TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
+  ;; (setq TeX-view-program-selection '((output-pdf "Sioyek")))
+  ;; (setq TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
   (setq TeX-source-correlate-start-server t)
   (setq LaTeX-command "latex -shell-escape --synctex=1")
   ;; Auto-refresh PDF buffer after compilation
@@ -1953,6 +1998,12 @@ DEADLINE: %^t
             (lambda ()
               (setq TeX-source-correlate-mode t)))
 
+  )
+
+(use-package evil-tex
+  :ensure t
+  :after tex evil
+  :hook (LaTeX-mode . evil-tex-mode)
   )
 
 (use-package pdf-tools
@@ -2187,9 +2238,12 @@ DEADLINE: %^t
 ;;               'ob-gptel-capf nil t))
 ;;   :hook (org-mode . ob-gptel-setup-completions))
 
-;; (use-package agent-shell
-;;     :ensure t
-;; )
+(use-package agent-shell
+    :ensure t
+    :config
+    (when-let ((pi-bin (getenv "PI_NPM_BIN")))
+  (add-to-list 'exec-path pi-bin))
+)
 
 (use-package mcp
   :ensure t
@@ -2209,7 +2263,9 @@ DEADLINE: %^t
   (require 'gptel-integrations)
   )
 
-
+(use-package pi-coding-agent
+  :ensure t
+  :init (defalias 'pi 'pi-coding-agent))
 
 (use-package direnv
   :ensure t)

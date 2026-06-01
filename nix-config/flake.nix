@@ -4,6 +4,7 @@ inputs =
   {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05";
+    
     nixos-wsl = 
       {
         url = "github:nix-community/NixOS-WSL";
@@ -16,8 +17,8 @@ inputs =
         inputs.nixpkgs.follows = "nixpkgs";
       };
     emacs-reader = {
-        url = "git+https://codeberg.org/divyaranjan/emacs-reader";
-        flake = false;
+      url = "git+https://codeberg.org/divyaranjan/emacs-reader";
+      flake = false;
     };
 
   };
@@ -147,8 +148,8 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
           ({ ... }: {
             home.username = machine.username;
             home.homeDirectory = "/home/${machine.username}";
-            # home-manager.useGlobalPkgs = true;
-            # home-manager.useUserPackages = true;
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
           })
     
           # Put your actual HM module(s) here

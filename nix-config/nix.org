@@ -45,6 +45,7 @@ inputs =
   {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05";
+    
     nixos-wsl = 
       {
         url = "github:nix-community/NixOS-WSL";
@@ -57,8 +58,8 @@ inputs =
         inputs.nixpkgs.follows = "nixpkgs";
       };
     emacs-reader = {
-        url = "git+https://codeberg.org/divyaranjan/emacs-reader";
-        flake = false;
+      url = "git+https://codeberg.org/divyaranjan/emacs-reader";
+      flake = false;
     };
 
   };
@@ -225,8 +226,8 @@ mkHome = machine:
       ({ ... }: {
         home.username = machine.username;
         home.homeDirectory = "/home/${machine.username}";
-        # home-manager.useGlobalPkgs = true;
-        # home-manager.useUserPackages = true;
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
       })
 
       # Put your actual HM module(s) here
@@ -363,17 +364,20 @@ in
 
       claude-code
       opencode
-      
+
       #misc     
       firefox
       coreutils
       syncthing
       hugo
       mupdf
+      sioyek
       tirith
       scrcpy
       android-tools
       pinentry-curses
+      ffmpeg
+      pi-coding-agent
     ];
 }
 #+end_src
@@ -520,7 +524,8 @@ in
     ];
   
   <<fonts>>
-  
+  hardware.graphics.enable = true;
+  # hardware.graphics.extraPackages = [ pkgs.mesa.drivers ];
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
 
@@ -555,11 +560,27 @@ in
       cmake
       glib
       dconf
+      (pkgs.symlinkJoin {
+      name = "pi-coding-agent";
+      buildInputs = [ pkgs.makeWrapper ];
+      paths = [ pkgs.pi-coding-agent ];
+      postBuild = ''
+        wrapProgram $out/bin/pi \
+          --set NPM_CONFIG_PREFIX ${config.home.homeDirectory}/.pi/npm/ \
+          --prefix PATH : ${
+            pkgs.lib.makeBinPath [
+              pkgs.nodejs_latest
+            ]
+          }
+      '';
+    })
     ];
-  <<common-home-config>>  
+
+<<common-home-config>>  
   programs.zsh.initContent = 
     ''
  <<zshConfigWsl>>
+  #export DISPLAY=$(ip route list default | awk '{print $3}'):0.0
 '';
 
   services.ssh-agent.enable = true;
@@ -596,13 +617,14 @@ in
   home.sessionVariables = 
     {
       EMACSLOADINIT = "${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el";
+      PI_NPM_BIN = "${config.home.homeDirectory}/.pi/npm/bin";
       GTK_THEME = "Orchis-Dark";
       LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
+      LIBGL_ALWAYS_INDIRECT = "1";
     };
   
-home.file.".emacs.d/init.el".source = ../../emacs/init.el;
-home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
-  # home.file.".emacs.d/init.el".source = ../emacs/init.el;
+  home.file.".emacs.d/init.el".source = ../../emacs/init.el;
+  home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
 
   # This value determines the Home Manager release that your
@@ -964,7 +986,6 @@ in
       #Media
       vlc
       obs-studio
-      ffmpeg
       spotify
       parsec-bin
       

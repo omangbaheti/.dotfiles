@@ -119,7 +119,6 @@ eval "$(direnv hook zsh)"
       #Media
       vlc
       obs-studio
-      ffmpeg
       spotify
       parsec-bin
       

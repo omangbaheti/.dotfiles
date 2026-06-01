@@ -34,7 +34,8 @@ in
       noto-fonts-monochrome-emoji
     ]);
   fonts.fontconfig.defaultFonts.emoji = [ "Noto Emoji" ];
-  
+  hardware.graphics.enable = true;
+  # hardware.graphics.extraPackages = [ pkgs.mesa.drivers ];
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
 

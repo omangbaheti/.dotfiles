@@ -3,10 +3,11 @@
     "devenv": {
       "locked": {
         "dir": "src/modules",
-        "lastModified": 1768406370,
+        "lastModified": 1778186459,
+        "narHash": "sha256-Rv2EMtH1agSQlInQzDBjhdEDPegkdIaV/ViGlx0Dri0=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "9487ba6df6cbbfb59c051f9410cdc4521a4471ed",
+        "rev": "f8c5fcd9c049318a1fd15528e61e6eef902e225b",
         "type": "github"
       },
       "original": {
@@ -20,21 +21,7 @@
       "flake": false,
       "locked": {
         "lastModified": 1767039857,
-        "owner": "NixOS",
-        "repo": "flake-compat",
-        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-compat_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1767039857,
+        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
         "owner": "edolstra",
         "repo": "flake-compat",
         "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
@@ -43,56 +30,16 @@
       "original": {
         "owner": "edolstra",
         "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "git-hooks": {
-      "inputs": {
-        "flake-compat": "flake-compat",
-        "gitignore": "gitignore",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1767281941,
-        "owner": "cachix",
-        "repo": "git-hooks.nix",
-        "rev": "f0927703b7b1c8d97511c4116eb9b4ec6645a0fa",
-        "type": "github"
-      },
-      "original": {
-        "owner": "cachix",
-        "repo": "git-hooks.nix",
-        "type": "github"
-      }
-    },
-    "gitignore": {
-      "inputs": {
-        "nixpkgs": [
-          "git-hooks",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1762808025,
-        "owner": "hercules-ci",
-        "repo": "gitignore.nix",
-        "rev": "cb5e3fdca1de58ccbc3ef53de65bd372b48f567c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "gitignore.nix",
         "type": "github"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1768364046,
+        "lastModified": 1778124196,
+        "narHash": "sha256-pYEytCNic/czazbV9r3tbQ6BZzqRBg/41x2dIC5ymOo=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "ea30586ee015f37f38783006a9bc9e4aa64d7d61",
+        "rev": "68a8af93ff4297686cb68880845e61e5e2e41d92",
         "type": "github"
       },
       "original": {
@@ -104,14 +51,15 @@
     },
     "nixpkgs-python": {
       "inputs": {
-        "flake-compat": "flake-compat_2",
+        "flake-compat": "flake-compat",
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1765052656,
+        "lastModified": 1777642067,
+        "narHash": "sha256-6eDIurv/KtJPS/oUT2ZPYzbTq7Qr4GEn3w7JNgObidY=",
         "owner": "cachix",
         "repo": "nixpkgs-python",
-        "rev": "04b27dbad2e004cb237db202f21154eea3c4f89f",
+        "rev": "0e0fd8c0fb36b707d0f90c38b13265d366db8798",
         "type": "github"
       },
       "original": {
@@ -122,15 +70,16 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1767313136,
+        "lastModified": 1773964973,
+        "narHash": "sha256-NV/J+tTER0P5iJhUDL/8HO5MDjDceLQPRUYgdmy5wXw=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "ac62194c3917d5f474c1a844b6fd6da2db95077d",
+        "rev": "812b3986fd1568f7a858f97fcf425ad996ba7d25",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-25.05",
+        "ref": "nixos-25.11",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -138,12 +87,8 @@
     "root": {
       "inputs": {
         "devenv": "devenv",
-        "git-hooks": "git-hooks",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-python": "nixpkgs-python",
-        "pre-commit-hooks": [
-          "git-hooks"
-        ]
+        "nixpkgs-python": "nixpkgs-python"
       }
     }
   },

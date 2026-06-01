@@ -10,89 +10,104 @@
       cmake
       glib
       dconf
+      (pkgs.symlinkJoin {
+      name = "pi-coding-agent";
+      buildInputs = [ pkgs.makeWrapper ];
+      paths = [ pkgs.pi-coding-agent ];
+      postBuild = ''
+        wrapProgram $out/bin/pi \
+          --set NPM_CONFIG_PREFIX ${config.home.homeDirectory}/.pi/npm/ \
+          --prefix PATH : ${
+            pkgs.lib.makeBinPath [
+              pkgs.nodejs_latest
+            ]
+          }
+      '';
+    })
     ];
-  programs.home-manager.enable = true;
-  
-  programs.zoxide.enable = true;
-  programs.git = {
-    enable = true;
-    settings = {
-      user.name = "Omang Baheti";
-      user.email = "omangbaheti@gmail.com";
-      init.defaultBranch = "main";
-      push.default = "simple";
-      extraConfig =
-        {
-          credential.helper = "cache --timeout=28800";
-        };
-    };
+
+programs.home-manager.enable = true;
+
+programs.zoxide.enable = true;
+programs.git = {
+  enable = true;
+  settings = {
+    user.name = "Omang Baheti";
+    user.email = "omangbaheti@gmail.com";
+    init.defaultBranch = "main";
+    push.default = "simple";
+    extraConfig =
+      {
+        credential.helper = "cache --timeout=28800";
+      };
   };
-  
-  programs.zsh = 
-    {
-      enable = true;
-      enableCompletion = true;
-      autosuggestion.enable = true;
-      syntaxHighlighting.enable = true;
-  
-      shellAliases = 
-        {
-          ll = "eza -l";
-          la = "eza -lah --tree --ignore-glob='.git|.venv|node_modules'";
-          ls = "eza -h --git --icons --color=auto --group-directories-first -s extension";
-          tree = "eza --tree --icons --ignore-glob='.git|.venv|node_modules'";
-          grep = "rg";
-          find = "fd";
-          e="emacsclient -c";
-          emd = "emacs --daemon";
-          rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config#${machine.systemType}";
-          rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config#${machine.username}@${machine.host}";
-          exp="/mnt/c/WINDOWS/explorer.exe .";
-        };
-  
-      oh-my-zsh = 
-        {
-          enable = true;
-          plugins = [ "git" "sudo" ];
-          theme = "robbyrussell";
-        };
-    };
-  
-  
-    # Direnv for automatic environment loading
-    programs.direnv = 
+};
+
+programs.zsh = 
+  {
+    enable = true;
+    enableCompletion = true;
+    autosuggestion.enable = true;
+    syntaxHighlighting.enable = true;
+
+    shellAliases = 
+      {
+        ll = "eza -l";
+        la = "eza -lah --tree --ignore-glob='.git|.venv|node_modules'";
+        ls = "eza -h --git --icons --color=auto --group-directories-first -s extension";
+        tree = "eza --tree --icons --ignore-glob='.git|.venv|node_modules'";
+        grep = "rg";
+        find = "fd";
+        e="emacsclient -c";
+        emd = "emacs --daemon";
+        rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config#${machine.systemType}";
+        rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config#${machine.username}@${machine.host}";
+        exp="/mnt/c/WINDOWS/explorer.exe .";
+      };
+
+    oh-my-zsh = 
       {
         enable = true;
-        enableZshIntegration = true;
-        nix-direnv.enable = true;
-        
-        config = {
-          global = {
-            log_format = "-";
-            log_filter = "^$";
-            hide_env_diff = true;
-          };
-        };
+        plugins = [ "git" "sudo" ];
+        theme = "robbyrussell";
       };
-  
-  
-      services.syncthing = 
-      {
-          enable = true;
-      };
-  
-  programs.gpg.enable = true;
-  
-  services.gpg-agent = 
+  };
+
+
+  # Direnv for automatic environment loading
+  programs.direnv = 
     {
       enable = true;
-      pinentry.package = pkgs.pinentry-curses; 
-      extraConfig = ''
-      default-cache-ttl = 31536000;  # 1 year in seconds
-      max-cache-ttl = 31536000;
-        allow-loopback-pinentry
-      '';
-    };  
+      enableZshIntegration = true;
+      nix-direnv.enable = true;
+      
+      config = {
+        global = {
+          log_format = "-";
+          log_filter = "^$";
+          hide_env_diff = true;
+        };
+      };
+    };
+
+
+    services.syncthing = 
+    {
+        enable = true;
+    };
+
+programs.gpg.enable = true;
+
+services.gpg-agent = 
+  {
+    enable = true;
+    pinentry.package = pkgs.pinentry-curses; 
+    extraConfig = ''
+    default-cache-ttl = 31536000;  # 1 year in seconds
+    max-cache-ttl = 31536000;
+      allow-loopback-pinentry
+    '';
+  };  
   programs.zsh.initContent = 
     ''
  # PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
@@ -119,6 +134,7 @@
  eval "$(oh-my-posh init zsh)"
  eval "$(tirith init --shell zsh)"
  eval "$(direnv hook zsh)"
+  #export DISPLAY=$(ip route list default | awk '{print $3}'):0.0
 '';
 
   services.ssh-agent.enable = true;
@@ -175,13 +191,14 @@
   home.sessionVariables = 
     {
       EMACSLOADINIT = "${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el";
+      PI_NPM_BIN = "${config.home.homeDirectory}/.pi/npm/bin";
       GTK_THEME = "Orchis-Dark";
       LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
+      LIBGL_ALWAYS_INDIRECT = "1";
     };
   
-home.file.".emacs.d/init.el".source = ../../emacs/init.el;
-home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
-  # home.file.".emacs.d/init.el".source = ../emacs/init.el;
+  home.file.".emacs.d/init.el".source = ../../emacs/init.el;
+  home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
 
   # This value determines the Home Manager release that your

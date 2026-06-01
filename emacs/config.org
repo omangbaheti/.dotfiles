@@ -52,6 +52,7 @@
   - [[#winpulse][Winpulse]]
   - [[#nerd-icons][Nerd Icons]]
   - [[#scroll-on-jump][Scroll On Jump]]
+  - [[#symbol-overlay][Symbol Overlay]]
 - [[#vertico][VERTICO]]
 - [[#marginalia][MARGINALIA]]
 - [[#orderless][ORDERLESS]]
@@ -86,7 +87,7 @@
   - [[#gptel-agent][GPTEL AGENT]]
   - [[#agent-shell][Agent Shell]]
   - [[#mcp][MCP]]
-  - [[#minuet][Minuet]]
+  - [[#pi-agent][PI Agent]]
 - [[#nano-calendar][NANO CALENDAR]]
 - [[#direnv-mode][DIRENV MODE]]
 - [[#convert-pdfs][CONVERT PDFS]]
@@ -101,6 +102,8 @@
   - [[#zoxide][ZOXIDE]]
   - [[#vterm][Vterm]]
   - [[#neotree][NEOTREE]]
+- [[#wsl-specific-stuff][WSL SPECIFIC STUFF]]
+  - [[#browser][BROWSER]]
 - [[#todo][TODO]]
 
 * IMPORTANT PROGRAMS TO LOAD FIRST
@@ -221,7 +224,6 @@
 
 ;;setting RETURN key in org-mode to follow links
 (setq org-return-follows-link t)
-
 #+END_SRC
 
 
@@ -611,6 +613,28 @@
 
 #+end_src
 
+*** Anzu
+
+#+begin_src emacs-lisp
+(use-package anzu
+  :ensure t
+  :config (global-anzu-mode +1))
+
+;; evil integration
+(use-package evil-anzu
+  :ensure t
+  :after (evil anzu))
+
+;; (use-package telephone-line
+;;   :ensure t
+;;   :init
+;;   (telephone-line-mode 1)
+;;   :config
+
+;;   (setq telephone-line-height 24)
+;;   (setq telephone-line-evil-use-short-tag nil))
+#+end_src
+
 
 ** DASHBOARD
 
@@ -768,6 +792,7 @@ one, an error is signaled."
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   (ace-window-posframe-mode t)
   (aw-scope 'frame)
+  ;; (aw-scope 'global)
   (aw-dispatch-always nil)
   (aw-background t)
   (aw-minibuffer-flag t)
@@ -809,7 +834,7 @@ Defining the fonts
 #+begin_src emacs-lisp
 ;; Setting the default font
 (set-face-attribute 'default nil
-		    :font "JetBrainsMono Nerd Font"
+		    :font "JetBrainsMono Nerd Font Mono"
 		    :height 110
 		    :weight 'medium)
 ;; Setting font for variable pitch
@@ -821,7 +846,7 @@ Defining the fonts
                     :height 140)
 ;;Setting font for fixed pitch
 (set-face-attribute 'fixed-pitch nil
-		    :font "JetBrainsMono Nerd Font"
+		    :font "JetBrainsMono Nerd Font Mono"
 		    :height 110
 		    :weight 'medium)
 (set-fontset-font t 'emoji (font-spec :family "Noto Color Emoji") nil 'prepend)
@@ -885,7 +910,7 @@ Defining the fonts
 
 #+begin_src emacs-lisp
 (global-display-line-numbers-mode 1)
-(global-visual-line-mode t)
+;; (global-visual-line-mode t)
 (setq truncate-lines nil)
 (setq display-line-numbers-type 'relative)
 #+end_src
@@ -1306,7 +1331,7 @@ Calling again while in override mode turns off the override and resumes auto beh
 	   (
 	    file+head "TopLevelTopics/${slug}.org"
 	    "#+TITLE: ${title}
-,#+filetags: roam-tag %^{Tags}
+,#+filetags: roam-tag 
 ,#+STARTUP: showall
 "
 	    )
@@ -1321,11 +1346,16 @@ Calling again while in override mode turns off the override and resumes auto beh
 :PROPERTIES:
 :ROAM_ALIASES: \"${fullname}\"
 :DATE: \"%<%d-%m-%Y-(%H-%M-%S)>\"
+:EMAIL: 
+:PHONE: 
+:COMPANY:  
+:FIELD: 
 :END:
 ,#+TITLE: ${title}
-,#+filetags: %^{Tags}
+,#+filetags: People
 ,#+OPTIONS: toc:2
 ,#+STARTUP: showall
+[[id:1afccf8b-2a17-4704-bbda-1dfe60f05b24][:People:]]
 ,* TABLE OF CONTENTS :toc:
 "
 	    )
@@ -1379,6 +1409,9 @@ DEADLINE: %^t
           )))
 
 #+end_src
+
+#+RESULTS:
+: [nil 27164 48805 240795 nil elpaca-process-queues nil nil 415000 nil]
 
 *** MD-ROAM
 #+begin_src emacs-lisp
@@ -1704,16 +1737,21 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
 (defun my/prettify-symbols-setup ()
 
   ;; Drawers
-  (push '(":PROPERTIES:" . " ") prettify-symbols-alist)
-  (push '(":ROAM_ALIASES:" . " ") prettify-symbols-alist)
-  (push '(":ID:" . " ") prettify-symbols-alist)
-  (push '(":DATE:" . " ") prettify-symbols-alist)
-  (push '(":DATE_PUBLISHED:" . " ") prettify-symbols-alist)
-  (push '(":AUTHOR:" . " ") prettify-symbols-alist)
-  (push '(":ROAM_REFS:" . " ") prettify-symbols-alist)
-  (push '(":PRIORITY:" . "󰁝 ") prettify-symbols-alist)
-  (push '(":END:" . " ") prettify-symbols-alist)
-  (push '(":RESULTS:" . " ") prettify-symbols-alist)
+  (push '(":PROPERTIES:" . "") prettify-symbols-alist)
+  (push '(":ROAM_ALIASES:" . "") prettify-symbols-alist)
+  (push '(":ID:" . "") prettify-symbols-alist)
+  (push '(":DATE:" . "") prettify-symbols-alist)
+  (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
+  (push '(":EMAIL:" . "󰇮") prettify-symbols-alist)
+  (push '(":COMPANY:" . "") prettify-symbols-alist)
+  (push '(":ORGANIZATION:" . "") prettify-symbols-alist)
+  (push '(":FIELD:" . "󱈹") prettify-symbols-alist)
+  (push '(":PHONE:" . "󰏲") prettify-symbols-alist)
+  (push '(":AUTHOR:" . "") prettify-symbols-alist)
+  (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
+  (push '(":PRIORITY:" . "󰁝") prettify-symbols-alist)
+  (push '(":END:" . "") prettify-symbols-alist)
+  (push '(":RESULTS:" . "") prettify-symbols-alist)
   ;; Tags
   (push '(":projects:" . "  Projects") prettify-symbols-alist)
   (push '(":work:"     . "  Work") prettify-symbols-alist)
@@ -1730,6 +1768,9 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
 (add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
 (add-hook 'org-agenda-mode-hook #'my/prettify-symbols-setup)
 #+end_src
+
+#+RESULTS:
+| my/prettify-symbols-setup |
 
 ** SVG Tag Mode
 #+begin_src emacs-lisp
@@ -1758,7 +1799,6 @@ Lifted from [[https://sophiebos.io/posts/prettifying-emacs-org-mode/][Sophie Bos
           (lambda ()
             (setq svg-lib-style-default (svg-lib-style-compute-default))))
 #+end_src
-
 
 ** Pulsar
 Package to highlight a line when jumping to different places
@@ -1824,7 +1864,6 @@ Package to highlight when switching buffer
   (dired-mode . nerd-icons-dired-mode))
 #+end_src
 
-
 ** Scroll On Jump
 
 #+begin_src emacs-lisp
@@ -1855,6 +1894,20 @@ Package to highlight when switching buffer
 )
 #+end_src
 
+** Symbol Overlay
+#+begin_src emacs-lisp
+(use-package symbol-overlay
+  :ensure t
+  :config
+  (setq symbol-overlay-idle-time 0.2)
+  (set-face-background 'symbol-overlay-default-face "#694b35")
+  (define-globalized-minor-mode global-symbol-overlay-mode
+    symbol-overlay-mode symbol-overlay-mode)
+  (global-symbol-overlay-mode 1))
+#+end_src
+
+#+RESULTS:
+: [nil 27164 39328 835575 nil elpaca-process-queues nil nil 97000 nil]
 
 * VERTICO 
 Nicer M-x menu
@@ -2080,7 +2133,8 @@ Enabling Frequency + Recency Sorting of options in vertico
 (use-package dirvish
   :ensure t
   :after evil
-  :init (dirvish-override-dired-mode))
+  ;; :init (dirvish-override-dired-mode)
+  )
 #+end_src
 
 
@@ -2093,10 +2147,19 @@ Enabling Frequency + Recency Sorting of options in vertico
   ;; Sorting defaults to 'type (directories first, then files)
   ;; Hidden files are hidden by default
   )
+
+(defun my/find-file-open-dir-in-grease (orig-fn filename &optional wildcards)
+  "Open directories in grease instead of dired."
+  (if (file-directory-p filename)
+      (grease-open filename)
+    (funcall orig-fn filename wildcards)))
+
+(advice-add 'find-file :around #'my/find-file-open-dir-in-grease)
 #+end_src
 
 
 * LANGUAGE SETUP
+
 ** Language Modes
 Language Modes that I need to install manually
 #+begin_src emacs-lisp
@@ -2113,7 +2176,6 @@ Language Modes that I need to install manually
 
 (use-package ess
   :ensure t
-  :defer t
 )
 
 (use-package dart-mode
@@ -2149,7 +2211,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
          (sh-mode . flycheck-mode)
          (yaml-mode . flycheck-mode)))
 #+end_src
-
 
 ** Yasnippet
 #+begin_src emacs-lisp
@@ -2234,9 +2295,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   )
 #+end_src
 
-#+RESULTS:
-: [nil 27131 50077 54445 nil elpaca-process-queues nil nil 208000 nil]
-
 *** LSP Bridge
 #+begin_src emacs-lisp
 (use-package lsp-bridge
@@ -2282,7 +2340,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (require 'acm-backend-elisp)
   (setq acm-enable-elisp t))
 #+end_src
-
 
 ** Corfu
 #+begin_src emacs-lisp
@@ -2350,19 +2407,21 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 #+begin_src emacs-lisp
 (use-package jupyter
   :ensure t
-  :defer t
+  :demand t
   :init
+  (require 'ob-jupyter)
   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
+  (setq org-babel-default-header-args:jupyter-R '((:session . "R")
+                                                  (:kernel . "ir")
+                                                  (:exports . "both")
+                                                  (:results . "output")))
   :config
   (setq org-confirm-babel-evaluate nil
         org-src-fontify-natively t
         org-src-tab-acts-natively t
         org-src-preserve-indentation t)
-  (setq org-babel-default-header-args:jupyter-R '((:session . "R")
-                                                  (:kernel . "ir")
-                                                  (:exports . "both")
-                                                  (:results . "output"))))
+  )
 
 (with-eval-after-load 'org
   (with-eval-after-load 'jupyter
@@ -2371,8 +2430,9 @@ Modern on-the-fly syntax checking extension for GNU Emacs
      '((emacs-lisp . t)
        (python . t)
        (shell . t)
+       (R . t)
        (jupyter . t)
-       (R . t)))
+       ))
     (org-babel-jupyter-aliases-from-kernelspecs)))
 #+end_src
 
@@ -2412,6 +2472,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (outline-indent-ellipsis " ..."))
 #+end_src
 
+
 * PROJECTILE
 [[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.
  
@@ -2437,7 +2498,8 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   
   ;; PDF viewer configuration
   (setq TeX-view-program-selection '((output-pdf "PDF Tools")))
-  (setq TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
+  ;; (setq TeX-view-program-selection '((output-pdf "Sioyek")))
+  ;; (setq TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
   (setq TeX-source-correlate-start-server t)
   (setq LaTeX-command "latex -shell-escape --synctex=1")
   ;; Auto-refresh PDF buffer after compilation
@@ -2464,6 +2526,14 @@ Modern on-the-fly syntax checking extension for GNU Emacs
             (lambda ()
               (setq TeX-source-correlate-mode t)))
 
+  )
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package evil-tex
+  :ensure t
+  :after tex evil
+  :hook (LaTeX-mode . evil-tex-mode)
   )
 #+end_src
 
@@ -2746,10 +2816,14 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 ** Agent Shell
 #+begin_src emacs-lisp
-;; (use-package agent-shell
-;;     :ensure t
-;; )
+(use-package agent-shell
+    :ensure t
+    :config
+    (when-let ((pi-bin (getenv "PI_NPM_BIN")))
+  (add-to-list 'exec-path pi-bin))
+)
 #+end_src
+
 
 ** MCP
 
@@ -2773,12 +2847,12 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   )
 #+end_src
 
-** Minuet
-
+** PI Agent
 #+begin_src emacs-lisp
-
+(use-package pi-coding-agent
+  :ensure t
+  :init (defalias 'pi 'pi-coding-agent))
 #+end_src
-
 
 
 * TODO NANO CALENDAR
@@ -3386,6 +3460,23 @@ Neotree is a file tree viewer.  When you open neotree, it jumps to the current f
 ;;                   (make-local-variable 'auto-hscroll-mode)
 ;;                   (setq auto-hscroll-mode nil)))))
 #+end_src
+
+
+* WSL SPECIFIC STUFF
+** BROWSER
+#+begin_src emacs-lisp
+(when (and (eq system-type 'gnu/linux)
+           (getenv "WSLENV"))
+  (let ((cmd-exe "/mnt/c/Windows/System32/cmd.exe")
+        (cmd-args '("/c" "start")))
+    (when (file-exists-p cmd-exe)
+      (setq browse-url-generic-program cmd-exe
+            browse-url-generic-args cmd-args
+            browse-url-browser-function 'browse-url-generic))))
+#+end_src
+
+#+RESULTS:
+: browse-url-generic
 
 * TODO
 https://github.com/emacs-vs/codemetrics

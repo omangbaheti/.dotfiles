@@ -104,16 +104,19 @@ in
 
       claude-code
       opencode
-      
+
       #misc     
       firefox
       coreutils
       syncthing
       hugo
       mupdf
+      sioyek
       tirith
       scrcpy
       android-tools
       pinentry-curses
+      ffmpeg
+      pi-coding-agent
     ];
 }
