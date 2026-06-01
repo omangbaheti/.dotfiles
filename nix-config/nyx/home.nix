@@ -106,7 +106,7 @@ eval "$(direnv hook zsh)"
       blender
       rclone
       
-      protonvpn-gui
+      proton-vpn
       localsend
       #Tools
       libreoffice

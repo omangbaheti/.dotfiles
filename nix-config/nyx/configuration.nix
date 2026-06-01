@@ -31,19 +31,30 @@ in
 
 
   nixpkgs.config.allowUnfree = true;
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
 
-  # Set your time zone.
-  # time.timeZone = systemSettings.timezone;
+  services.xserver.videoDrivers = [ "amdgpu" "nvidia" ];
 
-  # Select internationalisation properties.
-  # i18n.defaultLocale = systemSettings.defaultLocale;
+  hardware.nvidia = {
+    open = true;  
+    modesetting.enable = true;
 
-    # Enable the X11 windowing system.
+    prime = {
+      offload.enable = true;
+      offload.enableOffloadCmd = true;
+      nvidiaBusId  = "PCI:1:0:0";
+      amdgpuBusId  = "PCI:6:0:0";
+    };
+  };
+  
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -76,6 +87,9 @@ in
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+
+
+  
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nyx = {
     isNormalUser = true;
