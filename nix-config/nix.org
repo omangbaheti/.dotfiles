@@ -1168,7 +1168,6 @@ in
   # home.username = userSettings.name;
   # home.homeDirectory = "/home/" + userSettings.name;
  home.stateVersion = "26.05";
- programs.home-manager.enable = true;
  <<common-home-config>>
  
   programs.zsh.initContent = 

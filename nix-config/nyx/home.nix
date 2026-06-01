@@ -2,7 +2,7 @@
 {
   # home.username = userSettings.name;
   # home.homeDirectory = "/home/" + userSettings.name;
-  home.stateVersion = "26.05";
+ home.stateVersion = "26.05";
  programs.home-manager.enable = true;
  
  programs.zoxide.enable = true;
@@ -85,6 +85,7 @@
        allow-loopback-pinentry
      '';
    };
+ 
   programs.zsh.initContent = 
     ''
 eval "$(zoxide init zsh)"
@@ -147,6 +148,10 @@ eval "$(direnv hook zsh)"
   #   enable = true;
   # };
   
+  # services.emacs = {
+  #   enable = true;
+  # };
+  
   
   programs.emacs = {
     enable = true;
@@ -172,5 +177,6 @@ eval "$(direnv hook zsh)"
       LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
       # SPAWNEDITOR = userSettings.spawnEditor;
     };
-  home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
+  home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
+  home.file.".emacs.d/init.el".source = ../../emacs/init.el;
 }
