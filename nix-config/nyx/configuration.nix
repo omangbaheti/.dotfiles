@@ -19,7 +19,7 @@ in
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  
+  boot.kernelParams = [ "pcie_aspm=off" ];
   boot.kernelPackages = pkgs.linuxPackages;
   networking.hostName = hostname; # Define your hostname.
   #networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -108,7 +108,6 @@ in
   # $ nix search wget
   environment.systemPackages = with pkgs; 
     [
-      gitkraken
       vscode
       nodejs_24
       alacritty
