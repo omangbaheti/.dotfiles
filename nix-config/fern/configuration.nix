@@ -109,9 +109,7 @@ in
   # $ nix search wget
   environment.systemPackages = with pkgs; 
     [
-      gitkraken
       vscode
-      nodejs_24
       alacritty
       chromium
       qbittorrent

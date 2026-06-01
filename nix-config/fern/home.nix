@@ -124,7 +124,6 @@ eval "$(direnv hook zsh)"
       
       #Communication
       discord
-      wasistlos
       telegram-desktop
       slack 
       zoom-us
@@ -173,5 +172,6 @@ eval "$(direnv hook zsh)"
       LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
       # SPAWNEDITOR = userSettings.spawnEditor;
     };
-  home.file.".emacs.d/init.el".source = /${config.home.homeDirectory}/${machine.dotfilesDir}/emacs/init.el;
+  home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
+  home.file.".emacs.d/init.el".source = ../../emacs/init.el;
 }
