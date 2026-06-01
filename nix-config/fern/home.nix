@@ -128,7 +128,7 @@ eval "$(direnv hook zsh)"
       slack 
       zoom-us
       #Games
-      steam
+      stable.steam
       lutris-unwrapped
       
       # Virtual Machines and wine
