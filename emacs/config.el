@@ -1355,6 +1355,11 @@ DEADLINE: %^t
   (push '(":ID:" . "") prettify-symbols-alist)
   (push '(":DATE:" . "") prettify-symbols-alist)
   (push '(":DATE_PUBLISHED:" . "") prettify-symbols-alist)
+  (push '(":EMAIL:" . "󰇮") prettify-symbols-alist)
+  (push '(":COMPANY:" . "") prettify-symbols-alist)
+  (push '(":ORGANIZATION:" . "") prettify-symbols-alist)
+  (push '(":FIELD:" . "󱈹") prettify-symbols-alist)
+  (push '(":PHONE:" . "󰏲") prettify-symbols-alist)
   (push '(":AUTHOR:" . "") prettify-symbols-alist)
   (push '(":ROAM_REFS:" . "") prettify-symbols-alist)
   (push '(":PRIORITY:" . "󰁝") prettify-symbols-alist)
@@ -1369,8 +1374,8 @@ DEADLINE: %^t
   (push '(":learn:"    . "  Learn") prettify-symbols-alist)
   (push '(":code:"     . "  Code") prettify-symbols-alist)
 
-  (set-face-attribute 'org-drawer nil :height 1.6)
-  (set-face-attribute 'org-special-keyword nil :height 1.6)
+  (set-face-attribute 'org-drawer nil :height 1.3)
+  (set-face-attribute 'org-special-keyword nil :height 1.3)
   (prettify-symbols-mode))
 
 (add-hook 'org-mode-hook        #'my/prettify-symbols-setup)
@@ -2799,3 +2804,12 @@ _j_: next block    _k_: previous block
 ;;                   (setq word-wrap nil)
 ;;                   (make-local-variable 'auto-hscroll-mode)
 ;;                   (setq auto-hscroll-mode nil)))))
+
+(when (and (eq system-type 'gnu/linux)
+           (getenv "WSLENV"))
+  (let ((cmd-exe "/mnt/c/Windows/System32/cmd.exe")
+        (cmd-args '("/c" "start")))
+    (when (file-exists-p cmd-exe)
+      (setq browse-url-generic-program cmd-exe
+            browse-url-generic-args cmd-args
+            browse-url-browser-function 'browse-url-generic))))
