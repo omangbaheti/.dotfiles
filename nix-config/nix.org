@@ -48,6 +48,8 @@ inputs =
   {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nix-snapd.url = "github:nix-community/nix-snapd";
+    nix-snapd.inputs.nixpkgs.follows = "nixpkgs";
     
     nixos-wsl = 
       {
@@ -60,9 +62,29 @@ inputs =
         url = "github:nix-community/home-manager/master";
         inputs.nixpkgs.follows = "nixpkgs";
       };
-    emacs-reader = {
-      url = "git+https://codeberg.org/divyaranjan/emacs-reader";
-      flake = false;
+    
+    niri = {
+      url = "github:sodiboo/niri-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };   
+    
+    vicinae.url = "github:vicinaehq/vicinae";
+    
+    noctalia = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    
+    nix-colors.url = "github:misterio77/nix-colors";
+    
+    zen-browser = {
+      url = "github:youwen5/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    
+    lanzaboote = {
+    url = "github:nix-community/lanzaboote/v0.4.3";
+    inputs.nixpkgs.follows = "nixpkgs";
     };
 
   };
@@ -71,7 +93,7 @@ inputs =
 ** Flake Outputs
 #+name: flake-output
 #+begin_src nix :noweb yes 
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, nix-snapd, lanzaboote, ... }@inputs: 
   let
     # stableFor = system:
     #   nixpkgs-stable.legacyPackages.${system};
@@ -181,7 +203,6 @@ mkSystem = machine:
           [
             (if isWSL then nixos-wsl.nixosModules.wsl else {})
             home-manager.nixosModules.home-manager
-            
             # Forward args into HM modules here:
             ({ ... }: {
               home-manager.extraSpecialArgs = {
@@ -193,10 +214,13 @@ mkSystem = machine:
                 systemType = machine.systemType;
                 machines = machines;
               };
-
               home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
             })
-
+            #Snapd
+            nix-snapd.nixosModules.default
+            { services.snap.enable = true; }
+            #Adding Secure Boot
+            lanzaboote.nixosModules.lanzaboote  
             ./${machine.host}/configuration.nix
           ];
 
@@ -241,7 +265,6 @@ mkHome = machine:
 
 * Common Configuration 
 ** Fonts
-
 #+name:fonts
 #+begin_src nix
 fonts.packages = with pkgs.nerd-fonts; 
@@ -381,6 +404,13 @@ in
       pinentry-curses
       ffmpeg
       pi-coding-agent
+      #whatspp
+      karere
+      #for controlling external monitor
+      ddcutil
+      luminance
+      #secure boot
+      sbctl
     ];
 }
 #+end_src
@@ -415,7 +445,7 @@ programs.emacs = {
 #+name:common-home-config
 #+begin_src nix
 programs.home-manager.enable = true;
-
+nix.settings.auto-optimise-store = true;
 programs.zoxide.enable = true;
 programs.git = {
   enable = true;
@@ -816,7 +846,7 @@ in
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, stable, machine, ... }:
+{ config, pkgs, stable, machine, inputs, ... }:
 let
   hostname = machine.host;
   username = machine.username;
@@ -1028,7 +1058,7 @@ in
 ** NYX - Legion
 *** Configuration.nix
 #+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/nyx/configuration.nix
-{ config, pkgs, stable, machine, ... }:
+{ config, pkgs, lib, stable, machine, inputs, ... }:
 let
   hostname = machine.host;
   username = machine.username;
@@ -1043,7 +1073,12 @@ in
     ];
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.enable = lib.mkForce false;
+  boot.lanzaboote =
+    {
+      enable = true;
+      pkiBundle = "/var/lib/sbctl";
+    };
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelParams = [ "pcie_aspm=off" ];
   boot.kernelPackages = pkgs.linuxPackages;
@@ -1117,7 +1152,8 @@ in
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-
+  hardware.i2c.enable = true;
+  users.groups.i2c.members = [ "nyx" ];
 
   
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -1132,6 +1168,9 @@ in
   
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
+
+
+  programs.niri.enable = true;
   
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -1176,13 +1215,13 @@ in
 
 *** Home.nix
 #+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/nyx/home.nix
-{ config, pkgs, stable, machine, ... }:
+{ config, pkgs, stable, machine, inputs, ... }:
 {
   # home.username = userSettings.name;
   # home.homeDirectory = "/home/" + userSettings.name;
- home.stateVersion = "26.05";
- <<common-home-config>>
- 
+  home.stateVersion = "26.05";
+  <<common-home-config>>
+  
   programs.zsh.initContent = 
     ''
 <<zshConfigFern>>
@@ -1216,7 +1255,6 @@ in
       obs-studio
       spotify
       parsec-bin
-      
       #Communication
       discord
       #wasistlos
@@ -1227,6 +1265,7 @@ in
       steam
 
       
+      inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default     
       # Virtual Machines and wine
       libvirt
       wine
@@ -1238,10 +1277,6 @@ in
       fprintd
     ]);
 
-  # services.emacs = {
-  #   enable = true;
-  # };
-  
   <<emacs-config-wayland>>
   home.sessionVariables = 
     {
@@ -1253,6 +1288,19 @@ in
     };
   home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
   home.file.".emacs.d/init.el".source = ../../emacs/init.el;
+  home.file.".config/niri/config.kdl".source = ../../niri/config.kdl;
+  dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
+  
+  gtk = 
+    {
+      enable = true;
+      theme = 
+        {
+          package = pkgs.orchis-theme;
+          name = "Orchis-Dark"; # or "Orchis-Dark", "Orchis-Purple", etc.
+        };
+    };
+
 }
 #+end_src
 
