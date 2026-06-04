@@ -118,5 +118,12 @@ in
       pinentry-curses
       ffmpeg
       pi-coding-agent
+      #whatspp
+      karere
+      #for controlling external monitor
+      ddcutil
+      luminance
+      #secure boot
+      sbctl
     ];
 }

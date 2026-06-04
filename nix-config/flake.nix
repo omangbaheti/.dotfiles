@@ -4,6 +4,8 @@ inputs =
   {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nix-snapd.url = "github:nix-community/nix-snapd";
+    nix-snapd.inputs.nixpkgs.follows = "nixpkgs";
     
     nixos-wsl = 
       {
@@ -16,13 +18,33 @@ inputs =
         url = "github:nix-community/home-manager/master";
         inputs.nixpkgs.follows = "nixpkgs";
       };
-    emacs-reader = {
-      url = "git+https://codeberg.org/divyaranjan/emacs-reader";
-      flake = false;
+    
+    niri = {
+      url = "github:sodiboo/niri-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };   
+    
+    vicinae.url = "github:vicinaehq/vicinae";
+    
+    noctalia = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    
+    nix-colors.url = "github:misterio77/nix-colors";
+    
+    zen-browser = {
+      url = "github:youwen5/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    
+    lanzaboote = {
+    url = "github:nix-community/lanzaboote/v1.0.0";
+    inputs.nixpkgs.follows = "nixpkgs";
     };
 
   };
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, nix-snapd, lanzaboote, ... }@inputs: 
   let
     # stableFor = system:
     #   nixpkgs-stable.legacyPackages.${system};
@@ -104,7 +126,6 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
               [
                 (if isWSL then nixos-wsl.nixosModules.wsl else {})
                 home-manager.nixosModules.home-manager
-                
                 # Forward args into HM modules here:
                 ({ ... }: {
                   home-manager.extraSpecialArgs = {
@@ -116,10 +137,13 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, ... }@inputs
                     systemType = machine.systemType;
                     machines = machines;
                   };
-    
                   home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
                 })
-    
+                #Snapd
+                nix-snapd.nixosModules.default
+                { services.snap.enable = true; }
+                #Adding Secure Boot
+                lanzaboote.nixosModules.lanzaboote  
                 ./${machine.host}/configuration.nix
               ];
     

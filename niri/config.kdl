@@ -317,6 +317,7 @@ window-rule {
     match app-id=r#"^org\.wezfurlong\.wezterm$"#
     default-column-width {}
 }
+
 spawn-at-startup "noctalia-shell"
 
 // Open the Firefox picture-in-picture player as floating by default.

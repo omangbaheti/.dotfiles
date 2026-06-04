@@ -1,4 +1,4 @@
-{ config, pkgs, stable, machine, ... }:
+{ config, pkgs, lib, stable, machine, inputs, ... }:
 let
   hostname = machine.host;
   username = machine.username;
@@ -13,7 +13,13 @@ in
     ];
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.enable = lib.mkForce false;
+  # boot.loader.systemd-boot.enable = true;
+  boot.lanzaboote =
+    {
+      enable = true;
+      pkiBundle = "/var/lib/sbctl";
+    };
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelParams = [ "pcie_aspm=off" ];
   boot.kernelPackages = pkgs.linuxPackages;
@@ -87,7 +93,8 @@ in
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-
+  hardware.i2c.enable = true;
+  users.groups.i2c.members = [ "nyx" ];
 
   
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -113,6 +120,9 @@ in
   
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
+
+
+  programs.niri.enable = true;
   
   # List packages installed in system profile. To search, run:
   # $ nix search wget

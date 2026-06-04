@@ -27,7 +27,7 @@
     ];
 
 programs.home-manager.enable = true;
-
+nix.settings.auto-optimise-store = true;
 programs.zoxide.enable = true;
 programs.git = {
   enable = true;
