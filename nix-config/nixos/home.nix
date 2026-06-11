@@ -161,7 +161,6 @@ services.gpg-agent =
   #   enable = true;
   # };
   
-  
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;

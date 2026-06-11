@@ -147,7 +147,6 @@ eval "$(direnv hook zsh)"
   #   enable = true;
   # };
   
-  
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;

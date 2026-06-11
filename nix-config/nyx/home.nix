@@ -148,7 +148,6 @@ eval "$(direnv hook zsh)"
   #   enable = true;
   # };
   
-  
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;
@@ -177,6 +176,7 @@ eval "$(direnv hook zsh)"
   home.file.".emacs.d/init.el".source = ../../emacs/init.el;
   # home.file.".config/niri/config.kdl".source = ../../niri/config.kdl;
   home.file.".config/niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "/home/nyx/.dotfiles/niri/config.kdl";
+  home.file.".local/share/vicinae/scripts".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos/scripts/vicinae";
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
   
   gtk = 

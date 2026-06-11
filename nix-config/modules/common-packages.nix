@@ -117,6 +117,7 @@ in
       pinentry-curses
       ffmpeg
       pi-coding-agent
+      vesktop
       #whatspp
       karere
       #for controlling external monitor

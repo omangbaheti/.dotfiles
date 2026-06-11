@@ -123,6 +123,19 @@ in
 
 
   programs.niri.enable = true;
+
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-gnome
+    ];
+    config.niri = {
+      default = lib.mkForce [ "gtk" "gnome" ];
+      "org.freedesktop.impl.portal.ScreenCast" = lib.mkForce [ "gnome" ];
+      "org.freedesktop.impl.portal.Screenshot" = lib.mkForce [ "gnome" ];
+    };
+  };
   
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -132,8 +145,13 @@ in
       alacritty
       chromium
       qbittorrent
+      linux-wallpaperengine
     ];
-
+  environment.sessionVariables = {
+    XDG_CURRENT_DESKTOP = "niri";
+    XDG_SESSION_TYPE = "wayland";
+    XDG_SESSION_DESKTOP = "niri";
+  };
   services.fprintd.enable = false;
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
