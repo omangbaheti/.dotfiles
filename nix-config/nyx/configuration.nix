@@ -43,7 +43,6 @@ in
   };
 
   services.xserver.videoDrivers = [ "amdgpu" "nvidia" ];
-
   hardware.nvidia = {
     open = true;  
     modesetting.enable = true;
