@@ -93,12 +93,23 @@
   :commands (evil-tutor-start evil-tutor-resume)
   )
 
+(defun my-evil-scroll-up-and-center ()
+  (interactive)
+  (evil-scroll-up nil)
+  (recenter))
+
+(defun my-evil-scroll-down-and-center ()
+  (interactive)
+  (evil-scroll-down nil)
+  (recenter))
+
 (with-eval-after-load 'evil-maps
   (define-key evil-motion-state-map (kbd "SPC") nil)
   (define-key evil-motion-state-map (kbd "RET") nil)
   (define-key evil-motion-state-map (kbd "TAB") nil)
-  (define-key evil-normal-state-map (kbd "C-b") #'evil-scroll-up )
-  )
+  (define-key evil-normal-state-map (kbd "C-b") #'my-evil-scroll-up-and-center)
+  (define-key evil-normal-state-map (kbd "C-d") #'my-evil-scroll-down-and-center))
+  
 
 ;;setting RETURN key in org-mode to follow links
 (setq org-return-follows-link t)
@@ -1423,6 +1434,8 @@ DEADLINE: %^t
      evil-yank-line
      evil-delete
      evil-scroll-up
+     my-evil-scroll-up-and-center
+     my-evil-scroll-down-and-center
      evil-delete-line
      evil-jump-item
      flymake-goto-next-error
@@ -1463,7 +1476,7 @@ DEADLINE: %^t
     :after evil
     :ensure t
     :config
-    (setq scroll-on-jump-duration 0.25
+    (setq scroll-on-jump-duration 0.25 
           scroll-on-jump-smooth t
           scroll-on-jump-curve 'smooth-out
           scroll-on-jump-curve-power 4.0)
@@ -2444,6 +2457,12 @@ Preserves existing entries to avoid overwriting."
   (other-window 1)
   (ghostel))
 
+(defun ghostel-new-frame ()
+  "Open ghostel in a new frame."
+  (interactive)
+  (select-frame (make-frame))
+  (ghostel))
+
 (defun gptel-split ()
   (interactive)
   (split-window-right)
@@ -2666,6 +2685,7 @@ Preserves existing entries to avoid overwriting."
     "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
     "t p" '(open-lazygit :wk "Open Lazygit")
     "t v" '(ghostel-split :wk "Toggle Vterm")
+    "t V" '(ghostel-new-frame :wk "Toggle Terminal new frame")
     "t w" '(shell-command-open-explorer :wk "Open Windows Explorer in pwd")
     "t t" '(visual-line-mode :wk "Toggle truncated lines")
     )

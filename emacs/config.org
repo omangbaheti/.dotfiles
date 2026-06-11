@@ -215,12 +215,23 @@
   :commands (evil-tutor-start evil-tutor-resume)
   )
 
+(defun my-evil-scroll-up-and-center ()
+  (interactive)
+  (evil-scroll-up nil)
+  (recenter))
+
+(defun my-evil-scroll-down-and-center ()
+  (interactive)
+  (evil-scroll-down nil)
+  (recenter))
+
 (with-eval-after-load 'evil-maps
   (define-key evil-motion-state-map (kbd "SPC") nil)
   (define-key evil-motion-state-map (kbd "RET") nil)
   (define-key evil-motion-state-map (kbd "TAB") nil)
-  (define-key evil-normal-state-map (kbd "C-b") #'evil-scroll-up )
-  )
+  (define-key evil-normal-state-map (kbd "C-b") #'my-evil-scroll-up-and-center)
+  (define-key evil-normal-state-map (kbd "C-d") #'my-evil-scroll-down-and-center))
+  
 
 ;;setting RETURN key in org-mode to follow links
 (setq org-return-follows-link t)
@@ -1820,6 +1831,8 @@ Package to highlight a line when jumping to different places
      evil-yank-line
      evil-delete
      evil-scroll-up
+     my-evil-scroll-up-and-center
+     my-evil-scroll-down-and-center
      evil-delete-line
      evil-jump-item
      flymake-goto-next-error
@@ -1871,7 +1884,7 @@ Package to highlight when switching buffer
     :after evil
     :ensure t
     :config
-    (setq scroll-on-jump-duration 0.25
+    (setq scroll-on-jump-duration 0.25 
           scroll-on-jump-smooth t
           scroll-on-jump-curve 'smooth-out
           scroll-on-jump-curve-power 4.0)
@@ -1905,9 +1918,6 @@ Package to highlight when switching buffer
     symbol-overlay-mode symbol-overlay-mode)
   (global-symbol-overlay-mode 1))
 #+end_src
-
-#+RESULTS:
-: [nil 27164 39328 835575 nil elpaca-process-queues nil nil 97000 nil]
 
 * VERTICO 
 Nicer M-x menu
