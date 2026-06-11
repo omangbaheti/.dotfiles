@@ -128,8 +128,6 @@ in
       #niri
       vicinae
       noctalia-shell
-      dms-shell
-      quickshell
       fuzzel
       xwayland-satellite
       nvtopPackages.nvidia
