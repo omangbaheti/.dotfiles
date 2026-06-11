@@ -175,7 +175,8 @@ eval "$(direnv hook zsh)"
     };
   home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
   home.file.".emacs.d/init.el".source = ../../emacs/init.el;
-  home.file.".config/niri/config.kdl".source = ../../niri/config.kdl;
+  # home.file.".config/niri/config.kdl".source = ../../niri/config.kdl;
+  home.file.".config/niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "/home/nyx/.dotfiles/niri/config.kdl";
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
   
   gtk = 

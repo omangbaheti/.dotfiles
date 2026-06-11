@@ -101,7 +101,6 @@ in
       home-manager
       languagetool
       
-
       claude-code
       opencode
 
@@ -125,5 +124,10 @@ in
       luminance
       #secure boot
       sbctl
+      #niri
+      vicinae
+      noctalia-shell
+      fuzzel
+      xwayland-satellite
     ];
 }
