@@ -1717,7 +1717,11 @@ DEADLINE: %^t
   :after dart-mode
   :bind (:map dart-mode-map
               ("C-M-x" . #'flutter-run-or-hot-reload))
-  )
+)
+
+(use-package kdl-mode
+  :ensure t
+  :mode "\\.kdl\\'")
 
 (use-package treesit-auto
   :custom

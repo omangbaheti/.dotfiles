@@ -92,7 +92,7 @@
 - [[#direnv-mode][DIRENV MODE]]
 - [[#convert-pdfs][CONVERT PDFS]]
 - [[#smudge][SMUDGE]]
-- [[#misc][Misc]]
+- [[#custom-functions][Custom Functions]]
 - [[#general-keybindings][General Keybindings]]
   - [[#hydra][HYDRA]]
   - [[#transient][TRANSIENT]]
@@ -2187,7 +2187,11 @@ Language Modes that I need to install manually
   :after dart-mode
   :bind (:map dart-mode-map
               ("C-M-x" . #'flutter-run-or-hot-reload))
-  )
+)
+
+(use-package kdl-mode
+  :ensure t
+  :mode "\\.kdl\\'")
 #+end_src
 
 ** Syntax Parsing - Treesitter
@@ -3039,7 +3043,7 @@ Preserves existing entries to avoid overwriting."
 #+end_src
 
 
-* Misc 
+* Custom Functions
 
 #+begin_src emacs-lisp
 (defun ghostel-split ()
@@ -3047,6 +3051,12 @@ Preserves existing entries to avoid overwriting."
   (interactive)
   (split-window-right)
   (other-window 1)
+  (ghostel))
+
+(defun ghostel-new-frame ()
+  "Open ghostel in a new frame."
+  (interactive)
+  (select-frame (make-frame))
   (ghostel))
 
 (defun gptel-split ()
@@ -3091,7 +3101,6 @@ Preserves existing entries to avoid overwriting."
   (let ((shell-command-switch "-ic"))
     (shell-command "exp")))
 #+end_src
-
 
 * General Keybindings
 
@@ -3276,6 +3285,7 @@ Preserves existing entries to avoid overwriting."
     "t n" '(neotree-toggle :wk "Toggle neotree file viewer")
     "t p" '(open-lazygit :wk "Open Lazygit")
     "t v" '(ghostel-split :wk "Toggle Vterm")
+    "t V" '(ghostel-new-frame :wk "Toggle Terminal new frame")
     "t w" '(shell-command-open-explorer :wk "Open Windows Explorer in pwd")
     "t t" '(visual-line-mode :wk "Toggle truncated lines")
     )
@@ -3318,6 +3328,9 @@ Preserves existing entries to avoid overwriting."
 (global-set-key (kbd "C-x h") 'previous-buffer)
 (global-set-key (kbd "C-x l") 'next-buffer)
 #+END_SRC
+
+#+RESULTS:
+: next-buffer
 
 #+begin_src emacs-lisp
 #+end_src
