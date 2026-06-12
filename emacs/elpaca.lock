@@ -234,7 +234,7 @@
 	(:package "corfu" :repo "minad/corfu" :files
 		  (:defaults "extensions/corfu-*.el") :fetcher github
 		  :source "MELPA" :id corfu :host github :ref
-		  "80b3e0264b840c98a131534c2cfd585659ad1372" :type git
+		  "856171ac98c3aaa629caa011be7cd3a9405e6e0f" :type git
 		  :protocol https :inherit t :depth treeless))
  (csv-mode :source "elpaca-menu-lock-file" :recipe
 	   (:package "csv-mode" :repo
@@ -334,7 +334,7 @@
    "elpaca-menu-lock-file" :recipe
    (:source nil :package "elpaca" :id elpaca :repo
 	    "https://github.com/progfolio/elpaca.git" :ref
-	    "e9cb7eef2d8539e362d87f0489ab9eed8e8732c4" :depth 1
+	    "27c2889f66368bde12b4e243582e343ed9cb75e3" :depth 1
 	    :inherit ignore :files
 	    (:defaults "elpaca-test.el" (:exclude "extensions"))
 	    :build (:not elpaca--activate-package) :type git :protocol
@@ -346,11 +346,12 @@
 			       ("extensions/elpaca-use-package.el")
 			       :main
 			       "extensions/elpaca-use-package.el"
-			       :build (:not elpaca-build-docs) :source
-			       "Elpaca extensions" :id
+			       :build
+			       (:not elpaca-source elpaca-build-docs)
+			       :source "Elpaca extensions" :id
 			       elpaca-use-package :type git :protocol
 			       https :inherit t :depth treeless :ref
-			       "e9cb7eef2d8539e362d87f0489ab9eed8e8732c4"))
+			       "27c2889f66368bde12b4e243582e343ed9cb75e3"))
  (emacsql :source "elpaca-menu-lock-file" :recipe
 	  (:package "emacsql" :fetcher github :repo "magit/emacsql"
 		    :files (:defaults "README.md" "sqlite") :source
@@ -580,9 +581,11 @@
 		    "a48768f85a655fe77b5f45c2880b420da1b1b9c3"))
  (ghostel :source "elpaca-menu-lock-file" :recipe
 	  (:package "ghostel" :fetcher github :repo "dakra/ghostel"
-		    :files (:defaults "etc") :source "MELPA" :id
-		    ghostel :host github :type git :protocol https
-		    :inherit t :depth treeless :ref
+		    :files
+		    (:defaults "etc" "src" "vendor" "build.zig"
+			       "build.zig.zon" "symbols.map")
+		    :source "MELPA" :id ghostel :host github :type git
+		    :protocol https :inherit t :depth treeless :ref
 		    "9846c64f4a5164da2578f7f94662cd4d2de47ceb"))
  (git-gutter :source "elpaca-menu-lock-file" :recipe
 	     (:package "git-gutter" :repo "emacsorphanage/git-gutter"
@@ -725,6 +728,19 @@
 		    "MELPA" :id jupyter :type git :protocol https
 		    :inherit t :depth treeless :ref
 		    "3b9caed3e4cc5f4bc0348eb65d17098de76904e4"))
+ (kdl-mode :source "elpaca-menu-lock-file" :recipe
+	   (:package "kdl-mode" :fetcher github :repo
+		     "taquangtrung/emacs-kdl-mode" :files
+		     ("*.el" "*.el.in" "dir" "*.info" "*.texi"
+		      "*.texinfo" "doc/dir" "doc/*.info" "doc/*.texi"
+		      "doc/*.texinfo" "lisp/*.el" "docs/dir"
+		      "docs/*.info" "docs/*.texi" "docs/*.texinfo"
+		      (:exclude ".dir-locals.el" "test.el" "tests.el"
+				"*-test.el" "*-tests.el" "LICENSE"
+				"README*" "*-pkg.el"))
+		     :source "MELPA" :id kdl-mode :type git :protocol
+		     https :inherit t :depth treeless :ref
+		     "2d849e298199f490e4894c01764a8a83decd704a"))
  (kirigami :source "elpaca-menu-lock-file" :recipe
 	   (:package "kirigami" :fetcher github :repo
 		     "jamescherti/kirigami.el" :files
@@ -1004,7 +1020,7 @@
  (oauth2 :source "elpaca-menu-lock-file" :recipe
 	 (:package "oauth2" :repo
 		   ("https://gitlab.com/manphiz/oauth2" . "oauth2")
-		   :tar "0.18.4" :host gnu :files
+		   :tar "0.19" :host gnu :files
 		   ("*" (:exclude ".git")) :source "GNU ELPA" :id
 		   oauth2 :type git :protocol https :inherit t :depth
 		   treeless :ref
@@ -1574,11 +1590,11 @@
 		 :inherit t :depth treeless :ref
 		 "f2369fb4985ed054be47ae111760ff2075dff72a"))
  (yasnippet :source "elpaca-menu-lock-file" :recipe
-	    (:package "yasnippet" :repo "joaotavora/yasnippet"
-		      :fetcher github :files
-		      ("yasnippet.el" "snippets") :source "MELPA" :id
-		      yasnippet :type git :protocol https :inherit t
-		      :depth treeless :ref
+	    (:package "yasnippet" :fetcher github :repo
+		      "joaotavora/yasnippet" :files
+		      (:defaults ("doc" "doc/*.org")) :source "MELPA"
+		      :id yasnippet :type git :protocol https :inherit
+		      t :depth treeless :ref
 		      "c1e6ff23e9af16b856c88dfaab9d3ad7b746ad37"))
  (yasnippet-snippets :source "elpaca-menu-lock-file" :recipe
 		     (:package "yasnippet-snippets" :repo
