@@ -172,7 +172,10 @@ eval "$(direnv hook zsh)"
   home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
   home.file.".emacs.d/init.el".source = ../../emacs/init.el;
   home.file.".config/niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "/home/nyx/.dotfiles/niri/config.kdl";
-  home.file.".config/noctalia".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/config/noctalia";
+  home.file.".config/noctalia" = {
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/config/noctalia";
+    recursive = true;  # symlinks each file individually
+  };
   home.file.".local/share/vicinae/scripts".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos/scripts/vicinae";
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
   
