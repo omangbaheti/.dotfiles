@@ -9,7 +9,7 @@
         "density": "default",
         "enableClipPreview": true,
         "enableClipboardChips": true,
-        "enableClipboardHistory": false,
+        "enableClipboardHistory": true,
         "enableClipboardSmartIcons": true,
         "enableSessionSearch": true,
         "enableSettingsSearch": true,
@@ -284,7 +284,7 @@
                     "colorizeSystemText": "none",
                     "customIconPath": "",
                     "enableColorization": false,
-                    "icon": "noctalia",
+                    "icon": "settings",
                     "id": "ControlCenter",
                     "useDistroLogo": false
                 }
@@ -424,7 +424,7 @@
         "deadOpacity": 0.74,
         "displayMode": "auto_hide",
         "dockType": "floating",
-        "enabled": true,
+        "enabled": false,
         "floatingRatio": 0.9500000000000001,
         "groupApps": false,
         "groupClickAction": "cycle",
@@ -755,11 +755,11 @@
         "fontFixedScale": 1,
         "panelBackgroundOpacity": 0.93,
         "panelsAttachedToBar": true,
-        "scrollbarAlwaysVisible": true,
+        "scrollbarAlwaysVisible": false,
         "settingsPanelMode": "attached",
         "settingsPanelSideBarCardStyle": false,
         "tooltipsEnabled": true,
-        "translucentWidgets": false
+        "translucentWidgets": true
     },
     "wallpaper": {
         "automationEnabled": false,
