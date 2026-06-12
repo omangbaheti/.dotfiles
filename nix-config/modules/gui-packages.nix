@@ -41,5 +41,5 @@
     uefi-run
     lxc
     swtpm
-  ])
+  ]);
 }

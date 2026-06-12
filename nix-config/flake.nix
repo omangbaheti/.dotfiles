@@ -44,7 +44,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
         dotfilesDir = ".dotfiles";
         allowUnfree = true;
         editor = "emacs";
-        browser = "firefox";
+        browser = "zen";
       };
     
     #defining variables for each of my machines

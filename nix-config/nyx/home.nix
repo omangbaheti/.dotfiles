@@ -1,8 +1,8 @@
 { config, pkgs, stable, machine, inputs, ... }:
 {
-  # home.username = userSettings.name;
-  # home.homeDirectory = "/home/" + userSettings.name;
   home.stateVersion = "26.05";
+  imports = [../modules/gui-packages.nix];
+  
   programs.home-manager.enable = true;
   nix.settings.auto-optimise-store = true;
   programs.zoxide.enable = true;
@@ -94,51 +94,10 @@ eval "$(tirith init --shell zsh)"
 eval "$(direnv hook zsh)"
     '';
   nixpkgs.config.allowUnfree = true;
+  
   home.packages = (with pkgs;
     [
-      #Dev-Tools
-      jetbrains.rider
-      unityhub
-      
-      #ventoy
-      #bitwarden-desktop
-      blender
-      rclone
-      
-      proton-vpn
-      localsend
-      
-      #Tools
-      libreoffice
-      gimp
-      aseprite
-      zotero
-      obsidian
-      stable.android-studio
-      audacity
-
-      #Media
-      vlc
-      obs-studio
-      spotify
-      parsec-bin
-      #Communication
-      discord
-      telegram-desktop
-      slack 
-      zoom-us
-      steam
-
-      
       inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default     
-      # Virtual Machines and wine
-      libvirt
-      wine
-      virt-manager
-      qemu
-      uefi-run
-      lxc
-      swtpm
     ]);
 
   # services.emacs = {
@@ -161,22 +120,23 @@ eval "$(direnv hook zsh)"
           
     );
   };
+  
   home.sessionVariables = 
     {
       EMACSLOADINIT = "~/.dotfiles/emacs/init.el";
       EDITOR = machine.editor;
       BROWSER = machine.browser;
       LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
-      # SPAWNEDITOR = userSettings.spawnEditor;
     };
+  
   home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
   home.file.".emacs.d/init.el".source = ../../emacs/init.el;
   home.file.".config/niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "/home/nyx/.dotfiles/niri/config.kdl";
+  home.file.".local/share/vicinae/scripts".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos/scripts/vicinae";
   home.file.".config/noctalia" = {
     source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/noctalia";
     recursive = true;  # symlinks each file individually
   };
-  home.file.".local/share/vicinae/scripts".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos/scripts/vicinae";
   dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
   
   gtk = 
