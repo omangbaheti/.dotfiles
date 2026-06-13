@@ -1,25 +1,25 @@
 # Theming
 font: JetBrainsMono Nerd Font 12
-background: "#282828d0"
+background: "#2e3440"
 color: "#fbf1c7"
-border: "#8ec07c"
+border: "#5e81ac"
 separator: " ➜ "
 border_width: 2
 corner_r: 10
 padding: 15 # Defaults to corner_r
-rows_per_column: 5 # No limit by default
+rows_per_column: 4 # No limit by default
 column_padding: 25 # Defaults to padding
 
 # Anchor and margin
-anchor: center # One of center, left, right, top, bottom, bottom-left, top-left, etc.
+anchor: bottom # One of center, left, right, top, bottom, bottom-left, top-left, etc.
 # Only relevant when anchor is not center
 margin_right: 0
-margin_bottom: 0
+margin_bottom: 100
 margin_left: 0
 margin_top: 0
 
 # namespace to use for the layer shell surface
-namespace: "wlr_which_key"
+# namespace: "wlr_which_key"
 
 # Permits key bindings that conflict with compositor key bindings.
 # Default is `false`.
@@ -29,36 +29,35 @@ inhibit_compositor_keyboard_shortcuts: true
 auto_kbd_layout: true
 
 menu:
-  - key: "p"
-    desc: Power
-    submenu:
-      - key: "s"
-        desc: Sleep
-        cmd: systemctl suspend
-      - key: "r"
-        desc: Reboot
-        cmd: reboot
-      - key: "o"
-        desc: Off
-        cmd: poweroff
+  - key: "h"
+    desc: Move Column Left 
+    cmd: niri msg action move-column-left 
   - key: "l"
-    desc: Laptop Screen
-    submenu:
-      - key: "t"
-        desc: Toggle On/Off
-        cmd: toggle-laptop-display.sh
-      - key: "s"
-        desc: Scale
-        submenu:
-          - key: "1"
-            desc: Set Scale to 1.0
-            cmd: wlr-randr --output eDP-1 --scale 1
-          - key: "2"
-            desc: Set Scale to 1.1
-            cmd: wlr-randr --output eDP-1 --scale 1.1
-          - key: "3"
-            desc: Set Scale to 1.2
-            cmd: wlr-randr --output eDP-1 --scale 1.2
-          - key: "4"
-            desc: Set Scale to 1.3
-            cmd: wlr-randr --output eDP-1 --scale 1.3
+    desc: Move Window Right 
+    cmd: niri msg action move-column-right
+  - key: "j"
+    desc: Go Down Workspace
+    cmd: niri msg action focus-workspace-down
+    keep_open: true
+  - key: "k"
+    desc: Go Down Workspace
+    cmd: niri msg action focus-workspace-up
+    keep_open: true
+  - key: "H"
+    desc: Move Window Left Monitor
+    cmd: niri msg action move-column-to-monitor-left 
+  - key: "L"
+    desc: Move Window Right Monitor
+    cmd: niri msg action move-column-to-monitor-right
+  - key: "J"
+    desc: Move Window Down Workspace
+    cmd: niri msg action move-window-to-workspace-down
+  - key: "K"
+    desc: Move Window Up Workspace
+    cmd: niri msg action move-window-to-workspace-up
+  - key: "a"
+    desc: Focus Left Monitor
+    cmd: niri msg action focus-monitor-left
+  - key: "d"
+    desc: Focus Left Monitor
+    cmd: niri msg action focus-monitor-right

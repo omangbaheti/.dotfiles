@@ -130,5 +130,6 @@ in
       noctalia-shell
       xwayland-satellite
       nvtopPackages.nvidia
+      wlr-which-key
     ];
 }

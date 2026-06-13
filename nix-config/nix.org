@@ -11,7 +11,7 @@
 - [[#common-configuration][Common Configuration]]
   - [[#fonts][Fonts]]
   - [[#software][Software]]
-  - [[#gui-stuff][GUI Stuff]]
+  - [[#gui-software-home-manager][GUI Software (Home Manager)]]
   - [[#emacs-configuration][Emacs Configuration]]
   - [[#common-home-manager-configuration][Common Home Manager Configuration]]
 - [[#individual-configurations][Individual Configurations]]
@@ -400,11 +400,13 @@ in
       noctalia-shell
       xwayland-satellite
       nvtopPackages.nvidia
+      wlr-which-key
     ];
 }
 #+end_src
 
-** GUI Stuff
+
+** GUI Software (Home Manager)
 #+begin_src nix :tangle ./modules/gui-packages.nix
 { config, pkgs, stable, machine, inputs, ... }:
 {
@@ -942,6 +944,7 @@ in
     };
   
   home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
+  home.file.".config/wlr-which-key/config.yaml".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/wlr-which-key/config.yaml";
   home.file.".emacs.d/init.el".source = ../../emacs/init.el;
   home.file.".config/niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "/home/nyx/.dotfiles/niri/config.kdl";
   home.file.".local/share/vicinae/scripts".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos/scripts/vicinae";
