@@ -29,35 +29,94 @@ inhibit_compositor_keyboard_shortcuts: true
 auto_kbd_layout: true
 
 menu:
-  - key: "h"
-    desc: Move Column Left 
-    cmd: niri msg action move-column-left 
-  - key: "l"
-    desc: Move Window Right 
-    cmd: niri msg action move-column-right
-  - key: "j"
-    desc: Go Down Workspace
-    cmd: niri msg action focus-workspace-down
-    keep_open: true
-  - key: "k"
-    desc: Go Down Workspace
-    cmd: niri msg action focus-workspace-up
-    keep_open: true
-  - key: "H"
-    desc: Move Window Left Monitor
-    cmd: niri msg action move-column-to-monitor-left 
-  - key: "L"
-    desc: Move Window Right Monitor
-    cmd: niri msg action move-column-to-monitor-right
-  - key: "J"
-    desc: Move Window Down Workspace
-    cmd: niri msg action move-window-to-workspace-down
-  - key: "K"
-    desc: Move Window Up Workspace
-    cmd: niri msg action move-window-to-workspace-up
   - key: "a"
     desc: Focus Left Monitor
     cmd: niri msg action focus-monitor-left
   - key: "d"
-    desc: Focus Left Monitor
+    desc: Focus Right Monitor
     cmd: niri msg action focus-monitor-right
+  - key: "o"
+    desc: Overview
+    cmd: niri msg action toggle-overview
+  - key: "q"
+    desc: Kill Window
+    cmd: niri msg action close-window
+  - key: "s"
+    desc: Swap Column
+    submenu:
+      - key: "h"
+        desc: Move Column Left 
+        cmd: niri msg action move-column-left 
+      - key: "l"
+        desc: Move Window Right 
+        cmd: niri msg action move-column-right
+      - key: "j"
+        desc: Go Down Workspace
+        cmd: niri msg action focus-workspace-down
+        keep_open: true
+      - key: "k"
+        desc: Go Up Workspace
+        cmd: niri msg action focus-workspace-up
+        keep_open: true
+  - key: "m"
+    desc: Move Window
+    submenu:
+      - key: "h"
+        desc: Move Window Left Monitor
+        cmd: niri msg action move-column-to-monitor-left 
+      - key: "l"
+        desc: Move Window Right Monitor
+        cmd: niri msg action move-column-to-monitor-right
+      - key: "j"
+        desc: Move Window Down Workspace
+        cmd: niri msg action move-window-to-workspace-down
+      - key: "k"
+        desc: Move Window Up Workspace
+        cmd: niri msg action move-window-to-workspace-up
+  - key: "f"
+    desc: Focus Window
+    submenu:
+      - key: "h"
+        desc: Focus Left
+        cmd: niri msg action focus-column-left
+        keep_open: true
+      - key: "l"
+        desc: Focus Right
+        cmd: niri msg action focus-column-right
+        keep_open: true
+  - key: "v"
+    desc: Volume
+    submenu:
+      - key: "k"
+        desc: Volume Up 
+        cmd: wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0
+        keep_open: true
+      - key: "j"
+        desc: Volume Down
+        cmd: wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-
+        keep_open: true
+  - key: "t"
+    desc: Open Terminal
+    cmd: alacritty
+  - key: "["
+    desc: Consume Or Expel Window Left
+    cmd: niri msg action consume-or-expel-window-left
+  - key: "]"
+    desc: Consume Or Expel Window Right
+    cmd: niri msg action consume-or-expel-window-right
+  - key: "-"
+    desc: Reduce Column Width
+    cmd: niri msg action set-column-width "-10%"  
+    keep_open: true
+  - key: "="
+    desc: Increase Column Width
+    cmd: niri msg action set-column-width "+10%"
+    keep_open: true
+  - key: "_"
+    desc: Reduce Column Height
+    cmd: niri msg action set-column-height "-10%"  
+    keep_open: true
+  - key: "+"
+    desc: Increase Column Height
+    cmd: niri msg action set-column-height "+10%"
+    keep_open: true
