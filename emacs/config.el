@@ -201,6 +201,15 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
+
+(setq org-fontify-whole-heading-line t)
+
+;; (custom-set-faces
+;;   '(org-level-1 ((t (:overline "#88c0d0" :background "#3b4252"))))  ; frost blue / nord1
+;;   '(org-level-2 ((t (:overline "#81a1c1" :background "#3b4252"))))  ; steel blue / nord1
+;;   '(org-level-3 ((t (:overline "#5e81ac" :background "#3b4252"))))  ; muted blue / nord1
+;;   '(org-level-4 ((t (:overline "#4c566a" :background "#3b4252")))))  ; nord3 / nord1
+
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1))
@@ -1399,7 +1408,6 @@ DEADLINE: %^t
 
 (use-package svg-tag-mode
   :ensure t
-  :defer t
   :hook (org-mode . svg-tag-mode)
   :config
   (setq svg-tag-tags
@@ -1413,9 +1421,11 @@ DEADLINE: %^t
                             :margin 0
                             :radius 0
                             :padding 0)))))))
+
 (add-hook 'server-after-make-frame-hook
           (lambda ()
-            (setq svg-lib-style-default (svg-lib-style-compute-default))))
+            (with-eval-after-load 'svg-lib
+              (setq svg-lib-style-default (svg-lib-style-compute-default)))))
 
 (use-package pulsar
   :ensure t
@@ -1924,7 +1934,7 @@ DEADLINE: %^t
 
 (use-package jupyter
   :ensure t
-  :demand t
+  :defer t
   :init
   (require 'ob-jupyter)
   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
@@ -1975,6 +1985,10 @@ DEADLINE: %^t
    (emacs-lisp-mode . outline-indent-minor-mode))
   :custom
   (outline-indent-ellipsis " ..."))
+
+(use-package unity
+  :ensure (:host github :repo "elizagamedev/unity.el")
+  :commands (unity-mode))
 
 (use-package projectile
   :ensure t
@@ -2243,8 +2257,10 @@ DEADLINE: %^t
                 (gpt-5.4-pro))
       :key azure-api-2))
   
-  (setq gptel-backend azure 
-        gptel-model 'DeepSeek-V4-Flash ))
+  (setq gptel-backend openrouter
+        gptel-model 'deepseek/deepseek-v4-flash )
+
+  (setq gptel-tools '(WebFetch WebSearch)))
 
 (use-package gptel-agent
   :ensure (:host github :repo "karthink/gptel-agent" :branch "master" :depth nil)
