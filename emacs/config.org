@@ -2824,7 +2824,8 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq gptel-backend openrouter
         gptel-model 'deepseek/deepseek-v4-flash )
 
-  (setq gptel-tools '(WebFetch WebSearch)))
+  ;; (setq gptel-tools '(WebFetch WebSearch))
+  )
 
 #+end_src
 
