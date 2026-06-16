@@ -100,9 +100,9 @@ eval "$(direnv hook zsh)"
       inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default     
     ]);
 
-  services.emacs = {
-    enable = true;
-  };
+  # services.emacs = {
+  #   enable = true;
+  # };
   
   programs.emacs = {
     enable = true;

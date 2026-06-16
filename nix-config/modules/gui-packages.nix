@@ -19,7 +19,8 @@
     obsidian
     stable.android-studio
     audacity
-
+    kdePackages.okular
+    
     #Media
     vlc
     obs-studio
@@ -32,7 +33,7 @@
     slack
     zoom-us
     steam
-
+    
     # Virtual Machines and wine
     libvirt
     wine

@@ -429,7 +429,8 @@ in
     obsidian
     stable.android-studio
     audacity
-
+    kdePackages.okular
+    
     #Media
     vlc
     obs-studio
@@ -442,7 +443,7 @@ in
     slack
     zoom-us
     steam
-
+    
     # Virtual Machines and wine
     libvirt
     wine
@@ -458,9 +459,9 @@ in
 ** Emacs Configuration
 #+name:emacs-config-wayland
 #+begin_src nix
-services.emacs = {
-  enable = true;
-};
+# services.emacs = {
+#   enable = true;
+# };
 
 programs.emacs = {
   enable = true;
