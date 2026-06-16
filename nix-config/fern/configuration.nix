@@ -1,4 +1,4 @@
-{ config, pkgs, stable, machine, inputs, ... }:
+{ config, lib, pkgs, stable, machine, inputs, ... }:
 let
   hostname = machine.host;
   username = machine.username;
@@ -73,6 +73,19 @@ in
       #media-session.enable = true;
     };
 
+services.keyd = {
+  enable = true;
+  keyboards.default = {
+    ids = [ "*" ];
+    settings.global = {
+      overload_tap_timeout = 200; # Milliseconds to register a tap before timeout
+    };
+    settings.main = {
+      compose = "layer(meta)"; # Make the menu key press super
+      leftmeta = "overload(meta, macro(leftmeta+z))"; # Make left meta tap open anyrun keybind
+    };
+  };
+};
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
@@ -101,6 +114,25 @@ in
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
   
+  programs.niri.enable = true;
+
+  environment.sessionVariables = {
+    XDG_CURRENT_DESKTOP = "niri";
+    XDG_SESSION_TYPE = "wayland";
+    XDG_SESSION_DESKTOP = "niri";
+  };
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-gnome
+    ];
+    config.niri = {
+      default = lib.mkForce [ "gtk" "gnome" ];
+      "org.freedesktop.impl.portal.ScreenCast" = lib.mkForce [ "gnome" ];
+      "org.freedesktop.impl.portal.Screenshot" = lib.mkForce [ "gnome" ];
+    };
+  };
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; 

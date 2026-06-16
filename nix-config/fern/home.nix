@@ -1,4 +1,4 @@
-{ config, pkgs, stable, machine, ... }:
+{ config, pkgs, stable, machine, inputs, ... }:
 {
   home.stateVersion = "25.05";
   imports = [../modules/gui-packages.nix];
@@ -127,6 +127,26 @@ eval "$(direnv hook zsh)"
       BROWSER = machine.browser;
       LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
     };
-  home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
+  
   home.file.".emacs.d/init.el".source = ../../emacs/init.el;
+  home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
+  
+  home.file.".config/wlr-which-key/config.yaml".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/wlr-which-key/config.yaml";
+  home.file.".config/niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/niri/config.kdl";
+  home.file.".local/share/vicinae/scripts".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos/scripts/vicinae";
+  home.file.".config/noctalia" = {
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/noctalia";
+    recursive = true;  # symlinks each file individually
+  };
+  dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
+  
+  gtk = 
+    {
+      enable = true;
+      theme = 
+        {
+          package = pkgs.orchis-theme;
+          name = "Orchis-Dark"; # or "Orchis-Dark", "Orchis-Purple", etc.
+        };
+    };
 }

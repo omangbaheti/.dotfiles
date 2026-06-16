@@ -572,7 +572,7 @@ services.gpg-agent =
 ** Fern - T490
 *** Configuration.nix
 #+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/fern/configuration.nix
-{ config, pkgs, stable, machine, inputs, ... }:
+{ config, lib, pkgs, stable, machine, inputs, ... }:
 let
   hostname = machine.host;
   username = machine.username;
@@ -647,6 +647,19 @@ in
       #media-session.enable = true;
     };
 
+services.keyd = {
+  enable = true;
+  keyboards.default = {
+    ids = [ "*" ];
+    settings.global = {
+      overload_tap_timeout = 200; # Milliseconds to register a tap before timeout
+    };
+    settings.main = {
+      compose = "layer(meta)"; # Make the menu key press super
+      leftmeta = "overload(meta, macro(leftmeta+z))"; # Make left meta tap open anyrun keybind
+    };
+  };
+};
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
@@ -664,6 +677,25 @@ in
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
   
+  programs.niri.enable = true;
+
+  environment.sessionVariables = {
+    XDG_CURRENT_DESKTOP = "niri";
+    XDG_SESSION_TYPE = "wayland";
+    XDG_SESSION_DESKTOP = "niri";
+  };
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-gnome
+    ];
+    config.niri = {
+      default = lib.mkForce [ "gtk" "gnome" ];
+      "org.freedesktop.impl.portal.ScreenCast" = lib.mkForce [ "gnome" ];
+      "org.freedesktop.impl.portal.Screenshot" = lib.mkForce [ "gnome" ];
+    };
+  };
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; 
@@ -706,7 +738,7 @@ in
 
 *** Home.nix
 #+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/fern/home.nix
-{ config, pkgs, stable, machine, ... }:
+{ config, pkgs, stable, machine, inputs, ... }:
 {
   home.stateVersion = "25.05";
   imports = [../modules/gui-packages.nix];
@@ -732,8 +764,28 @@ in
       BROWSER = machine.browser;
       LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
     };
-  home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
+  
   home.file.".emacs.d/init.el".source = ../../emacs/init.el;
+  home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
+  
+  home.file.".config/wlr-which-key/config.yaml".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/wlr-which-key/config.yaml";
+  home.file.".config/niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/niri/config.kdl";
+  home.file.".local/share/vicinae/scripts".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos/scripts/vicinae";
+  home.file.".config/noctalia" = {
+    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/noctalia";
+    recursive = true;  # symlinks each file individually
+  };
+  dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
+  
+  gtk = 
+    {
+      enable = true;
+      theme = 
+        {
+          package = pkgs.orchis-theme;
+          name = "Orchis-Dark"; # or "Orchis-Dark", "Orchis-Purple", etc.
+        };
+    };
 }
 #+end_src
 
