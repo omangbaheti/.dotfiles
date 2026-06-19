@@ -128,6 +128,7 @@ output "HKC OVERSEAS LIMITED 24E3 0000000000001" {
     scale 1
     transform "normal"
     position x=1920 y=0
+    variable-refresh-rate on-demand=true
 }
 
 output "Samsung Electric Company LS24D300G H1AK500000" {
@@ -359,7 +360,7 @@ binds {
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     // Mod+T hotkey-overlay-title="Open a Terminal: alacritty" { spawn "alacritty"; }
     // Mod+E hotkey-overlay-title="Open Emacs" { spawn "emacs"; }
-    Ctrl+S hotkey-overlay-title="Launcher" { spawn-sh "vicinae toggle";}
+    Ctrl+Z hotkey-overlay-title="Launcher" { spawn-sh "vicinae toggle";}
     Mod+Z hotkey-overlay-title="Which Key" { spawn-sh "wlr-which-key"; }
     Ctrl+L hotkey-overlay-title="Lock the Screen " { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock" ; }
 
