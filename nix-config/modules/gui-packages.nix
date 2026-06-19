@@ -32,7 +32,10 @@
     telegram-desktop
     slack
     zoom-us
+    
+    #games
     steam
+    # prismlauncher
     
     # Virtual Machines and wine
     libvirt

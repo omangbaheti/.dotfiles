@@ -98,6 +98,7 @@ eval "$(direnv hook zsh)"
   home.packages = (with pkgs;
     [
       inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default     
+      inputs.freesmlauncher.packages.${system}.freesmlauncher  
     ]);
 
   # services.emacs = {

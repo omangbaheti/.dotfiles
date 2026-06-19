@@ -28,9 +28,13 @@ inputs =
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
+    
+    freesmlauncher = {
+      url = "github:FreesmTeam/FreesmLauncher";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, ... }@inputs: 
   let
     # stableFor = system:
     #   nixpkgs-stable.legacyPackages.${system};

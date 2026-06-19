@@ -73,14 +73,18 @@ inputs =
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
+    
+    freesmlauncher = {
+      url = "github:FreesmTeam/FreesmLauncher";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 #+end_src 
 
 ** Flake Outputs
 #+name: flake-output
 #+begin_src nix :noweb yes 
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, ... }@inputs: 
   let
     # stableFor = system:
     #   nixpkgs-stable.legacyPackages.${system};
@@ -442,7 +446,10 @@ in
     telegram-desktop
     slack
     zoom-us
+    
+    #games
     steam
+    # prismlauncher
     
     # Virtual Machines and wine
     libvirt
@@ -840,7 +847,7 @@ in
   hardware.nvidia = {
     open = true;  
     modesetting.enable = true;
-
+    powerManagement.enable = true;
     prime = {
       offload.enable = true;
       offload.enableOffloadCmd = true;
@@ -996,6 +1003,7 @@ services.keyd = {
   home.packages = (with pkgs;
     [
       inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default     
+      inputs.freesmlauncher.packages.${system}.freesmlauncher  
     ]);
 
   <<emacs-config-wayland>>
