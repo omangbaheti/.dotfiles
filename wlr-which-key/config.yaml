@@ -31,13 +31,13 @@ auto_kbd_layout: true
 menu:
   - key: "a"
     desc: Focus Left Monitor
-    cmd: niri msg action focus-monitor-left
+    cmd: niri msg action focus-monitor-left && sleep 0.1 && wlr-which-key
+  - key: "d"
+    desc: Focus Right Monitor
+    cmd: niri msg action focus-monitor-right && sleep 0.1 && wlr-which-key
   - key: "x"
     desc: App Launcher
     cmd: vicinae toggle
-  - key: "d"
-    desc: Focus Right Monitor
-    cmd: niri msg action focus-monitor-right
   - key: "o"
     desc: Overview
     cmd: niri msg action toggle-overview
@@ -45,6 +45,7 @@ menu:
   - key: "q"
     desc: Kill Window
     cmd: niri msg action close-window
+    keep_open: true
   - key: "v"
     desc: Volume
     submenu:
@@ -62,24 +63,26 @@ menu:
       - key: "h"
         desc: Move Column Left 
         cmd: niri msg action move-column-left 
+        keep_open: true
       - key: "l"
         desc: Move Window Right 
         cmd: niri msg action move-column-right
+        keep_open: true
   - key: "m"
     desc: Move Window
     submenu:
       - key: "h"
         desc: Move Window Left Monitor
-        cmd: niri msg action move-column-to-monitor-left 
+        cmd: niri msg action move-column-to-monitor-left && sleep 0.1 && wlr-which-key
       - key: "l"
         desc: Move Window Right Monitor
-        cmd: niri msg action move-column-to-monitor-right
+        cmd: niri msg action move-column-to-monitor-right && sleep 0.1 && wlr-which-key
       - key: "j"
         desc: Move Window Down Workspace
-        cmd: niri msg action move-window-to-workspace-down
+        cmd: niri msg action move-window-to-workspace-down && sleep 0.1 && wlr-which-key
       - key: "k"
         desc: Move Window Up Workspace
-        cmd: niri msg action move-window-to-workspace-up
+        cmd: niri msg action move-window-to-workspace-up && sleep 0.1 && wlr-which-key
   - key: "h"
     desc: Focus Left
     cmd: niri msg action focus-column-left
@@ -96,8 +99,11 @@ menu:
     desc: Go Up Workspace
     cmd: niri msg action focus-workspace-up
     keep_open: true
+  - key: "e"
+    desc: Emacs
+    cmd: emacs
   - key: "t"
-    desc: Open Terminal
+    desc: Terminal
     cmd: alacritty
   - key: "["
     desc: Consume Or Expel Window Left
