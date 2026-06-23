@@ -1071,7 +1071,7 @@ in
 
   # Bootloader.
   services.logrotate.checkConfig = false;
-
+  nixpkgs.config.allowUnfree = true;
   boot.tmp.cleanOnBoot = true;
   zramSwap.enable = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
