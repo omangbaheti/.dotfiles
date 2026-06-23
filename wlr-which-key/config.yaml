@@ -105,6 +105,9 @@ menu:
   - key: "t"
     desc: Terminal
     cmd: alacritty
+  - key: "f"
+    desc: File Manager
+    cmd: exec alacritty -e yazi
   - key: "["
     desc: Consume Or Expel Window Left
     cmd: niri msg action consume-or-expel-window-left
