@@ -257,8 +257,8 @@ mkHome = machine:
         home.username = machine.username;
         # home.homeDirectory = "/home/${machine.username}";
         home.homeDirectory = if machine.username == "root" then "/root" else "/home/${machine.username}"; 
-        home-manager.useGlobalPkgs = true;
-        home-manager.useUserPackages = true;
+        # home-manager.useGlobalPkgs = true;
+        # home-manager.useUserPackages = true;
       })
 
       # Put your actual HM module(s) here
@@ -508,7 +508,7 @@ programs.emacs = {
 #+name:common-home-config
 #+begin_src nix
 programs.home-manager.enable = true;
-nix.settings.auto-optimise-store = true;
+# nix.settings.auto-optimise-store = true;
 programs.zoxide.enable = true;
 programs.git = {
   enable = true;
@@ -1082,6 +1082,8 @@ in
   networking.domain = "guest";
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com'' ];
+ programs.zsh.enable = true;
+ users.users.root.shell = pkgs.zsh; 
   environment.systemPackages = with pkgs;
     [
       vim
@@ -1444,6 +1446,7 @@ eval "$(zoxide init zsh)"
 eval "$(oh-my-posh init zsh)"
 eval "$(tirith init --shell zsh)"
 eval "$(direnv hook zsh)"
+export COLORTERM=truecolor
 #+end_src
 
 ** WSL Config

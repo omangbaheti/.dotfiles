@@ -21,6 +21,8 @@ in
   networking.domain = "guest";
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com'' ];
+ programs.zsh.enable = true;
+ users.users.root.shell = pkgs.zsh; 
   environment.systemPackages = with pkgs;
     [
       vim

@@ -3,7 +3,7 @@
 
   home.stateVersion = "26.05";
   programs.home-manager.enable = true;
-  nix.settings.auto-optimise-store = true;
+  # nix.settings.auto-optimise-store = true;
   programs.zoxide.enable = true;
   programs.git = {
     enable = true;
@@ -90,5 +90,6 @@
  eval "$(oh-my-posh init zsh)"
  eval "$(tirith init --shell zsh)"
  eval "$(direnv hook zsh)"
+ export COLORTERM=truecolor
     '';
 }

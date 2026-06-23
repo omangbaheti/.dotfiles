@@ -87,5 +87,6 @@ in
  eval "$(oh-my-posh init zsh)"
  eval "$(tirith init --shell zsh)"
  eval "$(direnv hook zsh)"
+ export COLORTERM=truecolor
     '';
 }

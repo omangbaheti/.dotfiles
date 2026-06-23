@@ -170,8 +170,8 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
             home.username = machine.username;
             # home.homeDirectory = "/home/${machine.username}";
             home.homeDirectory = if machine.username == "root" then "/root" else "/home/${machine.username}"; 
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
+            # home-manager.useGlobalPkgs = true;
+            # home-manager.useUserPackages = true;
           })
     
           # Put your actual HM module(s) here
