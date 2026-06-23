@@ -9,6 +9,7 @@
   - [[#benchmarking][Benchmarking]]
   - [[#load-evil-mode][Load Evil Mode]]
   - [[#theming][Theming]]
+  - [[#projectile][PROJECTILE]]
   - [[#dashboard][DASHBOARD]]
 - [[#closing-minibuffer][CLOSING MINIBUFFER]]
 - [[#buffer-move][BUFFER-MOVE]]
@@ -76,7 +77,7 @@
   - [[#jupyter][Jupyter]]
   - [[#rainbow-mode][Rainbow mode]]
   - [[#unity-mode][Unity Mode]]
-- [[#projectile][PROJECTILE]]
+  - [[#tidal-cycles][Tidal Cycles]]
 - [[#latex][LATEX]]
   - [[#pdf-tools][Pdf-Tools]]
   - [[#citar][Citar]]
@@ -654,6 +655,15 @@
 ;;   (setq telephone-line-evil-use-short-tag nil))
 #+end_src
 
+
+** PROJECTILE
+[[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.
+ 
+#+begin_src emacs-lisp
+(use-package projectile
+  :ensure t
+  )
+#+end_src
 
 ** DASHBOARD
 
@@ -2504,15 +2514,15 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :commands (unity-mode))
 #+end_src
 
-
-* PROJECTILE
-[[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.
- 
+** Tidal Cycles
 #+begin_src emacs-lisp
-(use-package projectile
+(use-package tidal
   :ensure t
-  :defer t
-  :hook (after-init . projectile-mode))
+  :config
+  (setq tidal-boot-script-path
+        (string-trim
+         (shell-command-to-string
+          "ghc-pkg field tidal data-dir --simple-output"))))
 #+end_src
 
 
@@ -2824,7 +2834,6 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   (setq gptel-backend openrouter
         gptel-model 'deepseek/deepseek-v4-flash )
 
-  ;; (setq gptel-tools '(WebFetch WebSearch))
   )
 
 #+end_src
