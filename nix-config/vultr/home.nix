@@ -1,6 +1,6 @@
 { config, pkgs, stable, machine, inputs, ... }:
 {
-  home.stateVersion = "23.11";
+  home.stateVersion = "26.05";
   
   programs.home-manager.enable = true;
   nix.settings.auto-optimise-store = true;

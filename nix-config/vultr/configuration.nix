@@ -21,11 +21,12 @@ in
   networking.domain = "guest";
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com'' ];
-  system.stateVersion = "23.11";
   environment.systemPackages = with pkgs;
     [
       vim
       git
       lazygit
     ];
+  
+  system.stateVersion = "26.05";
 }

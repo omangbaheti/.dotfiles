@@ -72,6 +72,8 @@ inputs =
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
+    nixarr.url = "github:nix-media-server/nixarr";    
+    
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -87,7 +89,7 @@ inputs =
 ** Flake Outputs
 #+name: flake-output
 #+begin_src nix :noweb yes 
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
   let
     # stableFor = system:
     #   nixpkgs-stable.legacyPackages.${system};
@@ -253,7 +255,8 @@ mkHome = machine:
     modules = [
       ({ ... }: {
         home.username = machine.username;
-        home.homeDirectory = "/home/${machine.username}";
+        # home.homeDirectory = "/home/${machine.username}";
+        home.homeDirectory = if machine.username == "root" then "/root" else "/home/${machine.username}"; 
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
       })
@@ -1079,13 +1082,14 @@ in
   networking.domain = "guest";
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com'' ];
-  system.stateVersion = "23.11";
   environment.systemPackages = with pkgs;
     [
       vim
       git
       lazygit
     ];
+  
+  system.stateVersion = "26.05";
 }
 #+end_src
 
@@ -1093,7 +1097,7 @@ in
 #+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/vultr/home.nix
 { config, pkgs, stable, machine, inputs, ... }:
 {
-  home.stateVersion = "23.11";
+  home.stateVersion = "26.05";
   
   <<common-home-config>>
   

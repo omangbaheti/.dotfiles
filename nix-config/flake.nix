@@ -24,6 +24,8 @@ inputs =
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
+    nixarr.url = "github:nix-media-server/nixarr";    
+    
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -34,7 +36,7 @@ inputs =
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
   let
     # stableFor = system:
     #   nixpkgs-stable.legacyPackages.${system};
@@ -166,7 +168,8 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
         modules = [
           ({ ... }: {
             home.username = machine.username;
-            home.homeDirectory = "/home/${machine.username}";
+            # home.homeDirectory = "/home/${machine.username}";
+            home.homeDirectory = if machine.username == "root" then "/root" else "/home/${machine.username}"; 
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
           })
