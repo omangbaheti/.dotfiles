@@ -47,7 +47,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
       {
         dotfilesDir = ".dotfiles";
         allowUnfree = true;
-        editor = "emacs";
+        editor = "emacsclient -c -a";
         browser = "zen";
       };
     
@@ -69,6 +69,14 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
                  username = "fern";
                  systemType = "fern";
                };
+        
+        vultr = commonSettings // 
+                {
+                  system = "x86_64-linux";
+                  host = "vultr";
+                  username = "root";
+                  systemType = "vultr";
+                };
 
         nyx = commonSettings // 
               {
@@ -88,12 +96,12 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
                 };
         
         raven =  commonSettings //
-                {
-                  system = "aarch64-linux";
-                  host = "raven";
-                  username = "raven";
-                  systemType = "other-distro";
-                };
+                 {
+                   system = "aarch64-linux";
+                   host = "raven";
+                   username = "raven";
+                   systemType = "other-distro";
+                 };
         
         sakura = (commonSettings // # overriding system when required
                   {
@@ -175,6 +183,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
           fern   = mkSystem machines.fern;
           nyx    = mkSystem machines.nyx;
           sakura = mkSystem machines.sakura;
+          vultr = mkSystem machines.vultr;
           annie = mkSystem machines.annie;
         };
       
@@ -184,6 +193,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
           "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
+          "${machines.vultr.username}@${machines.vultr.host}" = mkHome machines.vultr;
           "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
           "${machines.raven.username}@${machines.raven.host}" = mkHome machines.raven;
         };

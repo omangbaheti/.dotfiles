@@ -1,7 +1,6 @@
 { config, pkgs, stable, machine, inputs, ... }:
 {
-  home.stateVersion = "26.05";
-  imports = [../modules/gui-packages.nix];
+  home.stateVersion = "23.11";
   
   programs.home-manager.enable = true;
   nix.settings.auto-optimise-store = true;
@@ -97,8 +96,6 @@ eval "$(direnv hook zsh)"
   
   home.packages = (with pkgs;
     [
-      inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default     
-      inputs.freesmlauncher.packages.${system}.freesmlauncher  
     ]);
 
   services.emacs = {
@@ -131,24 +128,5 @@ eval "$(direnv hook zsh)"
     };
   
   home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
-  home.file.".config/wlr-which-key/config.yaml".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/wlr-which-key/config.yaml";
   home.file.".emacs.d/init.el".source = ../../emacs/init.el;
-  home.file.".config/niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "/home/nyx/.dotfiles/niri/config.kdl";
-  home.file.".local/share/vicinae/scripts".source =  config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nixos/scripts/vicinae";
-  home.file.".config/noctalia" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/noctalia";
-    recursive = true;  # symlinks each file individually
-  };
-  dconf.settings."org/gnome/desktop/wm/preferences".button-layout = ":minimize,maximize,close";
-  
-  gtk = 
-    {
-      enable = true;
-      theme = 
-        {
-          package = pkgs.orchis-theme;
-          name = "Orchis-Dark"; # or "Orchis-Dark", "Orchis-Purple", etc.
-        };
-    };
-
 }

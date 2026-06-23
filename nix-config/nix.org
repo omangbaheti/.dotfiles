@@ -21,12 +21,15 @@
   - [[#nyx---legion][NYX - Legion]]
     - [[#configurationnix-1][Configuration.nix]]
     - [[#homenix-1][Home.nix]]
-  - [[#wsl-config-files][WSL Config Files]]
+  - [[#vultr---vps][Vultr - VPS]]
     - [[#configurationnix-2][Configuration.nix]]
     - [[#homenix-2][Home.nix]]
-  - [[#annie---pixel][Annie - Pixel]]
+  - [[#wsl-config-files][WSL Config Files]]
     - [[#configurationnix-3][Configuration.nix]]
     - [[#homenix-3][Home.nix]]
+  - [[#annie---pixel][Annie - Pixel]]
+    - [[#configurationnix-4][Configuration.nix]]
+    - [[#homenix-4][Home.nix]]
   - [[#raven---realme][Raven - Realme]]
 - [[#zsh-config][ZSH Config]]
   - [[#wsl-config][WSL Config]]
@@ -97,7 +100,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
       {
         dotfilesDir = ".dotfiles";
         allowUnfree = true;
-        editor = "emacs";
+        editor = "emacsclient -c -a";
         browser = "zen";
       };
     
@@ -119,6 +122,14 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
                  username = "fern";
                  systemType = "fern";
                };
+        
+        vultr = commonSettings // 
+                {
+                  system = "x86_64-linux";
+                  host = "vultr";
+                  username = "root";
+                  systemType = "vultr";
+                };
 
         nyx = commonSettings // 
               {
@@ -138,12 +149,12 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
                 };
         
         raven =  commonSettings //
-                {
-                  system = "aarch64-linux";
-                  host = "raven";
-                  username = "raven";
-                  systemType = "other-distro";
-                };
+                 {
+                   system = "aarch64-linux";
+                   host = "raven";
+                   username = "raven";
+                   systemType = "other-distro";
+                 };
         
         sakura = (commonSettings // # overriding system when required
                   {
@@ -164,6 +175,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
           fern   = mkSystem machines.fern;
           nyx    = mkSystem machines.nyx;
           sakura = mkSystem machines.sakura;
+          vultr = mkSystem machines.vultr;
           annie = mkSystem machines.annie;
         };
       
@@ -173,6 +185,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
           "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
+          "${machines.vultr.username}@${machines.vultr.host}" = mkHome machines.vultr;
           "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
           "${machines.raven.username}@${machines.raven.host}" = mkHome machines.raven;
         };
@@ -466,9 +479,9 @@ in
 ** Emacs Configuration
 #+name:emacs-config-wayland
 #+begin_src nix
-# services.emacs = {
-#   enable = true;
-# };
+services.emacs = {
+  enable = true;
+};
 
 programs.emacs = {
   enable = true;
@@ -984,7 +997,6 @@ services.keyd = {
 }
 #+end_src
 
-
 *** Home.nix
 #+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/nyx/home.nix
 { config, pkgs, stable, machine, inputs, ... }:
@@ -1040,6 +1052,76 @@ services.keyd = {
 }
 #+end_src
 
+
+** Vultr - VPS
+*** Configuration.nix
+#+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/vultr/configuration.nix
+{ config, pkgs, lib, stable, machine, inputs, ... }:
+let
+  hostname = machine.host;
+  username = machine.username;
+  allowUnfree = machine.allowUnfree;
+in
+{
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+  imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+      ../modules/common-packages.nix 
+    ];
+
+  # Bootloader.
+  services.logrotate.checkConfig = false;
+
+  boot.tmp.cleanOnBoot = true;
+  zramSwap.enable = true;
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  networking.hostName = "vultr";
+  networking.domain = "guest";
+  services.openssh.enable = true;
+  users.users.root.openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com'' ];
+  system.stateVersion = "23.11";
+  environment.systemPackages = with pkgs;
+    [
+      vim
+      git
+      lazygit
+    ];
+}
+#+end_src
+
+*** Home.nix
+#+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/vultr/home.nix
+{ config, pkgs, stable, machine, inputs, ... }:
+{
+  home.stateVersion = "23.11";
+  
+  <<common-home-config>>
+  
+  programs.zsh.initContent = 
+    ''
+<<commonZshConfig>>
+    '';
+  nixpkgs.config.allowUnfree = true;
+  
+  home.packages = (with pkgs;
+    [
+    ]);
+
+  <<emacs-config-wayland>>
+  
+  home.sessionVariables = 
+    {
+      EMACSLOADINIT = "~/.dotfiles/emacs/init.el";
+      EDITOR = machine.editor;
+      BROWSER = machine.browser;
+      LOMBOK_JAR = "${pkgs.lombok}/share/java/lombok.jar";
+    };
+  
+  home.file.".emacs.d/early-init.el".source = ../../emacs/early-init.el;
+  home.file.".emacs.d/init.el".source = ../../emacs/init.el;
+}
+#+end_src
 
 ** WSL Config Files
 *** Configuration.nix
