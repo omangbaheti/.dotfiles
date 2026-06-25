@@ -142,6 +142,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
                   })
                 lanzaboote.nixosModules.lanzaboote  
                 ./${machine.host}/configuration.nix
+                nixarr.nixosModules.default 
               ];
     
             specialArgs = {
