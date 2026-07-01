@@ -104,6 +104,15 @@ services.keyd = {
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+services.tailscale.enable = true;
+
+# Open the UDP port for Tailscale
+networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
+
+# Optional: trust the tailscale interface (skips firewall for tailnet traffic)
+networking.firewall.trustedInterfaces = [ "tailscale0" ];
+
+
   hardware.i2c.enable = true;
   users.groups.i2c.members = [ "nyx" ];
 

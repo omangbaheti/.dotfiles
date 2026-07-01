@@ -101,7 +101,7 @@ menu:
     keep_open: true
   - key: "e"
     desc: Emacs
-    cmd: emacs
+    cmd: emacsclient -c
   - key: "t"
     desc: Terminal
     cmd: alacritty
