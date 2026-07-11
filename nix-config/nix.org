@@ -136,6 +136,14 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
                   systemType = "vultr";
                 };
 
+        ino = commonSettings // 
+                {
+                  system = "x86_64-linux";
+                  host = "ino";
+                  username = "ino";
+                  systemType = "ino";
+                };
+        
         nyx = commonSettings // 
               {
                 system = "x86_64-linux";
@@ -181,6 +189,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
           nyx    = mkSystem machines.nyx;
           sakura = mkSystem machines.sakura;
           vultr = mkSystem machines.vultr;
+          ino = mkSystem machines.ino;
           annie = mkSystem machines.annie;
         };
       
@@ -191,6 +200,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
           "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
           "${machines.vultr.username}@${machines.vultr.host}" = mkHome machines.vultr;
+          "${machines.ino.username}@${machines.ino.host}" = mkHome machines.ino;
           "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
           "${machines.raven.username}@${machines.raven.host}" = mkHome machines.raven;
         };

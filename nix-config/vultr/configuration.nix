@@ -12,6 +12,7 @@ in
     ];
 
   # Bootloader.
+  
   services.logrotate.checkConfig = false;
   nixpkgs.config.allowUnfree = true;
   boot.tmp.cleanOnBoot = true;
