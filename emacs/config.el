@@ -201,15 +201,6 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
-
-(setq org-fontify-whole-heading-line t)
-
-;; (custom-set-faces
-;;   '(org-level-1 ((t (:overline "#88c0d0" :background "#3b4252"))))  ; frost blue / nord1
-;;   '(org-level-2 ((t (:overline "#81a1c1" :background "#3b4252"))))  ; steel blue / nord1
-;;   '(org-level-3 ((t (:overline "#5e81ac" :background "#3b4252"))))  ; muted blue / nord1
-;;   '(org-level-4 ((t (:overline "#4c566a" :background "#3b4252")))))  ; nord3 / nord1
-
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1))
@@ -496,6 +487,11 @@
 
 ;;   (setq telephone-line-height 24)
 ;;   (setq telephone-line-evil-use-short-tag nil))
+
+(use-package projectile
+  :ensure t
+  :defer t
+  :hook (after-init . projectile-mode))
 
 (use-package dashboard
   :ensure t 
@@ -1780,6 +1776,9 @@ DEADLINE: %^t
   :hook ((python-mode . lsp-deferred)
          (dart-mode . lsp-deferred)
 	 (LaTeX-mode . lsp-deferred)
+	 (typescript-ts-mode . lsp-deferred)
+         (tsx-ts-mode . lsp-deferred)
+         (js-ts-mode . lsp-deferred)
 	 (latex-mode . lsp-deferred)
          (lsp-completion-mode . corfu-setup-lsp)
 	 (lsp-mode . my/lsp-leader-keys))
@@ -1990,10 +1989,13 @@ DEADLINE: %^t
   :ensure (:host github :repo "elizagamedev/unity.el")
   :commands (unity-mode))
 
-(use-package projectile
+(use-package tidal
   :ensure t
-  :defer t
-  :hook (after-init . projectile-mode))
+  :config
+  (setq tidal-boot-script-path
+        (string-trim
+         (shell-command-to-string
+          "ghc-pkg field tidal data-dir --simple-output"))))
 
 (use-package auctex
   :ensure t
@@ -2260,7 +2262,7 @@ DEADLINE: %^t
   (setq gptel-backend openrouter
         gptel-model 'deepseek/deepseek-v4-flash )
 
-  (setq gptel-tools '(WebFetch WebSearch)))
+  )
 
 (use-package gptel-agent
   :ensure (:host github :repo "karthink/gptel-agent" :branch "master" :depth nil)

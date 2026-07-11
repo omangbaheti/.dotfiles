@@ -9,7 +9,7 @@
   - [[#benchmarking][Benchmarking]]
   - [[#load-evil-mode][Load Evil Mode]]
   - [[#theming][Theming]]
-  - [[#projectile][PROJECTILE]]
+- [[#projectile][PROJECTILE]]
   - [[#dashboard][DASHBOARD]]
 - [[#closing-minibuffer][CLOSING MINIBUFFER]]
 - [[#buffer-move][BUFFER-MOVE]]
@@ -656,13 +656,14 @@
 #+end_src
 
 
-** PROJECTILE
+* PROJECTILE
 [[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.
  
 #+begin_src emacs-lisp
 (use-package projectile
   :ensure t
-  )
+  :defer t
+  :hook (after-init . projectile-mode))
 #+end_src
 
 ** DASHBOARD
@@ -2275,6 +2276,9 @@ Modern on-the-fly syntax checking extension for GNU Emacs
   :hook ((python-mode . lsp-deferred)
          (dart-mode . lsp-deferred)
 	 (LaTeX-mode . lsp-deferred)
+	 (typescript-ts-mode . lsp-deferred)
+         (tsx-ts-mode . lsp-deferred)
+         (js-ts-mode . lsp-deferred)
 	 (latex-mode . lsp-deferred)
          (lsp-completion-mode . corfu-setup-lsp)
 	 (lsp-mode . my/lsp-leader-keys))
