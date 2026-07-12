@@ -35,6 +35,9 @@ inputs =
       url = "github:FreesmTeam/FreesmLauncher";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+ 
+    
   };
 outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
   let

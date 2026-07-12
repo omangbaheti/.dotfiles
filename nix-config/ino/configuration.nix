@@ -24,12 +24,17 @@ in
   networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # users.users."${username}".openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com'' ];
-  
+  fileSystems."/mnt/d" = {
+    device = "/dev/disk/by-uuid/38536e44-4640-43d2-951c-edb483b464c1";
+    fsType = "ext4";
+    options = [ "nofail" ];
+  }; 
   users.users."${username}" = {
     isNormalUser = true;
     description = "ino";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [];
+    shell = pkgs.zsh;
     openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com'' ];
   };
   # Set your time zone.
@@ -54,16 +59,16 @@ in
     ];
 
 
-programs.zsh.enable = true;
+  programs.zsh.enable = true;
   
-services.tailscale.enable = true;
-services.logrotate.checkConfig = false;
-services.openssh.enable = true;
-# Open the UDP port for Tailscale
-networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
+  services.tailscale.enable = true;
+  services.logrotate.checkConfig = false;
+  services.openssh.enable = true;
+  # Open the UDP port for Tailscale
+  networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
 
-# Optional: trust the tailscale interface (skips firewall for tailnet traffic)
-networking.firewall.trustedInterfaces = [ "tailscale0" ];
+  # Optional: trust the tailscale interface (skips firewall for tailnet traffic)
+  networking.firewall.trustedInterfaces = [ "tailscale0" ];
   
   nixarr = {
     enable = true;
@@ -107,5 +112,15 @@ networking.firewall.trustedInterfaces = [ "tailscale0" ];
     sonarr.enable = true;
     seerr.enable = true;
   };  
+
+  services.immich = {
+    enable = true;
+    port = 2283;
+    host = "0.0.0.0";
+    mediaLocation = "/var/lib/immich";
+    openFirewall = true;
+  };
+
+  
   system.stateVersion = "26.05";
 }
