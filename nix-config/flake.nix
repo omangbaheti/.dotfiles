@@ -36,8 +36,7 @@ inputs =
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
- 
-    
+    nix-minecraft.url = "github:Infinidoge/nix-minecraft";
   };
 outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
   let
@@ -157,6 +156,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
               ];
     
             specialArgs = {
+              inherit inputs; 
               machine = machine;
               stable = stableFor machine.system;
               host = machine.host;
