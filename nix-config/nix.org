@@ -27,9 +27,6 @@
   - [[#wsl-config-files][WSL Config Files]]
     - [[#configurationnix-3][Configuration.nix]]
     - [[#homenix-3][Home.nix]]
-  - [[#annie---pixel][Annie - Pixel]]
-    - [[#configurationnix-4][Configuration.nix]]
-    - [[#homenix-4][Home.nix]]
   - [[#raven---realme][Raven - Realme]]
 - [[#zsh-config][ZSH Config]]
   - [[#wsl-config][WSL Config]]
@@ -1140,7 +1137,10 @@ in
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [];
     shell = pkgs.zsh;
-    openssh.authorizedKeys.keys = [''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com'' ];
+    openssh.authorizedKeys.keys = [
+      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com''
+      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjuH720PJ/+WJybGHkyvJn+jl1KWQytl3K1z4rYjYDd omangbaheti@gmail.com'' 
+    ];
   };
   # Set your time zone.
   time.timeZone = "America/Toronto";
@@ -1403,87 +1403,6 @@ in
   # This value determines the Home Manager release that your
   # configuration is compatible with.
   home.stateVersion = "24.11"; # Don't change this
-}
-#+end_src
-
-** Annie - Pixel 
-*** Configuration.nix
-#+begin_src nix :noweb yes :tangle ./annie/configuration.nix
-{config, lib, pkgs, stable, machine, ... }:
-let
-  userName = machine.username;
-  allowUnfree = machine.allowUnfree;
-in
-{
-  imports = 
-    [ 
-      <nixos-avf/avf>
-    ];
-  users.users.${userName} = 
-    {
-      isNormalUser = true;
-      home = "/home/${userName}";
-      description = "Annie User";
-      extraGroups = [ "wheel" "networkmanager" ];
-      # Add any other user configuration
-    };
-  nix.settings.trusted-users = [ "root" userName];
-  nix.settings.experimental-features = ["nix-command" "flakes"];
-  #forcing autologin?
-  systemd.services."getty@tty1".serviceConfig = {
-    ExecStart = [
-      ""
-      "${pkgs.util-linux}/sbin/agetty --autologin ${userName} --noclear %I $TERM"
-    ];
-  };
-  systemd.services."autovt@tty1".enable = false;
-  environment.systemPackages = with pkgs;
-    [
-      git
-      git-lfs
-      lazygit
-      neovim
-      wiper
-      zoxide
-      fzf
-      vim 
-      zsh
-      oh-my-posh
-      tealdeer
-      btop
-      #nnn  
-      fd
-      eza
-      devenv
-      nix-direnv
-      yazi
-      fastfetch
-      home-manager
-      ripgrep
-      poetry
-      pandoc
-      syncthing
-    ];
-  
-  <<fonts>>
-  
-  programs.zsh.enable = true;
-  users.defaultUserShell = pkgs.zsh;
-  system.stateVersion = "26.05"; # Did you read the comment?
-}
-#+end_src
-
-*** Home.nix
-#+begin_src nix :noweb yes :tangle ./annie/home.nix
-{ config, pkgs, stable, machine, ... }:
-{
-
-  home.stateVersion = "26.05";
-  <<common-home-config>>  
-  programs.zsh.initContent = 
-    ''
- <<commonZshConfig>>
-    '';
 }
 #+end_src
 
