@@ -1114,16 +1114,6 @@ in
   services.minecraft-servers = {
     enable = true;
     eula = true;
-    openFirewall = true;
-    servers = {
-      cybercafe = {
-        enable = true;
-        # server-port = 25566;
-        package = pkgs.fabricServers.fabric-26_2.override {
-          jre_headless = pkgs.jdk25_headless;
-        };
-      };
-    };
   };
   
   fileSystems."/mnt/d" = {
@@ -1166,6 +1156,8 @@ in
 
   programs.zsh.enable = true;
   
+  virtualisation.docker.enable = true;
+  virtualisation.oci-containers.backend = "docker"; 
   services.tailscale.enable = true;
   services.logrotate.checkConfig = false;
   services.openssh.enable = true;
@@ -1225,11 +1217,18 @@ in
     mediaLocation = "/mnt/d/images/immich";
     openFirewall = true;
   };
-
   systemd.tmpfiles.settings.immich =
     { "${mediaRoot}" = mkDir mediaRoot; }
     // lib.genAttrs (map (d: "${mediaRoot}/${d}") immichDirs) mkDir
       // lib.genAttrs (map (d: "${mediaRoot}/${d}/.immich") immichDirs) mkFile;
+
+  virtualisation.oci-containers.containers.voxeldash-one = {
+    image = "ghcr.io/gnmyt/voxeldash-one:dev-56309bb";
+    ports = [ "0.0.0.0:7867:7867"    "0.0.0.0:35223:35223" ]; 
+    volumes = [ "/var/lib/voxeldash:/data" ];
+  };
+
+
   
   system.stateVersion = "26.05";
 }
