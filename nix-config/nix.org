@@ -1169,7 +1169,7 @@ in
     ports = [ "0.0.0.0:7867:7867"    "0.0.0.0:35223:35223" ]; 
     volumes = [ "/var/lib/voxeldash:/data" ];
   };
- networking.firewall.allowedTCPPorts = [ 35223 ]; 
+  networking.firewall.allowedTCPPorts = [ 35223 ]; 
 
   #systemd services 
   services.tailscale.enable = true;
@@ -1234,10 +1234,42 @@ in
     sonarr.enable = true;
     seerr.enable = true;
   };  
+  
+  services.nextcloud = {
+    enable = true;
+    hostName = "ino.caracal-silverside.ts.net"; # MagicDNS name, or just the tailscale IP
+    # package = pkgs.nextcloud28;
 
-  #filesystem
-  #bug upstream where any folder other than /var/lib/immich doesnt work, so need to make them manually
-  systemd.tmpfiles.settings.immich =
+    database.createLocally = true;
+    configureRedis = true;
+
+    https = true; # Tailscale already encrypts the tunnel
+    maxUploadSize = "16G";
+    autoUpdateApps.enable = true;
+
+    extraAppsEnable = true;
+    extraApps = with config.services.nextcloud.package.packages.apps; {
+      inherit calendar contacts mail notes tasks;
+    };
+
+    config = {
+      dbtype = "pgsql";
+      adminuser = "admin";
+      adminpassFile = "/home/ino/.secrets/nextcloud.txt";
+    };
+
+    settings = {
+      defaultPhoneRegion = "CA";
+      overwriteProtocol = "https";
+      # trustedProxies = [ "100.64.0.0/10" ]; # Tailscale CGNAT range
+      # trusted_domains = [
+      #   "ino.caracal-silverside.ts.net"
+      # ];
+    };
+  };
+
+    #bug upstream where any folder other than /var/lib/immich doesnt work, so need to make them manually
+    systemd.tmpfiles.settings.immich =
     { "${mediaRoot}" = mkDir mediaRoot; }
     // lib.genAttrs (map (d: "${mediaRoot}/${d}") immichDirs) mkDir
       // lib.genAttrs (map (d: "${mediaRoot}/${d}/.immich") immichDirs) mkFile;
