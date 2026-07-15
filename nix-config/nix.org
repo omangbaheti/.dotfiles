@@ -82,6 +82,7 @@ inputs =
     };
 
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
+    playit-nixos-module.url = "github:pedorich-n/playit-nixos-module"; 
   };
 #+end_src 
 
@@ -1095,6 +1096,7 @@ in
       ./hardware-configuration.nix
       ../modules/common-packages.nix 
       inputs.nix-minecraft.nixosModules.minecraft-servers      
+      inputs.playit-nixos-module.nixosModules.default 
     ];
 
   # Bootloader.
@@ -1106,21 +1108,16 @@ in
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = hostname; # Define your hostname.
-  networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   ## minecraft
   nixpkgs.overlays = [ inputs.nix-minecraft.overlay ]; 
-  services.minecraft-servers = {
-    enable = true;
-    eula = true;
-  };
   
   fileSystems."/mnt/d" = {
     device = "/dev/disk/by-uuid/38536e44-4640-43d2-951c-edb483b464c1";
     fsType = "ext4";
     options = [ "nofail" ];
   }; 
+  
   users.users."${username}" = {
     isNormalUser = true;
     description = "ino";
@@ -1141,6 +1138,15 @@ in
   # Enable networking
   networking.networkmanager.enable = true;
   
+  networking.hostName = hostname; # Define your hostname.
+  networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  
+  # Open the UDP port for Tailscale
+  networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
+
+  # Optional: trust the tailscale interface (skips firewall for tailnet traffic)
+  networking.firewall.trustedInterfaces = [ "tailscale0" ];
+  
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   users.users.root.shell = pkgs.zsh; 
@@ -1153,20 +1159,39 @@ in
       btop
     ];
 
-
   programs.zsh.enable = true;
-  
+
+  #docker containers 
   virtualisation.docker.enable = true;
   virtualisation.oci-containers.backend = "docker"; 
+  virtualisation.oci-containers.containers.voxeldash-one = {
+    image = "ghcr.io/gnmyt/voxeldash-one:dev-56309bb";
+    ports = [ "0.0.0.0:7867:7867"    "0.0.0.0:35223:35223" ]; 
+    volumes = [ "/var/lib/voxeldash:/data" ];
+  };
+ networking.firewall.allowedTCPPorts = [ 35223 ]; 
+
+  #systemd services 
   services.tailscale.enable = true;
   services.logrotate.checkConfig = false;
   services.openssh.enable = true;
-  # Open the UDP port for Tailscale
-  networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
-
-  # Optional: trust the tailscale interface (skips firewall for tailnet traffic)
-  networking.firewall.trustedInterfaces = [ "tailscale0" ];
+  services.minecraft-servers = {
+    enable = true;
+    eula = true;
+  };
   
+  services.immich.package = pkgs.immich;
+  services.immich = {
+    enable = true;
+    port = 2283;
+    host = "0.0.0.0";
+    mediaLocation = "/mnt/d/images/immich";
+    openFirewall = true;
+  };
+  services.playit = {
+    enable = true;
+    secretPath = "/home/ino/.secrets/playit.toml";
+  }; 
   nixarr = {
     enable = true;
     # These two values are also the default, but you can set them to whatever
@@ -1209,27 +1234,14 @@ in
     sonarr.enable = true;
     seerr.enable = true;
   };  
-  services.immich.package = pkgs.immich;
-  services.immich = {
-    enable = true;
-    port = 2283;
-    host = "0.0.0.0";
-    mediaLocation = "/mnt/d/images/immich";
-    openFirewall = true;
-  };
+
+  #filesystem
+  #bug upstream where any folder other than /var/lib/immich doesnt work, so need to make them manually
   systemd.tmpfiles.settings.immich =
     { "${mediaRoot}" = mkDir mediaRoot; }
     // lib.genAttrs (map (d: "${mediaRoot}/${d}") immichDirs) mkDir
       // lib.genAttrs (map (d: "${mediaRoot}/${d}/.immich") immichDirs) mkFile;
 
-  virtualisation.oci-containers.containers.voxeldash-one = {
-    image = "ghcr.io/gnmyt/voxeldash-one:dev-56309bb";
-    ports = [ "0.0.0.0:7867:7867"    "0.0.0.0:35223:35223" ]; 
-    volumes = [ "/var/lib/voxeldash:/data" ];
-  };
-
-
-  
   system.stateVersion = "26.05";
 }
 #+end_src

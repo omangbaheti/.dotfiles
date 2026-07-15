@@ -37,6 +37,7 @@ inputs =
     };
 
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
+    playit-nixos-module.url = "github:pedorich-n/playit-nixos-module"; 
   };
 outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
   let
