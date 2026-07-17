@@ -1180,6 +1180,11 @@ in
     eula = true;
   };
   
+  services.syncthing = 
+    {
+      enable = true;
+    };
+  
   services.immich.package = pkgs.immich;
   services.immich = {
     enable = true;
@@ -1192,6 +1197,36 @@ in
     enable = true;
     secretPath = "/home/ino/.secrets/playit.toml";
   }; 
+
+  services.homepage-dashboard = {
+    enable = true;
+    listenPort = 8082;
+    settings = {
+      title = "My Homepage";
+    };
+    allowedHosts = "100.96.230.5:8082"; 
+    widgets = [
+      { resources = { cpu = true; memory = true; disk = "/"; }; }
+    ];
+
+    
+    services = [
+      {
+        "My Services" = [
+          {
+            "Router" = {
+              icon = "router.png";
+              href = "http://10.0.0.1";
+            };
+          }
+        ];
+      }
+    ];
+    bookmarks = [ ];
+    openFirewall = true;
+  };
+
+  
   nixarr = {
     enable = true;
     # These two values are also the default, but you can set them to whatever
@@ -1268,8 +1303,8 @@ in
     };
   };
 
-    #bug upstream where any folder other than /var/lib/immich doesnt work, so need to make them manually
-    systemd.tmpfiles.settings.immich =
+  #bug upstream where any folder other than /var/lib/immich doesnt work, so need to make them manually
+  systemd.tmpfiles.settings.immich =
     { "${mediaRoot}" = mkDir mediaRoot; }
     // lib.genAttrs (map (d: "${mediaRoot}/${d}") immichDirs) mkDir
       // lib.genAttrs (map (d: "${mediaRoot}/${d}/.immich") immichDirs) mkFile;
