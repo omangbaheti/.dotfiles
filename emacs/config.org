@@ -28,6 +28,7 @@
   - [[#helpful][Helpful]]
   - [[#zooming-inout][Zooming In/Out]]
   - [[#minor-optimisations][Minor Optimisations]]
+  - [[#clippty][Clippty]]
 - [[#org-mode][ORG MODE]]
   - [[#evil-org][EVIL ORG]]
   - [[#enabling-table-of-content][Enabling Table of Content]]
@@ -1030,6 +1031,12 @@ https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
               (when buffer-file-name (ignore-errors (recenter)))))
 #+end_src
 
+** Clippty
+#+begin_src emacs-lisp
+(use-package clipetty
+  :ensure t
+  :hook ( tty-setup . global-clipetty-mode))
+#+end_src
 
 * ORG MODE
 

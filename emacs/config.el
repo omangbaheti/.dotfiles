@@ -763,6 +763,10 @@ one, an error is signaled."
             (lambda (&rest _)
               (when buffer-file-name (ignore-errors (recenter)))))
 
+(use-package clipetty
+  :ensure t
+  :hook ( tty-setup . global-clipetty-mode))
+
 (setq font-lock-multiline t)
 ;; (setq jit-lock-defer-time 0) ; Immediate fontification
 (setq fast-but-imprecise-scrolling nil)
