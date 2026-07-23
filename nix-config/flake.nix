@@ -38,6 +38,12 @@ inputs =
 
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
     playit-nixos-module.url = "github:pedorich-n/playit-nixos-module"; 
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+      
   };
 outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
   let
@@ -158,6 +164,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
     
             specialArgs = {
               inherit inputs; 
+              inherit self;
               machine = machine;
               stable = stableFor machine.system;
               host = machine.host;
@@ -181,8 +188,8 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
         modules = [
           ({ ... }: {
             home.username = machine.username;
-            # home.homeDirectory = "/home/${machine.username}";
-            home.homeDirectory = if machine.username == "root" then "/root" else "/home/${machine.username}"; 
+            home.homeDirectory = "/home/${machine.username}";
+            # home.homeDirectory = if machine.username == "root" then "/root" else "/home/${machine.username}"; 
             # home-manager.useGlobalPkgs = true;
             # home-manager.useUserPackages = true;
           })
@@ -209,10 +216,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
-          "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
-          "${machines.vultr.username}@${machines.vultr.host}" = mkHome machines.vultr;
           "${machines.ino.username}@${machines.ino.host}" = mkHome machines.ino;
-          "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
           "${machines.raven.username}@${machines.raven.host}" = mkHome machines.raven;
         };
     };

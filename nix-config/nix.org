@@ -21,7 +21,7 @@
   - [[#nyx---legion][NYX - Legion]]
     - [[#configurationnix-1][Configuration.nix]]
     - [[#homenix-1][Home.nix]]
-  - [[#ino---vps][Ino - VPS]]
+  - [[#ino---homelab][Ino - Homelab]]
     - [[#configurationnix-2][Configuration.nix]]
     - [[#homenix-2][Home.nix]]
   - [[#wsl-config-files][WSL Config Files]]
@@ -83,6 +83,12 @@ inputs =
 
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
     playit-nixos-module.url = "github:pedorich-n/playit-nixos-module"; 
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+      
   };
 #+end_src 
 
@@ -195,10 +201,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
           "${machines.wsl.username}@${machines.wsl.host}" = mkHome machines.wsl;
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
-          "${machines.annie.username}@${machines.annie.host}" = mkHome machines.annie;
-          "${machines.vultr.username}@${machines.vultr.host}" = mkHome machines.vultr;
           "${machines.ino.username}@${machines.ino.host}" = mkHome machines.ino;
-          "${machines.sakura.username}@${machines.sakura.host}" = mkHome machines.sakura;
           "${machines.raven.username}@${machines.raven.host}" = mkHome machines.raven;
         };
     };
@@ -240,6 +243,7 @@ mkSystem = machine:
 
         specialArgs = {
           inherit inputs; 
+          inherit self;
           machine = machine;
           stable = stableFor machine.system;
           host = machine.host;
@@ -267,8 +271,8 @@ mkHome = machine:
     modules = [
       ({ ... }: {
         home.username = machine.username;
-        # home.homeDirectory = "/home/${machine.username}";
-        home.homeDirectory = if machine.username == "root" then "/root" else "/home/${machine.username}"; 
+        home.homeDirectory = "/home/${machine.username}";
+        # home.homeDirectory = if machine.username == "root" then "/root" else "/home/${machine.username}"; 
         # home-manager.useGlobalPkgs = true;
         # home-manager.useUserPackages = true;
       })
@@ -405,7 +409,8 @@ in
       
       claude-code
       opencode
-
+      pi-coding-agent
+      
       #misc     
       firefox
       coreutils
@@ -417,22 +422,18 @@ in
       scrcpy
       android-tools
       pinentry-curses
+      sops
+      age
+      ssh-to-age
       ffmpeg
-      pi-coding-agent
-      vesktop
-      #whatspp
-      karere
+      proton-pass-cli
+      
       #for controlling external monitor
       ddcutil
       luminance
       #secure boot
       sbctl
-      #niri
-      vicinae
-      noctalia-shell
-      xwayland-satellite
       nvtopPackages.nvidia
-      wlr-which-key
     ];
 }
 #+end_src
@@ -463,6 +464,9 @@ in
     audacity
     kdePackages.okular
     
+    #whatspp
+    karere
+    
     #Media
     vlc
     obs-studio
@@ -471,6 +475,7 @@ in
 
     #Communication
     discord
+    vesktop #better discord
     telegram-desktop
     slack
     zoom-us
@@ -487,6 +492,12 @@ in
     uefi-run
     lxc
     swtpm
+    
+    #niri
+    vicinae
+    noctalia-shell
+    xwayland-satellite
+    wlr-which-key
   ]);
 }
 #+end_src
@@ -1077,7 +1088,7 @@ networking.firewall.trustedInterfaces = [ "tailscale0" ];
 #+end_src
 
 
-** Ino - VPS
+** Ino - Homelab
 *** Configuration.nix
 #+begin_src nix :noweb yes :tangle ~/.dotfiles/nix-config/ino/configuration.nix
 { config, pkgs, lib, stable, machine, inputs, ... }:
@@ -1085,6 +1096,7 @@ let
   hostname = machine.host;
   username = machine.username;
   allowUnfree = machine.allowUnfree;
+  home = "/home/${username}";
   immichDirs = [ "thumbs" "upload" "backups" "library" "profile" "encoded-video" ];
   mediaRoot = "/mnt/d/images/immich";
   mkDir = path: { d = { user = "immich"; group = "immich"; mode = "0750"; }; };
@@ -1096,6 +1108,7 @@ in
       ./hardware-configuration.nix
       ../modules/common-packages.nix 
       inputs.nix-minecraft.nixosModules.minecraft-servers      
+      inputs.sops-nix.nixosModules.sops   
       inputs.playit-nixos-module.nixosModules.default 
     ];
 
@@ -1118,17 +1131,35 @@ in
     options = [ "nofail" ];
   }; 
   
-  users.users."${username}" = {
-    isNormalUser = true;
-    description = "ino";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [];
-    shell = pkgs.zsh;
-    openssh.authorizedKeys.keys = [
-      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com''
-      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjuH720PJ/+WJybGHkyvJn+jl1KWQytl3K1z4rYjYDd omangbaheti@gmail.com'' 
-    ];
+  users.users = {
+    "${username}" = {
+      isNormalUser = true;
+      description = "ino";
+      extraGroups = [ "networkmanager" "wheel" ];
+      packages = with pkgs; [];
+      shell = pkgs.zsh;
+      openssh.authorizedKeys.keys = [
+        ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com''
+        ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjuH720PJ/+WJybGHkyvJn+jl1KWQytl3K1z4rYjYDd omangbaheti@gmail.com'' 
+      ];
+    };
   };
+
+  systemd.tmpfiles.rules = [
+    "d ${home}/Notes 0755 ${username} users -"
+    "d ${home}/Notes/Agenda 0755 ${username} users -"
+    "d ${home}/.secrets 0700 ${username} users -"
+    "f ${home}/.secrets/secrets.yaml 0600 ${username} users -"
+  ];
+
+  sops = {
+    validateSopsFiles = false;
+    age.sshKeyPaths = ["/home/ino/.ssh/id_ed25519"];
+    defaultSopsFile = "../.secrets/secrets.yaml";
+    # secrets."nextcloud_admin_pass" = { owner = "nextcloud"; }; 
+    # secrets."nextcloud_db_pass" = { owner = "nextcloud"; }; 
+  };
+  
   # Set your time zone.
   time.timeZone = "America/Toronto";
   # Configure network proxy if necessary
@@ -1183,48 +1214,26 @@ in
   services.syncthing = 
     {
       enable = true;
+      openDefaultPorts = true; 
+      guiAddress = "0.0.0.0:8384";
+      user = "ino";
+      group = "users";
+      dataDir = "/home/ino";
     };
   
-  services.immich.package = pkgs.immich;
   services.immich = {
+    package = pkgs.immich;
     enable = true;
     port = 2283;
     host = "0.0.0.0";
     mediaLocation = "/mnt/d/images/immich";
     openFirewall = true;
   };
+  
   services.playit = {
     enable = true;
     secretPath = "/home/ino/.secrets/playit.toml";
   }; 
-
-  services.homepage-dashboard = {
-    enable = true;
-    listenPort = 8082;
-    settings = {
-      title = "My Homepage";
-    };
-    allowedHosts = "100.96.230.5:8082"; 
-    widgets = [
-      { resources = { cpu = true; memory = true; disk = "/"; }; }
-    ];
-
-    
-    services = [
-      {
-        "My Services" = [
-          {
-            "Router" = {
-              icon = "router.png";
-              href = "http://10.0.0.1";
-            };
-          }
-        ];
-      }
-    ];
-    bookmarks = [ ];
-    openFirewall = true;
-  };
 
   
   nixarr = {
@@ -1273,7 +1282,7 @@ in
   services.nextcloud = {
     enable = true;
     hostName = "ino.caracal-silverside.ts.net"; # MagicDNS name, or just the tailscale IP
-    # package = pkgs.nextcloud28;
+    package = pkgs.nextcloud34;
 
     database.createLocally = true;
     configureRedis = true;
@@ -1308,6 +1317,7 @@ in
     { "${mediaRoot}" = mkDir mediaRoot; }
     // lib.genAttrs (map (d: "${mediaRoot}/${d}") immichDirs) mkDir
       // lib.genAttrs (map (d: "${mediaRoot}/${d}/.immich") immichDirs) mkFile;
+  
 
   system.stateVersion = "26.05";
 }

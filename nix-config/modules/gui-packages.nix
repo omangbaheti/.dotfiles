@@ -21,6 +21,9 @@
     audacity
     kdePackages.okular
     
+    #whatspp
+    karere
+    
     #Media
     vlc
     obs-studio
@@ -29,6 +32,7 @@
 
     #Communication
     discord
+    vesktop #better discord
     telegram-desktop
     slack
     zoom-us
@@ -45,5 +49,11 @@
     uefi-run
     lxc
     swtpm
+    
+    #niri
+    vicinae
+    noctalia-shell
+    xwayland-satellite
+    wlr-which-key
   ]);
 }

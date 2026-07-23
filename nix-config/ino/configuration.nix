@@ -3,6 +3,7 @@ let
   hostname = machine.host;
   username = machine.username;
   allowUnfree = machine.allowUnfree;
+  home = "/home/${username}";
   immichDirs = [ "thumbs" "upload" "backups" "library" "profile" "encoded-video" ];
   mediaRoot = "/mnt/d/images/immich";
   mkDir = path: { d = { user = "immich"; group = "immich"; mode = "0750"; }; };
@@ -14,6 +15,7 @@ in
       ./hardware-configuration.nix
       ../modules/common-packages.nix 
       inputs.nix-minecraft.nixosModules.minecraft-servers      
+      inputs.sops-nix.nixosModules.sops   
       inputs.playit-nixos-module.nixosModules.default 
     ];
 
@@ -36,17 +38,35 @@ in
     options = [ "nofail" ];
   }; 
   
-  users.users."${username}" = {
-    isNormalUser = true;
-    description = "ino";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [];
-    shell = pkgs.zsh;
-    openssh.authorizedKeys.keys = [
-      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com''
-      ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjuH720PJ/+WJybGHkyvJn+jl1KWQytl3K1z4rYjYDd omangbaheti@gmail.com'' 
-    ];
+  users.users = {
+    "${username}" = {
+      isNormalUser = true;
+      description = "ino";
+      extraGroups = [ "networkmanager" "wheel" ];
+      packages = with pkgs; [];
+      shell = pkgs.zsh;
+      openssh.authorizedKeys.keys = [
+        ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGCznNafBn+pO8jaNT5u73dYTFliHk2vjOWMc3GhLOg omangbaheti@gmail.com''
+        ''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjuH720PJ/+WJybGHkyvJn+jl1KWQytl3K1z4rYjYDd omangbaheti@gmail.com'' 
+      ];
+    };
   };
+
+  systemd.tmpfiles.rules = [
+    "d ${home}/Notes 0755 ${username} users -"
+    "d ${home}/Notes/Agenda 0755 ${username} users -"
+    "d ${home}/.secrets 0700 ${username} users -"
+    "f ${home}/.secrets/secrets.yaml 0600 ${username} users -"
+  ];
+
+  sops = {
+    validateSopsFiles = false;
+    age.sshKeyPaths = ["/home/ino/.ssh/id_ed25519"];
+    defaultSopsFile = "../.secrets/secrets.yaml";
+    # secrets."nextcloud_admin_pass" = { owner = "nextcloud"; }; 
+    # secrets."nextcloud_db_pass" = { owner = "nextcloud"; }; 
+  };
+  
   # Set your time zone.
   time.timeZone = "America/Toronto";
   # Configure network proxy if necessary
@@ -101,48 +121,26 @@ in
   services.syncthing = 
     {
       enable = true;
+      openDefaultPorts = true; 
+      guiAddress = "0.0.0.0:8384";
+      user = "ino";
+      group = "users";
+      dataDir = "/home/ino";
     };
   
-  services.immich.package = pkgs.immich;
   services.immich = {
+    package = pkgs.immich;
     enable = true;
     port = 2283;
     host = "0.0.0.0";
     mediaLocation = "/mnt/d/images/immich";
     openFirewall = true;
   };
+  
   services.playit = {
     enable = true;
     secretPath = "/home/ino/.secrets/playit.toml";
   }; 
-
-  services.homepage-dashboard = {
-    enable = true;
-    listenPort = 8082;
-    settings = {
-      title = "My Homepage";
-    };
-    allowedHosts = "100.96.230.5:8082"; 
-    widgets = [
-      { resources = { cpu = true; memory = true; disk = "/"; }; }
-    ];
-
-    
-    services = [
-      {
-        "My Services" = [
-          {
-            "Router" = {
-              icon = "router.png";
-              href = "http://10.0.0.1";
-            };
-          }
-        ];
-      }
-    ];
-    bookmarks = [ ];
-    openFirewall = true;
-  };
 
   
   nixarr = {
@@ -191,7 +189,7 @@ in
   services.nextcloud = {
     enable = true;
     hostName = "ino.caracal-silverside.ts.net"; # MagicDNS name, or just the tailscale IP
-    # package = pkgs.nextcloud28;
+    package = pkgs.nextcloud34;
 
     database.createLocally = true;
     configureRedis = true;
@@ -226,6 +224,7 @@ in
     { "${mediaRoot}" = mkDir mediaRoot; }
     // lib.genAttrs (map (d: "${mediaRoot}/${d}") immichDirs) mkDir
       // lib.genAttrs (map (d: "${mediaRoot}/${d}/.immich") immichDirs) mkFile;
+  
 
   system.stateVersion = "26.05";
 }

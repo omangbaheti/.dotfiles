@@ -103,7 +103,8 @@ in
       
       claude-code
       opencode
-
+      pi-coding-agent
+      
       #misc     
       firefox
       coreutils
@@ -115,21 +116,17 @@ in
       scrcpy
       android-tools
       pinentry-curses
+      sops
+      age
+      ssh-to-age
       ffmpeg
-      pi-coding-agent
-      vesktop
-      #whatspp
-      karere
+      proton-pass-cli
+      
       #for controlling external monitor
       ddcutil
       luminance
       #secure boot
       sbctl
-      #niri
-      vicinae
-      noctalia-shell
-      xwayland-satellite
       nvtopPackages.nvidia
-      wlr-which-key
     ];
 }
