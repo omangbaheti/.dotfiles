@@ -963,6 +963,13 @@ Defining the fonts
 (load "~/.secrets/authinfo.el")
 #+end_src
 
+#+begin_src emacs-lisp
+(use-package sops
+  :ensure (:type git :host github :repo "djgoku/sops")
+  :init
+  (global-sops-mode 1))
+#+end_src
+
 ** Electric
 #+begin_src emacs-lisp
 (delete-selection-mode 1)

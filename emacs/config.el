@@ -719,6 +719,11 @@ one, an error is signaled."
 ;;this is going to bite me in the ass someday isnt it
 (load "~/.secrets/authinfo.el")
 
+(use-package sops
+  :ensure (:type git :host github :repo "djgoku/sops")
+  :init
+  (global-sops-mode 1))
+
 (delete-selection-mode 1)
 (electric-indent-mode 1)
 (electric-pair-mode 1)
