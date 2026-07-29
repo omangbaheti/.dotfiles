@@ -51,20 +51,28 @@ in
       ];
     };
   };
+  users.groups.arrs = {};
 
+  users.users.sonarr.extraGroups = [ "arrs" ];
+  users.users.radarr.extraGroups = [ "arrs" ];
+  users.users.bazarr.extraGroups = [ "arrs" ];
   systemd.tmpfiles.rules = [
+    "d /mnt/d 0775 root users -"
+    "d /mnt/d/media 0775 root users -"
+    "d /mnt/d/media/movies/ 0775 radarr arrs -"
+    "d /mnt/d/media/shows/ 0775 sonarr arrs -"
     "d ${home}/Notes 0755 ${username} users -"
     "d ${home}/Notes/Agenda 0755 ${username} users -"
-    "d ${home}/.secrets 0700 ${username} users -"
-    "f ${home}/.secrets/secrets.yaml 0600 ${username} users -"
   ];
 
   sops = {
     validateSopsFiles = false;
-    age.sshKeyPaths = ["/home/ino/.ssh/id_ed25519"];
-    defaultSopsFile = "../.secrets/secrets.yaml";
-    # secrets."nextcloud_admin_pass" = { owner = "nextcloud"; }; 
-    # secrets."nextcloud_db_pass" = { owner = "nextcloud"; }; 
+    age.sshKeyPaths = ["${home}/.ssh/id_ed25519"];
+    defaultSopsFile = "${home}/.dotfiles/.secrets/secrets.yaml";
+    secrets."nextcloud_admin_pass" = { owner = "nextcloud"; }; 
+    secrets."nextcloud_db_pass" = { owner = "nextcloud"; }; 
+    secrets."cloudflare_tunnel_key" = { owner = "ino"; }; 
+    secrets."playit_key" = { owner = "ino"; }; 
   };
   
   # Set your time zone.
@@ -80,7 +88,8 @@ in
   networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   
   # Open the UDP port for Tailscale
-  networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
+  networking.firewall.allowedTCPPorts = [ 80 443 ];
+  networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 443];
 
   # Optional: trust the tailscale interface (skips firewall for tailnet traffic)
   networking.firewall.trustedInterfaces = [ "tailscale0" ];
@@ -95,6 +104,7 @@ in
       lazygit
       lazydocker
       btop
+      glance
     ];
 
   programs.zsh.enable = true;
@@ -102,22 +112,69 @@ in
   #docker containers 
   virtualisation.docker.enable = true;
   virtualisation.oci-containers.backend = "docker"; 
-  virtualisation.oci-containers.containers.voxeldash-one = {
-    image = "ghcr.io/gnmyt/voxeldash-one:dev-56309bb";
-    ports = [ "0.0.0.0:7867:7867"    "0.0.0.0:35223:35223" ]; 
-    volumes = [ "/var/lib/voxeldash:/data" ];
-  };
-  networking.firewall.allowedTCPPorts = [ 35223 ]; 
+  virtualisation.oci-containers.containers.voxeldash-one =
+    {
+      image = "ghcr.io/gnmyt/voxeldash-one:dev-56309bb";
+      ports = [ "0.0.0.0:7867:7867"    "0.0.0.0:35223:35223" ]; 
+      volumes = [ "/var/lib/voxeldash:/data" ];
+    };
+  
+  virtualisation.oci-containers.containers.byparr =
+    {
+      image = "ghcr.io/thephaseless/byparr:latest";
+      autoStart = true;
+      ports = [ "127.0.0.1:8191:8191" ];
+      environment = {
+        LOG_LEVEL = "INFO";
+        PORT = "8191";
+        HOST = "0.0.0.0";
+      };
+      pull = "always"; 
+    };
 
   #systemd services 
   services.tailscale.enable = true;
   services.logrotate.checkConfig = false;
   services.openssh.enable = true;
+
+  services.cloudflared =
+    {
+      enable = true;
+      tunnels."eec2b94a-fd09-4e71-bc7a-757617a0a882" =
+        {
+          credentialsFile = "/home/ino/.cloudflared/eec2b94a-fd09-4e71-bc7a-757617a0a882.json";
+          default = "http_status:404";
+          ingress = {
+            "immich.amber-forge.party" = "http://127.0.0.1:2283";
+            "nextcloud.amber-forge.party" = "http://127.0.0.1:80";
+            "jellyfin.amber-forge.party" = "http://127.0.0.1:8096";
+            "home.amber-forge.party" = "http://127.0.0.1:8080";
+          };
+        };
+    };  
+  
   services.minecraft-servers = {
     enable = true;
     eula = true;
   };
+
+  services.glance = {
+    enable = true;
+    # openfirewall = true;
+    settings = {
+      server.port = 8080;
+    };
+  };
   
+  systemd.services.glance.serviceConfig.User = lib.mkForce "${username}";
+  
+  systemd.services.glance = {
+    serviceConfig = {
+      ExecStart = lib.mkForce "${lib.getExe pkgs.glance} --config ${home}/.dotfiles/glance/glance.yml";
+      # if sandboxed and needs to read your home dir:
+      ProtectHome = lib.mkForce false;
+    };
+  };
   services.syncthing = 
     {
       enable = true;
@@ -134,12 +191,18 @@ in
     port = 2283;
     host = "0.0.0.0";
     mediaLocation = "/mnt/d/images/immich";
-    openFirewall = true;
+    # openFirewall = true;
   };
+
+  #bug upstream where any folder other than /var/lib/immich doesnt work, so need to make them manually
+  systemd.tmpfiles.settings.immich =
+    { "${mediaRoot}" = mkDir mediaRoot; }
+    // lib.genAttrs (map (d: "${mediaRoot}/${d}") immichDirs) mkDir
+      // lib.genAttrs (map (d: "${mediaRoot}/${d}/.immich") immichDirs) mkFile;
   
   services.playit = {
     enable = true;
-    secretPath = "/home/ino/.secrets/playit.toml";
+    secretPath = config.sops.secrets.playit_key.path; #"/home/ino/.secrets/playit.toml";
   }; 
 
   
@@ -148,8 +211,8 @@ in
     # These two values are also the default, but you can set them to whatever
     # else you want
     # WARNING: Do _not_ set them to `/home/user/whatever`, it will not work!
-    mediaDir = "/data/media";
-    stateDir = "/data/media/.state/nixarr";
+    mediaDir = "/mnt/d/jellyfin";
+    stateDir = "/mnt/d/jellyfin/.state/nixarr";
 
     vpn = {
       enable = false;
@@ -172,6 +235,8 @@ in
     transmission = {
       enable = true;
       vpn.enable = false;
+      # rpc-whitelist-enabled = false;
+      extraAllowedIps = [ "100.*.*.*" ];
       # peerPort = 50000; # Set this to the port forwarded by your VPN
     };
 
@@ -188,7 +253,8 @@ in
   
   services.nextcloud = {
     enable = true;
-    hostName = "ino.caracal-silverside.ts.net"; # MagicDNS name, or just the tailscale IP
+    hostName = "nextcloud.amber-forge.party"; # MagicDNS name, or just the tailscale IP
+    # hostName = "ino.caracal-silverside.ts.net"; # MagicDNS name, or just the tailscale IP
     package = pkgs.nextcloud34;
 
     database.createLocally = true;
@@ -206,25 +272,15 @@ in
     config = {
       dbtype = "pgsql";
       adminuser = "admin";
-      adminpassFile = "/home/ino/.secrets/nextcloud.txt";
+      adminpassFile = config.sops.secrets.nextcloud_admin_pass.path;
     };
 
     settings = {
       defaultPhoneRegion = "CA";
       overwriteProtocol = "https";
-      # trustedProxies = [ "100.64.0.0/10" ]; # Tailscale CGNAT range
-      # trusted_domains = [
-      #   "ino.caracal-silverside.ts.net"
-      # ];
     };
   };
 
-  #bug upstream where any folder other than /var/lib/immich doesnt work, so need to make them manually
-  systemd.tmpfiles.settings.immich =
-    { "${mediaRoot}" = mkDir mediaRoot; }
-    // lib.genAttrs (map (d: "${mediaRoot}/${d}") immichDirs) mkDir
-      // lib.genAttrs (map (d: "${mediaRoot}/${d}/.immich") immichDirs) mkFile;
-  
 
   system.stateVersion = "26.05";
 }

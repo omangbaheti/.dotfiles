@@ -58,7 +58,7 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
       {
         dotfilesDir = ".dotfiles";
         allowUnfree = true;
-        editor = "emacsclient -c -a";
+        editor = "emacs -c -a";
         browser = "zen";
       };
     

@@ -115,13 +115,13 @@ in
       tirith
       scrcpy
       android-tools
-      pinentry-curses
       sops
       age
       ssh-to-age
       ffmpeg
       proton-pass-cli
-      
+      cloudflared     
+      openssl
       #for controlling external monitor
       ddcutil
       luminance
