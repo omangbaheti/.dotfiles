@@ -23,6 +23,7 @@
   - [[#backups][Backups]]
   - [[#minibuffer-escape][Minibuffer escape]]
   - [[#api-keys][API Keys]]
+  - [[#tramp][TRAMP]]
   - [[#electric][Electric]]
   - [[#undo-fu][UNDO-FU]]
   - [[#helpful][Helpful]]
@@ -41,9 +42,11 @@
   - [[#org-roam][ORG-ROAM]]
   - [[#org-noter][ORG NOTER]]
   - [[#org-transclusion][ORG TRANSCLUSION]]
+  - [[#org-fragtog][ORG FRAGTOG]]
   - [[#ansi-support][ANSI SUPPORT]]
   - [[#org-appear][ORG Appear]]
   - [[#org-kanban][ORG KANBAN]]
+  - [[#org-caldav][ORG CALDAV]]
 - [[#markdown][MARKDOWN]]
 - [[#which-key][WHICH-KEY]]
 - [[#pretty-visuals][PRETTY VISUALS]]
@@ -919,7 +922,6 @@ Defining the fonts
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
-
 ;; ;; WHy am i havin to do this
 ;; (setq enable-local-variables t)
 ;; solves the font lock 
@@ -935,6 +937,8 @@ Defining the fonts
             (setq kill-ring
                   (mapcar #'substring-no-properties
                           (cl-remove-if-not #'stringp kill-ring)))))
+
+(setq org-preview-latex-default-process 'dvisvgm)
 #+end_src
 
 ** Display Line Numbers and Truncated Lines
@@ -968,6 +972,14 @@ Defining the fonts
   :ensure (:type git :host github :repo "djgoku/sops")
   :init
   (global-sops-mode 1))
+#+end_src
+
+** TRAMP
+#+begin_src emacs-lisp
+(setq tramp-default-method "ssh")
+(prefer-coding-system 'utf-8-unix)
+(setq-default buffer-file-coding-system 'utf-8-unix)
+(setq tramp-use-ssh-controlmaster-options nil)
 #+end_src
 
 ** Electric
@@ -1671,6 +1683,16 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 #+end_src
 
 
+** ORG FRAGTOG
+#+begin_src emacs-lisp
+(use-package org-fragtog
+  :ensure t
+  :after org
+  :hook (org-mode . org-fragtog-mode))
+#+end_src
+
+#+RESULTS:
+
 ** TODO ANSI SUPPORT
 #+begin_src emacs-lisp
 ;; (require 'ansi-color)
@@ -1718,6 +1740,22 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 ;;   )
 #+end_src
 
+** ORG CALDAV
+#+begin_src emacs-lisp
+;; (use-package org-caldav
+;;   :ensure t
+;;   :config
+;;   (setq org-caldav-url "https://nextcloud.amber-forge.party/remote.php/dav/calendars/YOUR-USERNAME")
+;;   (setq org-caldav-calendar-id "personal")
+;;   (setq org-caldav-inbox "~/org/gtd/inbox.org")
+;;   (setq org-caldav-files '("~/org/gtd/tasks.org" "~/org/gtd/homework.org"))
+;;   (setq org-icalendar-timezone "America/Toronto")
+;;   (setq org-caldav-save-directory "~/.cache/org-caldav/")
+;;   (setq org-caldav-backup-file "~/.cache/org-caldav-backup.org")
+;;   (setq org-caldav-show-sync-results nil)
+;;   (unless (file-exists-p org-caldav-save-directory)
+;;     (make-directory org-caldav-save-directory t)))
+#+end_src
 
 * MARKDOWN
 #+begin_src emacs-lisp
@@ -2458,35 +2496,63 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 ** Jupyter
 
 #+begin_src emacs-lisp
+;; (use-package jupyter
+;;   :ensure t
+;;   :after org
+;;   :defer t
+;;   :init
+;;   (require 'ob-jupyter)
+;;   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
+;;   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
+;;   (setq org-babel-default-header-args:jupyter-R '((:session . "R")
+;;                                                   (:kernel . "ir")
+;;                                                   (:exports . "both")
+;;                                                   (:results . "output")))
+;;   :config
+;;   (setq org-confirm-babel-evaluate nil
+;;         org-src-fontify-natively t
+;;         org-src-tab-acts-natively t
+;;         org-src-preserve-indentation t)
+;;   )
+
+;; (with-eval-after-load 'org
+;;   (with-eval-after-load 'jupyter
+;;     (org-babel-do-load-languages
+;;      'org-babel-load-languages
+;;      '((emacs-lisp . t)
+;;        (python . t)
+;;        (shell . t)
+;;        (R . t)
+;;        (jupyter . t)
+;;        ))
+;;     (org-babel-jupyter-aliases-from-kernelspecs)))
+
+
 (use-package jupyter
   :ensure t
-  :defer t
-  :init
-  (require 'ob-jupyter)
+  :after org               ;; load only after org is loaded
+  :defer t                 ;; don't load at startup even after org is loaded
+  :init                    ;; runs before jupyter is loaded (but after org, due to :after)
   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
   (setq org-babel-default-header-args:jupyter-R '((:session . "R")
                                                   (:kernel . "ir")
                                                   (:exports . "both")
                                                   (:results . "output")))
-  :config
+  :config                   ;; runs when jupyter is actually loaded
+  (require 'ob-jupyter)     ;; now safe to require
   (setq org-confirm-babel-evaluate nil
         org-src-fontify-natively t
         org-src-tab-acts-natively t
         org-src-preserve-indentation t)
-  )
-
-(with-eval-after-load 'org
-  (with-eval-after-load 'jupyter
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp . t)
-       (python . t)
-       (shell . t)
-       (R . t)
-       (jupyter . t)
-       ))
-    (org-babel-jupyter-aliases-from-kernelspecs)))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)
+     (shell . t)
+     (R . t)
+     (jupyter . t)))
+  (org-babel-jupyter-aliases-from-kernelspecs))
 #+end_src
 
 ** Rainbow mode
@@ -2534,13 +2600,13 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 ** Tidal Cycles
 #+begin_src emacs-lisp
-(use-package tidal
-  :ensure t
-  :config
-  (setq tidal-boot-script-path
-        (string-trim
-         (shell-command-to-string
-          "ghc-pkg field tidal data-dir --simple-output"))))
+;; (use-package tidal
+;;   :ensure t
+;;   :config
+;;   (setq tidal-boot-script-path
+;;         (string-trim
+;;          (shell-command-to-string
+;;           "ghc-pkg field tidal data-dir --simple-output"))))
 #+end_src
 
 
@@ -2878,12 +2944,12 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 ** Agent Shell
 #+begin_src emacs-lisp
-(use-package agent-shell
-    :ensure t
-    :config
-    (when-let ((pi-bin (getenv "PI_NPM_BIN")))
-  (add-to-list 'exec-path pi-bin))
-)
+;; (use-package agent-shell
+;;     :ensure t
+;;     :config
+;;     (when-let ((pi-bin (getenv "PI_NPM_BIN")))
+;;   (add-to-list 'exec-path pi-bin))
+;; )
 #+end_src
 
 

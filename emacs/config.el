@@ -690,7 +690,6 @@ one, an error is signaled."
 (setq mouse-wheel-scroll-amount-horizontal 20)
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
 (setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
-
 ;; ;; WHy am i havin to do this
 ;; (setq enable-local-variables t)
 ;; solves the font lock 
@@ -706,6 +705,8 @@ one, an error is signaled."
             (setq kill-ring
                   (mapcar #'substring-no-properties
                           (cl-remove-if-not #'stringp kill-ring)))))
+
+(setq org-preview-latex-default-process 'dvisvgm)
 
 (global-display-line-numbers-mode 1)
 ;; (global-visual-line-mode t)
@@ -723,6 +724,11 @@ one, an error is signaled."
   :ensure (:type git :host github :repo "djgoku/sops")
   :init
   (global-sops-mode 1))
+
+(setq tramp-default-method "ssh")
+(prefer-coding-system 'utf-8-unix)
+(setq-default buffer-file-coding-system 'utf-8-unix)
+(setq tramp-use-ssh-controlmaster-options nil)
 
 (delete-selection-mode 1)
 (electric-indent-mode 1)
@@ -1295,6 +1301,11 @@ DEADLINE: %^t
   :hook (org-mode . org-transclusion-mode)
   )
 
+(use-package org-fragtog
+  :ensure t
+  :after org
+  :hook (org-mode . org-fragtog-mode))
+
 ;; (require 'ansi-color)
 
 ;; (defun my-ansi-colorize-buffer ()
@@ -1328,6 +1339,20 @@ DEADLINE: %^t
 ;;   ;; Optional: Set mirrored to nil if you want the board the other way around
 ;;   (setq org-kanban/mirrored nil)
 ;;   )
+
+;; (use-package org-caldav
+;;   :ensure t
+;;   :config
+;;   (setq org-caldav-url "https://nextcloud.amber-forge.party/remote.php/dav/calendars/YOUR-USERNAME")
+;;   (setq org-caldav-calendar-id "personal")
+;;   (setq org-caldav-inbox "~/org/gtd/inbox.org")
+;;   (setq org-caldav-files '("~/org/gtd/tasks.org" "~/org/gtd/homework.org"))
+;;   (setq org-icalendar-timezone "America/Toronto")
+;;   (setq org-caldav-save-directory "~/.cache/org-caldav/")
+;;   (setq org-caldav-backup-file "~/.cache/org-caldav-backup.org")
+;;   (setq org-caldav-show-sync-results nil)
+;;   (unless (file-exists-p org-caldav-save-directory)
+;;     (make-directory org-caldav-save-directory t)))
 
 (use-package markdown-mode
   :ensure t
@@ -1940,35 +1965,63 @@ DEADLINE: %^t
   ;;				      parenthesized_expression subscript)))
   :hook ((prog-mode) . indent-bars-mode))
 
+;; (use-package jupyter
+;;   :ensure t
+;;   :after org
+;;   :defer t
+;;   :init
+;;   (require 'ob-jupyter)
+;;   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
+;;   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
+;;   (setq org-babel-default-header-args:jupyter-R '((:session . "R")
+;;                                                   (:kernel . "ir")
+;;                                                   (:exports . "both")
+;;                                                   (:results . "output")))
+;;   :config
+;;   (setq org-confirm-babel-evaluate nil
+;;         org-src-fontify-natively t
+;;         org-src-tab-acts-natively t
+;;         org-src-preserve-indentation t)
+;;   )
+
+;; (with-eval-after-load 'org
+;;   (with-eval-after-load 'jupyter
+;;     (org-babel-do-load-languages
+;;      'org-babel-load-languages
+;;      '((emacs-lisp . t)
+;;        (python . t)
+;;        (shell . t)
+;;        (R . t)
+;;        (jupyter . t)
+;;        ))
+;;     (org-babel-jupyter-aliases-from-kernelspecs)))
+
+
 (use-package jupyter
   :ensure t
-  :defer t
-  :init
-  (require 'ob-jupyter)
+  :after org               ;; load only after org is loaded
+  :defer t                 ;; don't load at startup even after org is loaded
+  :init                    ;; runs before jupyter is loaded (but after org, due to :after)
   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
   (setq org-babel-default-header-args:jupyter-R '((:session . "R")
                                                   (:kernel . "ir")
                                                   (:exports . "both")
                                                   (:results . "output")))
-  :config
+  :config                   ;; runs when jupyter is actually loaded
+  (require 'ob-jupyter)     ;; now safe to require
   (setq org-confirm-babel-evaluate nil
         org-src-fontify-natively t
         org-src-tab-acts-natively t
         org-src-preserve-indentation t)
-  )
-
-(with-eval-after-load 'org
-  (with-eval-after-load 'jupyter
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp . t)
-       (python . t)
-       (shell . t)
-       (R . t)
-       (jupyter . t)
-       ))
-    (org-babel-jupyter-aliases-from-kernelspecs)))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)
+     (shell . t)
+     (R . t)
+     (jupyter . t)))
+  (org-babel-jupyter-aliases-from-kernelspecs))
 
 (use-package rainbow-delimiters
   :ensure t
@@ -1998,13 +2051,13 @@ DEADLINE: %^t
   :ensure (:host github :repo "elizagamedev/unity.el")
   :commands (unity-mode))
 
-(use-package tidal
-  :ensure t
-  :config
-  (setq tidal-boot-script-path
-        (string-trim
-         (shell-command-to-string
-          "ghc-pkg field tidal data-dir --simple-output"))))
+;; (use-package tidal
+;;   :ensure t
+;;   :config
+;;   (setq tidal-boot-script-path
+;;         (string-trim
+;;          (shell-command-to-string
+;;           "ghc-pkg field tidal data-dir --simple-output"))))
 
 (use-package auctex
   :ensure t
@@ -2287,12 +2340,12 @@ DEADLINE: %^t
 ;;               'ob-gptel-capf nil t))
 ;;   :hook (org-mode . ob-gptel-setup-completions))
 
-(use-package agent-shell
-    :ensure t
-    :config
-    (when-let ((pi-bin (getenv "PI_NPM_BIN")))
-  (add-to-list 'exec-path pi-bin))
-)
+;; (use-package agent-shell
+;;     :ensure t
+;;     :config
+;;     (when-let ((pi-bin (getenv "PI_NPM_BIN")))
+;;   (add-to-list 'exec-path pi-bin))
+;; )
 
 (use-package mcp
   :ensure t
