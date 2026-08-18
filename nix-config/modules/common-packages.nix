@@ -62,6 +62,7 @@ in
       libvterm
       libgcc
       libtool
+      p7zip
       
       #python 
       pylint

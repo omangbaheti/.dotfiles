@@ -108,7 +108,13 @@ services.gpg-agent =
       allow-loopback-pinentry
     '';
   };  
-  programs.zsh.initContent = 
+
+programs.zsh = {
+  initExtraFirst = ''
+    # Must run before oh-my-zsh/p10k/starship init
+    [[ "$TERM" == "dumb" ]] && unsetopt zle && PS1='$ ' && return
+  '';
+  initContent = 
     ''
  # PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
  function isWinDir 
@@ -138,6 +144,9 @@ services.gpg-agent =
   #export DISPLAY=$(ip route list default | awk '{print $3}'):0.0
 '';
 
+};
+
+  # programs.zsh.
   services.ssh-agent.enable = true;
   
   programs.ssh = {

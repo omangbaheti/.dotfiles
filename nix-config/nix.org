@@ -368,6 +368,7 @@ in
       libvterm
       libgcc
       libtool
+      p7zip
       
       #python 
       pylint
@@ -1498,12 +1499,21 @@ in
     ];
 
 <<common-home-config>>  
-  programs.zsh.initContent = 
+
+programs.zsh = {
+  initExtraFirst = ''
+    # Must run before oh-my-zsh/p10k/starship init
+    [[ "$TERM" == "dumb" ]] && unsetopt zle && PS1='$ ' && return
+  '';
+  initContent = 
     ''
  <<zshConfigWsl>>
   #export DISPLAY=$(ip route list default | awk '{print $3}'):0.0
 '';
 
+};
+
+  # programs.zsh.
   services.ssh-agent.enable = true;
   
   programs.ssh = {
