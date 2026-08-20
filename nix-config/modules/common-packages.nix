@@ -129,5 +129,6 @@ in
       #secure boot
       sbctl
       nvtopPackages.nvidia
+      libva-utils
     ];
 }

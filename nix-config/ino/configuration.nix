@@ -28,7 +28,13 @@ in
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-
+hardware.graphics = {
+  enable = true;
+  extraPackages = with pkgs; [
+    intel-media-driver
+    intel-compute-runtime
+  ];
+};
   ## minecraft
   nixpkgs.overlays = [ inputs.nix-minecraft.overlay ]; 
   
@@ -56,6 +62,7 @@ in
   users.users.sonarr.extraGroups = [ "arrs" ];
   users.users.radarr.extraGroups = [ "arrs" ];
   users.users.bazarr.extraGroups = [ "arrs" ];
+  users.users.jellyfin.extraGroups = [ "video" "render" ];
   systemd.tmpfiles.rules = [
     "d /mnt/d 0775 root users -"
     "d /mnt/d/media 0775 root users -"
@@ -214,11 +221,16 @@ in
     mediaDir = "/mnt/d/jellyfin";
     stateDir = "/mnt/d/jellyfin/.state/nixarr";
 
+    # vpn = {
+    #   enable = false;
+    #   # WARNING: This file must _not_ be in the config git directory
+    #   # You can usually get this wireguard file from your VPN provider
+    #   # wgConf = "/data/.secret/wg.conf";
+    # };
+    
     vpn = {
-      enable = false;
-      # WARNING: This file must _not_ be in the config git directory
-      # You can usually get this wireguard file from your VPN provider
-      # wgConf = "/data/.secret/wg.conf";
+      enable = true;
+      wgConf = "${home}/.dotfiles/.secrets/wg.conf";
     };
     
     jellyfin = {
@@ -232,13 +244,21 @@ in
       # };
     };
 
+    qbittorrent = {
+      enable = true;
+      extraAllowedIps = [ "100.*.*.*" ];
+      qui.enable = true;
+    };
+
+    
     transmission = {
       enable = true;
-      vpn.enable = false;
+      vpn.enable = true;
       # rpc-whitelist-enabled = false;
       extraAllowedIps = [ "100.*.*.*" ];
-      # peerPort = 50000; # Set this to the port forwarded by your VPN
+      peerPort = 50000; # Set this to the port forwarded by your VPN
     };
+
 
     # It is possible for this module to run the *Arrs through a VPN, but it
     # is generally not recommended, as it can cause rate-limiting issues.
