@@ -1965,63 +1965,64 @@ DEADLINE: %^t
   ;;				      parenthesized_expression subscript)))
   :hook ((prog-mode) . indent-bars-mode))
 
+(use-package jupyter
+  :ensure t
+  :after org
+  :defer t
+  :init
+  (require 'ob-jupyter)
+  (setenv "jupyter_runtime_dir" (expand-file-name "~/.local/share/jupyter/runtime"))
+  (setenv "jupyter_data_dir" (expand-file-name "~/.local/share/jupyter"))
+  (setq org-babel-default-header-args:jupyter-r '((:session . "r")
+                                                  (:kernel . "ir")
+                                                  (:exports . "both")
+                                                  (:results . "output")))
+  :config
+  (setq org-confirm-babel-evaluate nil
+        org-src-fontify-natively t
+        org-src-tab-acts-natively t
+        org-src-preserve-indentation t)
+  )
+
+
+
 ;; (use-package jupyter
 ;;   :ensure t
-;;   :after org
-;;   :defer t
-;;   :init
-;;   (require 'ob-jupyter)
+;;   :after org               ;; load only after org is loaded
+;;   :defer t                 ;; don't load at startup even after org is loaded
+;;   :init                    ;; runs before jupyter is loaded (but after org, due to :after)
 ;;   (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
 ;;   (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
 ;;   (setq org-babel-default-header-args:jupyter-R '((:session . "R")
 ;;                                                   (:kernel . "ir")
 ;;                                                   (:exports . "both")
 ;;                                                   (:results . "output")))
-;;   :config
+;;   :config                   ;; runs when jupyter is actually loaded
+;;   (require 'ob-jupyter)     ;; now safe to require
 ;;   (setq org-confirm-babel-evaluate nil
 ;;         org-src-fontify-natively t
 ;;         org-src-tab-acts-natively t
 ;;         org-src-preserve-indentation t)
-;;   )
+;;   (org-babel-do-load-languages
+;;    'org-babel-load-languages
+;;    '((emacs-lisp . t)
+;;      (python . t)
+;;      (shell . t)
+;;      (R . t)
+;;      (jupyter . t)))
+;;   (org-babel-jupyter-aliases-from-kernelspecs))
 
-;; (with-eval-after-load 'org
-;;   (with-eval-after-load 'jupyter
-;;     (org-babel-do-load-languages
-;;      'org-babel-load-languages
-;;      '((emacs-lisp . t)
-;;        (python . t)
-;;        (shell . t)
-;;        (R . t)
-;;        (jupyter . t)
-;;        ))
-;;     (org-babel-jupyter-aliases-from-kernelspecs)))
-
-
-(use-package jupyter
-  :ensure t
-  :after org               ;; load only after org is loaded
-  :defer t                 ;; don't load at startup even after org is loaded
-  :init                    ;; runs before jupyter is loaded (but after org, due to :after)
-  (setenv "JUPYTER_RUNTIME_DIR" (expand-file-name "~/.local/share/jupyter/runtime"))
-  (setenv "JUPYTER_DATA_DIR" (expand-file-name "~/.local/share/jupyter"))
-  (setq org-babel-default-header-args:jupyter-R '((:session . "R")
-                                                  (:kernel . "ir")
-                                                  (:exports . "both")
-                                                  (:results . "output")))
-  :config                   ;; runs when jupyter is actually loaded
-  (require 'ob-jupyter)     ;; now safe to require
-  (setq org-confirm-babel-evaluate nil
-        org-src-fontify-natively t
-        org-src-tab-acts-natively t
-        org-src-preserve-indentation t)
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (python . t)
-     (shell . t)
-     (R . t)
-     (jupyter . t)))
-  (org-babel-jupyter-aliases-from-kernelspecs))
+(with-eval-after-load 'org
+  (with-eval-after-load 'jupyter
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((emacs-lisp . t)
+       (python . t)
+       (shell . t)
+       (r . t)
+       (jupyter . t)
+       ))
+    (org-babel-jupyter-aliases-from-kernelspecs)))
 
 (use-package rainbow-delimiters
   :ensure t
