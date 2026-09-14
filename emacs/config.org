@@ -47,6 +47,7 @@
   - [[#org-appear][ORG Appear]]
   - [[#org-kanban][ORG KANBAN]]
   - [[#org-caldav][ORG CALDAV]]
+  - [[#brower-gt][Brower GT]]
 - [[#markdown][MARKDOWN]]
 - [[#which-key][WHICH-KEY]]
 - [[#pretty-visuals][PRETTY VISUALS]]
@@ -1757,6 +1758,12 @@ Lifted from  https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-thei
 ;;     (make-directory org-caldav-save-directory t)))
 #+end_src
 
+** Brower GT
+
+#+begin_src emacs-lisp
+
+#+end_src
+
 * MARKDOWN
 #+begin_src emacs-lisp
 (use-package markdown-mode
@@ -2978,9 +2985,12 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 ** PI Agent
 #+begin_src emacs-lisp
-(use-package pi-coding-agent
-  :ensure t
-  :init (defalias 'pi 'pi-coding-agent))
+;; (use-package agent-shell
+;;   :ensure t
+;;   :bind (:map agent-shell-mode-map
+;;               ("RET" . newline)
+;;               ("C-c C-c" . shell-maker-submit)
+              ;; ("C-c C-k" . agent-shell-interrupt)))
 #+end_src
 
 

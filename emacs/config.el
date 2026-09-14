@@ -1354,6 +1354,8 @@ DEADLINE: %^t
 ;;   (unless (file-exists-p org-caldav-save-directory)
 ;;     (make-directory org-caldav-save-directory t)))
 
+
+
 (use-package markdown-mode
   :ensure t
   :mode ("README\\.md\\'" . gfm-mode)
@@ -2366,9 +2368,12 @@ DEADLINE: %^t
   (require 'gptel-integrations)
   )
 
-(use-package pi-coding-agent
-  :ensure t
-  :init (defalias 'pi 'pi-coding-agent))
+;; (use-package agent-shell
+;;   :ensure t
+;;   :bind (:map agent-shell-mode-map
+;;               ("RET" . newline)
+;;               ("C-c C-c" . shell-maker-submit)
+              ;; ("C-c C-k" . agent-shell-interrupt)))
 
 (use-package direnv
   :ensure t)
