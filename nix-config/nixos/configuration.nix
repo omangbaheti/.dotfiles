@@ -1,21 +1,23 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
+# edit this configuration file to define what should be installed on
+# your system. help is available in the configuration.nix(5) man page, on
+# https://search.nixos.org/options and in the nixos manual (`nixos-help`).
 
-# NixOS-WSL specific options are documented on the NixOS-WSL repository:
-# https://github.com/nix-community/NixOS-WSL
+# nixos-wsl specific options are documented on the nixos-wsl repository:
+# https://github.com/nix-community/nixos-wsl
 
-{config, lib, pkgs, stable, machine, ... }:
+{config, lib, pkgs, stable, machine, inputs, ... }:
 let
-  userName = machine.username;
+  username = machine.username;
   allowUnfree = machine.allowUnfree;
+  secretsdir = "/home/${username}/.dotfiles/.secrets";
+  hostfile   = "${secretsdir}/${username}/secrets.yaml";
 in
 {
-  nix.settings.trusted-users = [ "root" userName];
+  nix.settings.trusted-users = [ "root" username];
   nixpkgs.config.allowUnfree = allowUnfree;
   
   wsl.enable = true;
-  wsl.defaultUser = userName;
+  wsl.defaultUser = username;
   
   imports = 
     [
@@ -35,7 +37,7 @@ in
     ]);
   fonts.fontconfig.defaultFonts.emoji = [ "Noto Emoji" ];
   hardware.graphics.enable = true;
-  # hardware.graphics.extraPackages = [ pkgs.mesa.drivers ];
+  # hardware.graphics.extrapackages = [ pkgs.mesa.drivers ];
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
 
@@ -45,11 +47,11 @@ in
       exercism
     ];
 
-  # This value determines the NixOS release from which the default
+  # this value determines the nixos release from which the default
   # settings for stateful data, like file locations and database versions
-  # on your system were taken. It's perfectly fine and recommended to leave
+  # on your system were taken. it's perfectly fine and recommended to leave
   # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
+  # before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "24.11"; # Did you read the comment?
+  system.stateVersion = "24.11"; # did you read the comment?
 }

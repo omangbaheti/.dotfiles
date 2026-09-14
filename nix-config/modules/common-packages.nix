@@ -1,4 +1,4 @@
-{ config, pkgs, stable, ... }:
+{ config, pkgs, stable, inputs, ... }:
 let
   python-with-packages = pkgs.python3.withPackages (ps: with ps; [
     numpy
