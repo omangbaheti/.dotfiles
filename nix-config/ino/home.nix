@@ -1,7 +1,7 @@
 { config, pkgs, stable, machine, inputs, ... }:
 {
   home.stateVersion = "26.05";
-  
+  imports = [ inputs.sops-nix.homeManagerModules.sops ];
   programs.home-manager.enable = true;
   # nix.settings.auto-optimise-store = true;
   programs.zoxide.enable = true;
@@ -84,6 +84,10 @@
         allow-loopback-pinentry
       '';
     };
+  
+  home.file.".pi/agent/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/settings.json";
+  home.file.".pi/agent/skills".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/skills";
+  home.file.".pi/agent/extensions".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/extensions";
   
   programs.zsh.initContent = 
     ''
