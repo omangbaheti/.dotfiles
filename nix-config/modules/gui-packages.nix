@@ -52,7 +52,7 @@
     
     #niri
     vicinae
-    noctalia-shell
+    noctalia
     xwayland-satellite
     wlr-which-key
   ]);

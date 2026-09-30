@@ -1,7 +1,10 @@
 { config, pkgs, stable, machine, inputs, ... }:
 {
   home.stateVersion = "26.05";
-  imports = [../modules/gui-packages.nix];
+  imports = [
+    inputs.sops-nix.homeManagerModules.sops 
+    ../modules/gui-packages.nix
+  ];
   
   programs.home-manager.enable = true;
   # nix.settings.auto-optimise-store = true;
@@ -86,18 +89,31 @@
       '';
     };
   
-  home.file.".pi/agent/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/settings.json";
+  home.file.".pi/agent/settings.json".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/agent/settings.json";
   home.file.".pi/agent/skills".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/skills";
-  home.file.".pi/agent/extensions".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/extensions";
+  home.file.".pi/agent/extensions".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/agent/extensions";
+
+  sops = {
+    validateSopsFiles = false;
+    age.sshKeyPaths = ["${config.home.homeDirectory}/.ssh/id_ed25519"];
+    defaultSopsFile = "/${config.home.homeDirectory}/.dotfiles/.secrets/shared/secrets.yaml";
+    secrets."opencode_go" = { }; 
+  };
   
-  programs.zsh.initContent = 
-    ''
+  programs.zsh = {
+    
+    initExtra = ''
+  export OPENCODE_API_KEY="$(cat ${config.sops.secrets.opencode_go.path})"
+'';
+    initContent = 
+      ''
 eval "$(zoxide init zsh)"
 eval "$(oh-my-posh init zsh)"
 eval "$(tirith init --shell zsh)"
 eval "$(direnv hook zsh)"
 export COLORTERM=truecolor
     '';
+  };
   nixpkgs.config.allowUnfree = true;
   
   home.packages = (with pkgs;
