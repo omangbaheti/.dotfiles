@@ -347,6 +347,10 @@
   :init
   ;; Global settings (defaults) - use SETQ to set variables
   :config
+  ;; temp fix?
+  (setcdr (assoc 'gnus-group-news-low-empty doom-themes-base-faces)
+          '(:inherit 'gnus-group-mail-1-empty :weight 'normal))
+  
   (load-theme 'doom-nord-aurora t)
   (setq doom-themes-enable-bold t)
   (setq doom-themes-enable-italic t)
@@ -2896,6 +2900,16 @@ Modern on-the-fly syntax checking extension for GNU Emacs
       :models '((google/gemma-4-31b-it:free) (deepseek/deepseek-v4-flash))
       :key openrouter-api))
   
+  (defvar opencode
+    (gptel-make-openai "OpenCode"
+      :host "opencode.ai"
+      :endpoint "/zen/go/v1/chat/completions"
+      :stream t
+      :models '(glm-5.3-flash
+		deepseek-v4.1-flash)
+      :key (getenv "OPENCODE_API_KEY")
+      ))
+  
   (gptel-make-openai "Azure-2"
     :host "emacs-2-resource.openai.azure.com"
     :protocol "https"
@@ -2923,12 +2937,14 @@ Modern on-the-fly syntax checking extension for GNU Emacs
                 (gpt-5.4-pro))
       :key azure-api-2))
   
-  (setq gptel-backend openrouter
-        gptel-model 'deepseek/deepseek-v4-flash )
-
+  (setq gptel-backend opencode
+        gptel-model 'deepseek-v4.1-flash )
   )
 
 #+end_src
+
+#+RESULTS:
+: [nil 27305 26791 606032 nil elpaca-process-queues nil nil 534000 nil]
 
 ** GPTEL AGENT
 
