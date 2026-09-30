@@ -8,7 +8,7 @@
 // https://niri-wm.github.io/niri/Configuration:-Input
 prefer-no-csd
 
-spawn-at-startup "noctalia-shell"
+spawn-at-startup "noctalia"
 spawn-sh-at-startup "vicinae server"
 
 input {
@@ -362,7 +362,7 @@ binds {
     // Mod+E hotkey-overlay-title="Open Emacs" { spawn "emacs"; }
     Ctrl+M hotkey-overlay-title="Launcher" { spawn-sh "vicinae toggle";}
     Mod+Z hotkey-overlay-title="Which Key" { spawn-sh "wlr-which-key"; }
-    Ctrl+L hotkey-overlay-title="Lock the Screen " { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock" ; }
+    Ctrl+L hotkey-overlay-title="Lock the Screen " { spawn "noctalia" "msg" "session" "lock" ; }
 
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument. It's passed verbatim to `sh -c`.
@@ -631,4 +631,5 @@ binds {
 }
 
 include "./noctalia.kdl"
+
 
