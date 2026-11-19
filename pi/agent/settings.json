@@ -5,7 +5,6 @@
   "defaultModel": "deepseek-v4.1-flash",
   "defaultThinkingLevel": "high",
   "packages": [
-    "npm:pi-openrouter-realtime",
     "npm:pi-web-access",
     "npm:pi-plugin-manager",
     "npm:@juicesharp/rpiv-ask-user-question",
@@ -17,7 +16,8 @@
     "npm:@llblab/pi-telegram",
     "npm:pi-disable-model-skill-invocation",
     "npm:pi-skill-manager",
-    "npm:pi-opencode-provider"
+    "npm:pi-opencode-provider",
+    "npm:@tintinweb/pi-subagents"
   ],
   "hideThinkingBlock": true,
   "transport": "auto",
