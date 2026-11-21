@@ -130,5 +130,6 @@ in
       sbctl
       nvtopPackages.nvidia
       libva-utils
+      inputs.herdr.packages.${pkgs.system}.default
     ];
 }
