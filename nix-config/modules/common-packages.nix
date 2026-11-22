@@ -83,7 +83,7 @@ in
       omnisharp-roslyn
       csharp-ls
       #Latex LSP and grammar checking
-      (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
+      # (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
       proselint
       harper
       ltex-ls-plus

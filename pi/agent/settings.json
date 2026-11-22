@@ -1,5 +1,8 @@
 {
-  "lastChangelogVersion": "0.84.4",
+  "lastChangelogVersion": "1.5.2",
+  "defaultTools": [
+    "+codemode"
+  ],
   "theme": "dark",
   "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4.1-flash",
@@ -9,15 +12,14 @@
     "npm:pi-plugin-manager",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-mcp-adapter",
-    "npm:@pi-vault/pi-dcp",
     "npm:@narumitw/pi-usage",
-    "npm:pi-go-bars",
     "git:github.com/DietrichGebert/ponytail",
-    "npm:@llblab/pi-telegram",
     "npm:pi-disable-model-skill-invocation",
     "npm:pi-skill-manager",
     "npm:pi-opencode-provider",
-    "npm:@tintinweb/pi-subagents"
+    "npm:pi-herdr-agents",
+    "npm:@jack-yang/pi-tps-meter",
+    "npm:billion-context"
   ],
   "hideThinkingBlock": true,
   "transport": "auto",
@@ -33,5 +35,22 @@
       "maxRetries": 0,
       "maxRetryDelayMs": 20000
     }
-  }
+  },
+  "extensionChangelogVersions": {
+    "{\"source\":\"npm:pi-web-access\",\"scope\":\"user\"}": "0.48.0",
+    "{\"source\":\"npm:pi-mcp-adapter\",\"scope\":\"user\"}": "7.0.1",
+    "{\"source\":\"npm:@pi-vault/pi-dcp\",\"scope\":\"user\"}": "0.11.0",
+    "{\"source\":\"npm:@narumitw/pi-usage\",\"scope\":\"user\"}": "0.69.4",
+    "{\"source\":\"npm:@llblab/pi-telegram\",\"scope\":\"user\"}": "0.59.3",
+    "{\"source\":\"npm:@tintinweb/pi-subagents\",\"scope\":\"user\"}": "0.26.2",
+    "{\"source\":\"npm:pi-herdr-agents\",\"scope\":\"user\"}": "3.12.1",
+    "{\"source\":\"npm:@jack-yang/pi-tps-meter\",\"scope\":\"user\"}": "1.0.0",
+    "{\"source\":\"npm:pi-herdr-pstack\",\"scope\":\"user\"}": "1.1.0"
+  },
+  "extensions": [
+    "-builtin:mcp"
+  ],
+  "followUpMode": "one-at-a-time",
+  "steeringMode": "one-at-a-time",
+  "showCacheMissNotices": false
 }

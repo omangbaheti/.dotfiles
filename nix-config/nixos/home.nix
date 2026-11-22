@@ -1,11 +1,11 @@
-{ config, pkgs, stable, machine, inputs, ... }:
+{ config, lib, pkgs, stable, machine, inputs, ... }:
 {
   # home manager needs a bit of information about you and the
   # paths it should manage.
   # home.username = machine.username; 
   # home.homedirectory = /home/${machine.username}; # replace with your username
   imports = [ inputs.sops-nix.homeManagerModules.sops ];
-    
+  
   sops = {
     validateSopsFiles = false;
     age.sshKeyPaths = ["${config.home.homeDirectory}/.ssh/id_ed25519"];
@@ -121,45 +121,85 @@
   home.file.".pi/agent/skills".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/skills";
   home.file.".pi/agent/extensions".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/pi/agent/extensions";  
 
+#   programs.zsh = {
+#     initExtraFirst = ''
+#     # must run before oh-my-zsh/p10k/starship init
+#     [[ "$term" == "dumb" ]] && unsetopt zle && ps1='$ ' && return
+#   '';
+#     initExtra = ''
+#   export OPENCODE_API_KEY="$(cat ${config.sops.secrets.opencode_go.path})"
+# '';
+
+#     initContent = 
+#       ''
+#  # PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
+#  function isWinDir 
+#  {
+#      case "$PWD/" in
+#          /mnt/*) return 0 ;;
+#          *) return 1 ;;
+#      esac
+#  }
+#  
+#  function lazygit 
+#  {
+#      if isWinDir; then
+#  	#  Use Windows `lazygit.exe` in Windows-mounted dirs
+#          command lazygit.exe "$@"
+#      else
+#  	#  Use native Linux `lazygit` in native dirs
+#          command lazygit "$@"
+#      fi 
+#  }
+#  
+#  eval "$(zoxide init zsh)"
+#  eval "$(oh-my-posh init zsh)"
+#  eval "$(tirith init --shell zsh)"
+#  eval "$(direnv hook zsh)"
+#  export COLORTERM=truecolor
+#   #export display=$(ip route list default | awk '{print $3}'):0.0
+# '';
+
+#   };
+
   programs.zsh = {
-    initExtraFirst = ''
-    # must run before oh-my-zsh/p10k/starship init
-    [[ "$term" == "dumb" ]] && unsetopt zle && ps1='$ ' && return
-  '';
-    initExtra = ''
-  export OPENCODE_API_KEY="$(cat ${config.sops.secrets.opencode_go.path})"
-'';
+    initContent = lib.mkMerge [
+      (lib.mkBefore ''
+      # must run before oh-my-zsh/p10k/starship init
+      [[ "$TERM" == "dumb" ]] && unsetopt zle && PS1='$ ' && return
+    '')
 
-    initContent = 
       ''
- # PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
- function isWinDir 
- {
-     case "$PWD/" in
-         /mnt/*) return 0 ;;
-         *) return 1 ;;
-     esac
- }
- 
- function lazygit 
- {
-     if isWinDir; then
- 	#  Use Windows `lazygit.exe` in Windows-mounted dirs
-         command lazygit.exe "$@"
-     else
- 	#  Use native Linux `lazygit` in native dirs
-         command lazygit "$@"
-     fi 
- }
- 
- eval "$(zoxide init zsh)"
- eval "$(oh-my-posh init zsh)"
- eval "$(tirith init --shell zsh)"
- eval "$(direnv hook zsh)"
- export COLORTERM=truecolor
-  #export display=$(ip route list default | awk '{print $3}'):0.0
-'';
+      export OPENCODE_API_KEY="$(cat ${config.sops.secrets.opencode_go.path})"
 
+      # PATH=/nix/store/5qng39wihv3lfgr03cf7mqbg4lpf4m45-cmake-3.30.5/bin:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:$PATH
+      function isWinDir 
+      {
+          case "$PWD/" in
+              /mnt/*) return 0 ;;
+              *) return 1 ;;
+          esac
+      }
+      
+      function lazygit 
+      {
+          if isWinDir; then
+      	#  Use Windows `lazygit.exe` in Windows-mounted dirs
+              command lazygit.exe "$@"
+          else
+      	#  Use native Linux `lazygit` in native dirs
+              command lazygit "$@"
+          fi 
+      }
+      
+      eval "$(zoxide init zsh)"
+      eval "$(oh-my-posh init zsh)"
+      eval "$(tirith init --shell zsh)"
+      eval "$(direnv hook zsh)"
+      export COLORTERM=truecolor
+      #export display=$(ip route list default | awk '{print $3}'):0.0
+    ''
+    ];
   };
 
   # programs.zsh.

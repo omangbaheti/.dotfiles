@@ -394,7 +394,7 @@ in
       omnisharp-roslyn
       csharp-ls
       #Latex LSP and grammar checking
-      (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
+      # (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
       proselint
       harper
       ltex-ls-plus
@@ -1520,14 +1520,14 @@ in
 
 *** Home.nix
 #+begin_src nix :tangle ./nixos/home.nix :noweb yes   
-{ config, pkgs, stable, machine, inputs, ... }:
+{ config, lib, pkgs, stable, machine, inputs, ... }:
 {
   # home manager needs a bit of information about you and the
   # paths it should manage.
   # home.username = machine.username; 
   # home.homedirectory = /home/${machine.username}; # replace with your username
   imports = [ inputs.sops-nix.homeManagerModules.sops ];
-    
+  
   sops = {
     validateSopsFiles = false;
     age.sshKeyPaths = ["${config.home.homeDirectory}/.ssh/id_ed25519"];
@@ -1558,21 +1558,37 @@ in
 
   <<common-home-config>>  
 
+#   programs.zsh = {
+#     initExtraFirst = ''
+#     # must run before oh-my-zsh/p10k/starship init
+#     [[ "$term" == "dumb" ]] && unsetopt zle && ps1='$ ' && return
+#   '';
+#     initExtra = ''
+#   export OPENCODE_API_KEY="$(cat ${config.sops.secrets.opencode_go.path})"
+# '';
+
+#     initContent = 
+#       ''
+#  <<zshconfigwsl>>
+#   #export display=$(ip route list default | awk '{print $3}'):0.0
+# '';
+
+#   };
+
   programs.zsh = {
-    initExtraFirst = ''
-    # must run before oh-my-zsh/p10k/starship init
-    [[ "$term" == "dumb" ]] && unsetopt zle && ps1='$ ' && return
-  '';
-    initExtra = ''
-  export OPENCODE_API_KEY="$(cat ${config.sops.secrets.opencode_go.path})"
-'';
+    initContent = lib.mkMerge [
+      (lib.mkBefore ''
+      # must run before oh-my-zsh/p10k/starship init
+      [[ "$TERM" == "dumb" ]] && unsetopt zle && PS1='$ ' && return
+    '')
 
-    initContent = 
       ''
- <<zshconfigwsl>>
-  #export display=$(ip route list default | awk '{print $3}'):0.0
-'';
+      export OPENCODE_API_KEY="$(cat ${config.sops.secrets.opencode_go.path})"
 
+      <<zshconfigwsl>>
+      #export display=$(ip route list default | awk '{print $3}'):0.0
+    ''
+    ];
   };
 
   # programs.zsh.
