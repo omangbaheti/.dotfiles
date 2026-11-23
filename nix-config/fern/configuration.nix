@@ -56,6 +56,7 @@ in
 
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
+  services.throttled.enable = true;
   security.rtkit.enable = true;
   services.tlp.enable = false;
   services.power-profiles-daemon.enable = true;
