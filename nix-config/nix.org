@@ -29,6 +29,7 @@
     - [[#configurationnix-3][Configuration.nix]]
     - [[#homenix-3][Home.nix]]
   - [[#raven---realme][Raven - Realme]]
+- [[#updating-packages][Updating Packages]]
 - [[#zsh-config][ZSH Config]]
   - [[#wsl-config][WSL Config]]
   - [[#fern-config][Fern Config]]
@@ -48,9 +49,16 @@ description = "Unified Flake Config";
 #+begin_src nix 
 inputs = 
   {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-26.05";
-    
+    # Calm base: a release branch only takes backports, so a weekly
+    # `nix flake update nixpkgs` moves a handful of packages, not the world.
+    # Anything you want fresher than this goes in multiverse.lock — see
+    # "Updating Packages" below.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+    # Per-package pins across every nixpkgs revision ever. No inputs of its
+    # own, so it adds no nixpkgs to the lock graph.
+    multiverse.url = "github:fzakaria/nixpkgs-multiverse";
+
     nixos-wsl = 
       {
         url = "github:nix-community/NixOS-WSL";
@@ -59,7 +67,9 @@ inputs =
     
     home-manager = 
       {
-        url = "github:nix-community/home-manager/master";
+        # Matched to the nixpkgs channel; master is 26.11 and warns about the
+        # mismatch.
+        url = "github:nix-community/home-manager/release-26.05";
         inputs.nixpkgs.follows = "nixpkgs";
       };
     
@@ -101,12 +111,12 @@ inputs =
 ** Flake Outputs
 #+name: flake-output
 #+begin_src nix :noweb yes 
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
+outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
   let
-    # stableFor = system:
-    #   nixpkgs-stable.legacyPackages.${system};
+    # `stable` and the base are the same channel now; this keeps the `stable`
+    # argument working (with unfree allowed) at every existing call site.
     stableFor = system:
-      import nixpkgs-stable {
+      import nixpkgs {
         inherit system;
         config.allowUnfree = true;
       };
@@ -240,9 +250,26 @@ mkSystem = machine:
                   systemType = machine.systemType;
                   machines = machines;
                 };
+                # Per-package pins live here. Empty lock = no-op until you add
+                # something with `mvs lock add`; see "Updating Packages".
+                home-manager.sharedModules = [
+                  inputs.multiverse.homeManagerModules.default
+                  {
+                    multiverse = {
+                      enable = true;
+                      config.allowUnfree = true;
+                      lock = ./multiverse.lock;
+                    };
+                  }
+                ];
                 home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
               })
             lanzaboote.nixosModules.lanzaboote  
+            # Same lock file, system side: `multiverse.locked.<attr>` is
+            # available to configuration.nix and installs into
+            # environment.systemPackages automatically.
+            inputs.multiverse.nixosModules.default
+            { multiverse = { enable = true; config.allowUnfree = machine.allowUnfree; lock = ./multiverse.lock; }; }
             ./${machine.host}/configuration.nix
             nixarr.nixosModules.default 
           ];
@@ -282,6 +309,15 @@ mkHome = machine:
         # home-manager.useGlobalPkgs = true;
         # home-manager.useUserPackages = true;
       })
+
+      inputs.multiverse.homeManagerModules.default
+      {
+        multiverse = {
+          enable = true;
+          config.allowUnfree = true;
+          lock = ./multiverse.lock;
+        };
+      }
 
       # Put your actual HM module(s) here
       ./${machine.host}/home.nix
@@ -452,6 +488,10 @@ in
 #+begin_src nix :tangle ./modules/gui-packages.nix
 { config, pkgs, stable, machine, inputs, ... }:
 {
+  # 26.05's rider build is flagged insecure until the branch catches up.
+  # The real fix is `mvs lock add jetbrains.rider` — see "Updating Packages".
+  nixpkgs.config.permittedInsecurePackages = [ "rider-2026.2.4" ];
+
   home.packages = (with pkgs; [
     #Dev-Tools
     jetbrains.rider
@@ -1147,6 +1187,10 @@ in
       inputs.playit-nixos-module.nixosModules.default 
     ];
 
+  # 26.05's immich build is flagged insecure until the branch catches up.
+  # The real fix is `mvs lock add immich` — see "Updating Packages".
+  nixpkgs.config.permittedInsecurePackages = [ "immich-2.7.5" ];
+
   # Bootloader.
   
   # Bootloader.
@@ -1739,6 +1783,87 @@ in
 }
 #+end_src
 
+
+* Updating Packages
+
+Two update paths, deliberately separate. The base moves rarely and in small
+steps; individual packages move on their own, whenever you want them to.
+
+| what                        | command                        | what it downloads          |
+|-----------------------------+--------------------------------+----------------------------|
+| everything (weekly)         | ~nix flake update nixpkgs~     | only what 26.05 backported |
+| one package                 | ~mvs lock update <attr>~       | that package's closure     |
+| every pin, newest available | ~mvs lock update --all~        | every pin's closure        |
+| nothing, just look          | ~mvs lock status~              | nothing                    |
+
+** One-time: get the ~mvs~ CLI
+
+Nothing is installed by the flake; run it out of the multiverse repo, from the
+directory holding ~multiverse.lock~:
+
+#+begin_src console
+nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock status
+#+end_src
+
+** Adding a package to the per-package list
+
+#+begin_src console
+# newest version the index knows
+nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock add obsidian
+
+# or pin a specific version (prefix match: 1.10 accepts 1.10.x)
+nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock add libreoffice@25.8
+
+nixos-rebuild switch --flake .#fern
+#+end_src
+
+The result is ~config.multiverse.locked.<attr>~ and ~config.multiverse.pinned.<attr>~,
+for the options that take a package rather than installing one:
+
+#+begin_src nix
+programs.obsidian.package = config.multiverse.locked.obsidian;
+#+end_src
+
+A lock file set in the module is installed automatically, so ~home.packages~
+does not need to list it again.
+
+** Updating one package, and only that package
+
+#+begin_src console
+nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock status
+# ATTR       PINNED   LATEST   BEHIND
+# obsidian   1.9.10   1.10.2   3 versions, 41 days
+
+nix flake update multiverse        # learn about newer revisions first
+nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock update obsidian
+nixos-rebuild switch --flake .#fern
+#+end_src
+
+~lock update <attr>~ rewrites exactly one entry in ~multiverse.lock~; every other
+pin keeps its revision. This is the thing a single flake input cannot do.
+
+** Keeping the pins cheap
+
+Each distinct revision in the lock is one nixpkgs fetch and evaluation.
+~lock minimize~ moves the pins onto the fewest revisions that still serve the
+versions already pinned — versions never change, only which build of them:
+
+#+begin_src console
+nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock minimize
+#+end_src
+
+** Limits worth knowing before you pin something
+
+- A pin comes from a *different* nixpkgs than the running system, so it brings
+  that revision's closure, including its own libc. Right for leaf applications
+  and CLI tools; wrong for libraries other packages link against.
+- Only top-level attributes are indexed (~jetbrains.idea~ and a few other
+  nested sets work). ~python3Packages.*~ and ~emacsPackages.*~ do *not*, so
+  ~emacs-pgtk~ is pinnable but the elpa packages built from the base nixpkgs
+  are not — leave emacs on the base.
+- Stored paths still substitute from cache.nixos.org, so a pin is a download,
+  not a compile.
+- aarch64 machines get their own copies; a pin downloads there separately.
 
 * ZSH Config
 #+name:commonZshConfig

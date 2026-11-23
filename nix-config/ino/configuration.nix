@@ -19,6 +19,10 @@ in
       inputs.playit-nixos-module.nixosModules.default 
     ];
 
+  # 26.05's immich build is flagged insecure until the branch catches up.
+  # The real fix is `mvs lock add immich` — see "Updating Packages".
+  nixpkgs.config.permittedInsecurePackages = [ "immich-2.7.5" ];
+
   # Bootloader.
   
   # Bootloader.

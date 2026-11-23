@@ -1,5 +1,9 @@
 { config, pkgs, stable, machine, inputs, ... }:
 {
+  # 26.05's rider build is flagged insecure until the branch catches up.
+  # The real fix is `mvs lock add jetbrains.rider` — see "Updating Packages".
+  nixpkgs.config.permittedInsecurePackages = [ "rider-2026.2.4" ];
+
   home.packages = (with pkgs; [
     #Dev-Tools
     jetbrains.rider

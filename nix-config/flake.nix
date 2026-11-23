@@ -2,9 +2,16 @@
 description = "Unified Flake Config";
 inputs = 
   {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-26.05";
-    
+    # Calm base: a release branch only takes backports, so a weekly
+    # `nix flake update nixpkgs` moves a handful of packages, not the world.
+    # Anything you want fresher than this goes in multiverse.lock — see
+    # "Updating Packages" below.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+    # Per-package pins across every nixpkgs revision ever. No inputs of its
+    # own, so it adds no nixpkgs to the lock graph.
+    multiverse.url = "github:fzakaria/nixpkgs-multiverse";
+
     nixos-wsl = 
       {
         url = "github:nix-community/NixOS-WSL";
@@ -13,7 +20,9 @@ inputs =
     
     home-manager = 
       {
-        url = "github:nix-community/home-manager/master";
+        # Matched to the nixpkgs channel; master is 26.11 and warns about the
+        # mismatch.
+        url = "github:nix-community/home-manager/release-26.05";
         inputs.nixpkgs.follows = "nixpkgs";
       };
     
@@ -50,12 +59,12 @@ inputs =
     };
     
   };
-outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
+outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, nixarr, ... }@inputs: 
   let
-    # stableFor = system:
-    #   nixpkgs-stable.legacyPackages.${system};
+    # `stable` and the base are the same channel now; this keeps the `stable`
+    # argument working (with unfree allowed) at every existing call site.
     stableFor = system:
-      import nixpkgs-stable {
+      import nixpkgs {
         inherit system;
         config.allowUnfree = true;
       };
@@ -160,9 +169,26 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
                       systemType = machine.systemType;
                       machines = machines;
                     };
+                    # Per-package pins live here. Empty lock = no-op until you add
+                    # something with `mvs lock add`; see "Updating Packages".
+                    home-manager.sharedModules = [
+                      inputs.multiverse.homeManagerModules.default
+                      {
+                        multiverse = {
+                          enable = true;
+                          config.allowUnfree = true;
+                          lock = ./multiverse.lock;
+                        };
+                      }
+                    ];
                     home-manager.users.${machine.username} = import ./${machine.host}/home.nix;
                   })
                 lanzaboote.nixosModules.lanzaboote  
+                # Same lock file, system side: `multiverse.locked.<attr>` is
+                # available to configuration.nix and installs into
+                # environment.systemPackages automatically.
+                inputs.multiverse.nixosModules.default
+                { multiverse = { enable = true; config.allowUnfree = machine.allowUnfree; lock = ./multiverse.lock; }; }
                 ./${machine.host}/configuration.nix
                 nixarr.nixosModules.default 
               ];
@@ -198,6 +224,15 @@ outputs = { self, nixpkgs, nixpkgs-stable, nixos-wsl, home-manager, lanzaboote, 
             # home-manager.useGlobalPkgs = true;
             # home-manager.useUserPackages = true;
           })
+    
+          inputs.multiverse.homeManagerModules.default
+          {
+            multiverse = {
+              enable = true;
+              config.allowUnfree = true;
+              lock = ./multiverse.lock;
+            };
+          }
     
           # Put your actual HM module(s) here
           ./${machine.host}/home.nix
