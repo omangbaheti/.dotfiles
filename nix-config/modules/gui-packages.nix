@@ -20,6 +20,7 @@
     stable.android-studio
     audacity
     kdePackages.okular
+    kdePackages.kdeconnect-kde
     
     #whatspp
     karere
