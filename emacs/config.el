@@ -2067,7 +2067,7 @@ DEADLINE: %^t
 ;;           "ghc-pkg field tidal data-dir --simple-output"))))
 
 (use-package auctex
-  :ensure t
+  :ensure (:host github :repo "emacsmirror/auctex" :branch "master")
   :config
   ;; Basic AUCTeX settings
   (setq TeX-save-query nil)

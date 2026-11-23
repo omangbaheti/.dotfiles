@@ -2626,7 +2626,7 @@ Modern on-the-fly syntax checking extension for GNU Emacs
 
 #+begin_src emacs-lisp
 (use-package auctex
-  :ensure t
+  :ensure (:host github :repo "emacsmirror/auctex" :branch "master")
   :config
   ;; Basic AUCTeX settings
   (setq TeX-save-query nil)
