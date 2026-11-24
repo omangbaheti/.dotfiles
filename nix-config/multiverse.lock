@@ -1,16 +1,208 @@
 {
   "version": 1,
   "pins": {
+    "basedpyright": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.39.8",
+      "date": "2026-11-21"
+    },
+    "claude-code": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "2.1.329",
+      "date": "2026-11-21"
+    },
+    "cmake": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "4.4.4",
+      "date": "2026-11-21"
+    },
+    "csharp-ls": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "0.28.0",
+      "date": "2026-11-21"
+    },
+    "firefox": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "160.0.1",
+      "date": "2026-11-21"
+    },
+    "flutter": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "3.50.1",
+      "date": "2026-11-21"
+    },
+    "gcc": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "16.2.0",
+      "date": "2026-11-21"
+    },
+    "hugo": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "0.170.0",
+      "date": "2026-11-21"
+    },
+    "jdt-language-server": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.63.0",
+      "date": "2026-11-21"
+    },
+    "languagetool": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "6.6",
+      "date": "2026-11-21"
+    },
+    "libtool": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "2.6.2",
+      "date": "2026-11-21"
+    },
+    "lombok": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.18.46",
+      "date": "2026-11-21"
+    },
+    "ltex-ls-plus": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "18.7.0",
+      "date": "2026-11-21"
+    },
+    "mupdf": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.28.5",
+      "date": "2026-11-21"
+    },
+    "nil": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "2026-07-23",
+      "date": "2026-11-21"
+    },
+    "nixfmt": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.5.0",
+      "date": "2026-11-21"
+    },
+    "nodejs_24": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "24.22.2",
+      "date": "2026-11-21"
+    },
     "obsidian": {
       "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
       "label": "2026-11-21-2786a2a72088",
       "version": "1.15.1",
       "date": "2026-11-21"
     },
+    "omnisharp-roslyn": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.39.14",
+      "date": "2026-11-21"
+    },
+    "opencode": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "2.3.0",
+      "date": "2026-11-21"
+    },
+    "openjdk25": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "25.0.5.0.3+1",
+      "date": "2026-11-21"
+    },
+    "p7zip": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "17.06",
+      "date": "2026-11-21"
+    },
+    "pandoc": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "3.7.0.2",
+      "date": "2026-11-21"
+    },
     "pi-coding-agent": {
       "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
       "label": "2026-11-21-2786a2a72088",
       "version": "1.6.0",
+      "date": "2026-11-21"
+    },
+    "poetry": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "2.5.1",
+      "date": "2026-11-21"
+    },
+    "proselint": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "0.16.0",
+      "date": "2026-11-21"
+    },
+    "pylint": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "4.1.3",
+      "date": "2026-11-21"
+    },
+    "pyrefly": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.4.1",
+      "date": "2026-11-21"
+    },
+    "ripgrep": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "15.2.0",
+      "date": "2026-11-21"
+    },
+    "scrcpy": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "5.0.1",
+      "date": "2026-11-21"
+    },
+    "sioyek": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "2.0.0-unstable-2026-11-04",
+      "date": "2026-11-21"
+    },
+    "texlab": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "5.26.0",
+      "date": "2026-11-21"
+    },
+    "texliveFull": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "2025-r78234-final-env",
+      "date": "2026-11-21"
+    },
+    "yazi": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "26.9.1",
       "date": "2026-11-21"
     }
   }

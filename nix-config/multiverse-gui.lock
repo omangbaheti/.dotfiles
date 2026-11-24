@@ -1,10 +1,130 @@
 {
   "version": 1,
   "pins": {
+    "android-studio": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "2026.2.2.9",
+      "date": "2026-11-21"
+    },
+    "aseprite": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.3.18.6",
+      "date": "2026-11-21"
+    },
+    "audacity": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "4.0.0",
+      "date": "2026-11-21"
+    },
+    "blender": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "5.2.3",
+      "date": "2026-11-21"
+    },
+    "discord": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.0.168",
+      "date": "2026-11-21"
+    },
+    "gimp": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "3.2.8",
+      "date": "2026-11-21"
+    },
+    "jetbrains.rider": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "2026.2.4",
+      "date": "2026-11-21"
+    },
+    "karere": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "3.1.1",
+      "date": "2026-11-21"
+    },
+    "libreoffice": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "26.8.3.1",
+      "date": "2026-11-21"
+    },
+    "localsend": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.18.0",
+      "date": "2026-11-21"
+    },
+    "obs-studio": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "32.2.2",
+      "date": "2026-11-21"
+    },
+    "parsec-bin": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "150_97c",
+      "date": "2026-11-21"
+    },
+    "proton-vpn": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "4.19.0",
+      "date": "2026-11-21"
+    },
+    "slack": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "4.51.180",
+      "date": "2026-11-21"
+    },
+    "spotify": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.2.95.453.g0eeebbed",
+      "date": "2026-11-21"
+    },
+    "steam": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.0.0.87",
+      "date": "2026-11-21"
+    },
+    "telegram-desktop": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "7.4.4",
+      "date": "2026-11-21"
+    },
     "unityhub": {
       "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
       "label": "2026-11-21-2786a2a72088",
       "version": "3.22.6",
+      "date": "2026-11-21"
+    },
+    "vesktop": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "1.6.9",
+      "date": "2026-11-21"
+    },
+    "vlc": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "3.0.24",
+      "date": "2026-11-21"
+    },
+    "zoom-us": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "7.2.5.6661",
       "date": "2026-11-21"
     }
   }
