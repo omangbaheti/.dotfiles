@@ -40,7 +40,6 @@ in
       oh-my-posh
       tealdeer
       btop
-      #nnn  
       fd
       eza
       devenv
@@ -49,71 +48,22 @@ in
       diff-so-fancy
       fastfetch
       ripgrep
-      poetry
-      pandoc
       gpg-tui     
       #LSPs / Compilers / Dev Envs
       #C/C++
-      glib
-      gdb
-      clang
-      cmake
-      gcc
-      libvterm
-      libgcc
-      libtool
-      p7zip
+      # libvterm
+      # libtool
       
       #python 
-      pylint
-      basedpyright
-      pyrefly
       python-with-packages
-      
-      #node 
-      nodejs_24
-      
-      #openjdk
-      jdt-language-server
-      lombok
-      openjdk25
-      # zulu8 
-      
-      # C#
-      omnisharp-roslyn
-      csharp-ls
-      #Latex LSP and grammar checking
-      # (aspellWithDicts (dicts: with dicts; [ en en-computers en-science ]))
-      proselint
-      harper
-      ltex-ls-plus
-      texlab
-      texliveFull
-      
-      #Nix 
-      nixfmt
-      statix
-      nil
-
-      #flutter
-      flutter
       
       #misc    
       home-manager
-      languagetool
-      
-      claude-code
-      opencode
       
       #misc     
-      firefox
       coreutils
-      syncthing
-      hugo
-      mupdf
       sioyek
       tirith
-      scrcpy
       android-tools
       sops
       age
