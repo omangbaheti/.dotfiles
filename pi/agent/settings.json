@@ -21,7 +21,7 @@
     "npm:@jack-yang/pi-tps-meter",
     "npm:billion-context"
   ],
-  "hideThinkingBlock": true,
+  "hideThinkingBlock": false,
   "transport": "auto",
   "enableInstallTelemetry": false,
   "treeFilterMode": "default",

@@ -20,7 +20,6 @@
     ];
 
   programs.home-manager.enable = true;
-  # nix.settings.auto-optimise-store = true;
   programs.zoxide.enable = true;
   programs.git = {
     enable = true;
@@ -145,12 +144,19 @@
 #  
 #  # Multiverse pins. Functions rather than aliases because they must run from the
 #  # flake directory — mvs writes ./multiverse.lock in the cwd.
-#  function nix-install {
-#    (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock add "$@")
+#  function mvs {
+#    (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- "$@")
 #  }
-#  function nix-gui-install {
-#    (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- --file multiverse-gui.lock lock add "$@")
-#  }
+#  function nix-install     { mvs lock add "$@" }
+#  function nix-gui-install { mvs --file multiverse-gui.lock lock add "$@" }
+#  function nix-uninstall   { mvs lock rm "$@" }
+#  function nix-status      { mvs lock status }
+#  # lock update only knows revisions already in the index: nix flake update multiverse first.
+#  function nix-update      { mvs lock update "$@" }
+#  # gui-only lock: mvs never looks past the file it is given, so say which one.
+#  function nix-gui-update  { mvs --file multiverse-gui.lock lock update "$@" }
+#  function nix-gui-uninstall { mvs --file multiverse-gui.lock lock rm "$@" }
+#  function nix-gui-status  { mvs --file multiverse-gui.lock lock status }
 #   #export display=$(ip route list default | awk '{print $3}'):0.0
 # '';
 
@@ -194,12 +200,19 @@
       
       # Multiverse pins. Functions rather than aliases because they must run from the
       # flake directory — mvs writes ./multiverse.lock in the cwd.
-      function nix-install {
-        (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock add "$@")
+      function mvs {
+        (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- "$@")
       }
-      function nix-gui-install {
-        (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- --file multiverse-gui.lock lock add "$@")
-      }
+      function nix-install     { mvs lock add "$@" }
+      function nix-gui-install { mvs --file multiverse-gui.lock lock add "$@" }
+      function nix-uninstall   { mvs lock rm "$@" }
+      function nix-status      { mvs lock status }
+      # lock update only knows revisions already in the index: nix flake update multiverse first.
+      function nix-update      { mvs lock update "$@" }
+      # gui-only lock: mvs never looks past the file it is given, so say which one.
+      function nix-gui-update  { mvs --file multiverse-gui.lock lock update "$@" }
+      function nix-gui-uninstall { mvs --file multiverse-gui.lock lock rm "$@" }
+      function nix-gui-status  { mvs --file multiverse-gui.lock lock status }
       #export display=$(ip route list default | awk '{print $3}'):0.0
     ''
     ];

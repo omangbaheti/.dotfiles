@@ -349,6 +349,13 @@ let
 in
 {
   nix.settings.experimental-features = ["nix-command" "flakes"];
+  nix.settings.auto-optimise-store = true;
+  nix.optimise.automatic = true;
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
   environment.systemPackages = with pkgs;
     [
       #cli tools
@@ -474,7 +481,6 @@ programs.emacs = {
 #+name:common-home-config
 #+begin_src nix
 programs.home-manager.enable = true;
-# nix.settings.auto-optimise-store = true;
 programs.zoxide.enable = true;
 programs.git = {
   enable = true;
@@ -1670,6 +1676,9 @@ nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock status
 nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- --file multiverse-gui.lock lock status
 #+end_src
 
+~lock update~, ~lock rm~ and ~lock status~ all take ~--file~ the same way; the
+shell has ~nix-gui-update~ / ~nix-gui-uninstall~ / ~nix-gui-status~ for it.
+
 Rule of thumb: anything in ~common-packages.nix~ or shared GUI code belongs in
 the global lock; anything device-specific belongs in that device's ~home.nix~
 on the base channel, or in the gui lock if the whole shared file wants it.
@@ -1698,12 +1707,19 @@ export COLORTERM=truecolor
 
 # Multiverse pins. Functions rather than aliases because they must run from the
 # flake directory — mvs writes ./multiverse.lock in the cwd.
-function nix-install {
-  (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock add "$@")
+function mvs {
+  (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- "$@")
 }
-function nix-gui-install {
-  (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- --file multiverse-gui.lock lock add "$@")
-}
+function nix-install     { mvs lock add "$@" }
+function nix-gui-install { mvs --file multiverse-gui.lock lock add "$@" }
+function nix-uninstall   { mvs lock rm "$@" }
+function nix-status      { mvs lock status }
+# lock update only knows revisions already in the index: nix flake update multiverse first.
+function nix-update      { mvs lock update "$@" }
+# gui-only lock: mvs never looks past the file it is given, so say which one.
+function nix-gui-update  { mvs --file multiverse-gui.lock lock update "$@" }
+function nix-gui-uninstall { mvs --file multiverse-gui.lock lock rm "$@" }
+function nix-gui-status  { mvs --file multiverse-gui.lock lock status }
 #+end_src
 
 ** WSL Config
