@@ -28,7 +28,6 @@
   - [[#wsl-config-files][WSL Config Files]]
     - [[#configurationnix-3][Configuration.nix]]
     - [[#homenix-3][Home.nix]]
-  - [[#raven---realme][Raven - Realme]]
 - [[#updating-packages][Updating Packages]]
   - [[#one-time-get-the-mvs-cli][One-time: get the ~mvs~ CLI]]
   - [[#adding-a-package-to-the-per-package-list][Adding a package to the per-package list]]
@@ -39,7 +38,6 @@
 - [[#zsh-config][ZSH Config]]
   - [[#wsl-config][WSL Config]]
   - [[#fern-config][Fern Config]]
-  - [[#annie-config][Annie Config]]
 
 * Flake Structure
 #+begin_src nix :tangle flake.nix :noweb yes
@@ -153,14 +151,6 @@ outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, 
                  systemType = "fern";
                };
         
-        vultr = commonSettings // 
-                {
-                  system = "x86_64-linux";
-                  host = "vultr";
-                  username = "root";
-                  systemType = "vultr";
-                };
-
         ino = commonSettings // 
                 {
                   system = "x86_64-linux";
@@ -185,23 +175,6 @@ outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, 
                   username = "annie";
                   systemType = "annie";
                 };
-        
-        raven =  commonSettings //
-                 {
-                   system = "aarch64-linux";
-                   host = "raven";
-                   username = "raven";
-                   systemType = "other-distro";
-                 };
-        
-        sakura = (commonSettings // # overriding system when required
-                  {
-                    system = "aarch64-linux";
-                    host = "sakura";
-                    username = "sakura";
-                    systemType = "pi";
-                  });
-        
       };
     <<makeSystem>> 
     <<makeHome>>
@@ -212,10 +185,7 @@ outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, 
           nix-wsl= mkSystem machines.wsl;
           fern   = mkSystem machines.fern;
           nyx    = mkSystem machines.nyx;
-          sakura = mkSystem machines.sakura;
-          vultr = mkSystem machines.vultr;
           ino = mkSystem machines.ino;
-          annie = mkSystem machines.annie;
         };
       
       homeConfigurations = 
@@ -224,7 +194,6 @@ outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, 
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
           "${machines.ino.username}@${machines.ino.host}" = mkHome machines.ino;
-          "${machines.raven.username}@${machines.raven.host}" = mkHome machines.raven;
         };
     };
 #+end_src
@@ -451,9 +420,6 @@ let
   };
 in
 {
-  # 26.05's rider build is flagged insecure until the branch catches up.
-  # The real fix is `mvs lock add jetbrains.rider` — see "Updating Packages".
-  nixpkgs.config.permittedInsecurePackages = [ "rider-2026.2.4" ];
 
   home.packages = (with pkgs; [
     #Dev-Tools
@@ -1603,99 +1569,6 @@ in
 #+end_src
 
 
-** Raven - Realme
-#+begin_src nix :noweb yes :tangle ./raven/home.nix
-{ config, pkgs, stable, machine, ... }:
-let
-  svDir = "${config.home.homeDirectory}/.config/sv";
-  sshPort = "2222";
-in
-{
-  home.stateVersion = "26.05";
-  
-  programs.home-manager.enable = true;
-  programs.zoxide.enable = true;
-  programs.git = 
-    {
-      enable = true;
-      settings = {
-        user.name = "Omang Baheti";
-        user.email = "omangbaheti@gmail.com";
-        init.defaultBranch = "main";
-        push.default = "simple";
-      };
-    };
-
-  programs.zsh = 
-    {
-      enable = true;
-      enableCompletion = true;
-      autosuggestion.enable = true;
-      syntaxHighlighting.enable = true;
-
-      shellAliases = 
-        {
-          ll = "eza -l";
-          la = "eza -lah --tree --ignore-glob='.git|.venv|node_modules'";
-          ls = "eza -h --git --icons --color=auto --group-directories-first -s extension";
-          tree = "eza --tree --icons --ignore-glob='.git|.venv|node_modules'";
-          grep = "rg";
-          find = "fd";
-          #          e="emacsclient -c";
-          emd = "emacs --daemon";
-          rebuild-config = "sudo nixos-rebuild switch --flake ~/.dotfiles/nix-config#${machine.systemType}";
-          rebuild-home-config = "home-manager switch --flake  ~/.dotfiles/nix-config#${machine.username}@${machine.host}";
-        };
-
-      oh-my-zsh = 
-        {
-          enable = true;
-        };
-    };
-
-  services.syncthing = 
-    {
-      enable = true;
-    };
-
-  home.packages = (with pkgs;
-    [
-      git
-      git-lfs
-      lazygit
-      wiper
-      zoxide
-      fzf
-      vim 
-      zsh
-      oh-my-posh
-      tealdeer
-      btop
-      fd
-      eza
-      devenv
-      nix-direnv
-      yazi
-      diff-so-fancy
-      fastfetch
-      openssh
-      ripgrep
-      poetry
-      pandoc
-      emacs-nox
-      tirith
-      android-tools
-      stable.runit
-    ]);
-  
-  programs.zsh.initContent = 
-    ''
- <<commonZshConfig>>
-    '';
-}
-#+end_src
-
-
 * Updating Packages
 
 Two update paths, deliberately separate. The base moves rarely and in small
@@ -1865,4 +1738,3 @@ function lazygit
 <<commonZshConfig>>
 #+end_src 
 
-** Annie Config

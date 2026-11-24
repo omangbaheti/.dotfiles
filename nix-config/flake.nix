@@ -95,14 +95,6 @@ outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, 
                  systemType = "fern";
                };
         
-        vultr = commonSettings // 
-                {
-                  system = "x86_64-linux";
-                  host = "vultr";
-                  username = "root";
-                  systemType = "vultr";
-                };
-
         ino = commonSettings // 
                 {
                   system = "x86_64-linux";
@@ -127,23 +119,6 @@ outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, 
                   username = "annie";
                   systemType = "annie";
                 };
-        
-        raven =  commonSettings //
-                 {
-                   system = "aarch64-linux";
-                   host = "raven";
-                   username = "raven";
-                   systemType = "other-distro";
-                 };
-        
-        sakura = (commonSettings // # overriding system when required
-                  {
-                    system = "aarch64-linux";
-                    host = "sakura";
-                    username = "sakura";
-                    systemType = "pi";
-                  });
-        
       };
     mkSystem = machine:
       let
@@ -245,10 +220,7 @@ outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, 
           nix-wsl= mkSystem machines.wsl;
           fern   = mkSystem machines.fern;
           nyx    = mkSystem machines.nyx;
-          sakura = mkSystem machines.sakura;
-          vultr = mkSystem machines.vultr;
           ino = mkSystem machines.ino;
-          annie = mkSystem machines.annie;
         };
       
       homeConfigurations = 
@@ -257,7 +229,6 @@ outputs = { self, nixpkgs, nixos-wsl, home-manager, lanzaboote, freesmlauncher, 
           "${machines.fern.username}@${machines.fern.host}" = mkHome machines.fern;
           "${machines.nyx.username}@${machines.nyx.host}" = mkHome machines.nyx;
           "${machines.ino.username}@${machines.ino.host}" = mkHome machines.ino;
-          "${machines.raven.username}@${machines.raven.host}" = mkHome machines.raven;
         };
     };
 }
