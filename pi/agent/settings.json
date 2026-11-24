@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.5.2",
+  "lastChangelogVersion": "1.6.0",
   "defaultTools": [
     "+codemode"
   ],
@@ -21,7 +21,7 @@
     "npm:@jack-yang/pi-tps-meter",
     "npm:billion-context"
   ],
-  "hideThinkingBlock": true,
+  "hideThinkingBlock": false,
   "transport": "auto",
   "enableInstallTelemetry": false,
   "treeFilterMode": "default",
@@ -40,7 +40,7 @@
     "{\"source\":\"npm:pi-web-access\",\"scope\":\"user\"}": "0.48.0",
     "{\"source\":\"npm:pi-mcp-adapter\",\"scope\":\"user\"}": "7.0.1",
     "{\"source\":\"npm:@pi-vault/pi-dcp\",\"scope\":\"user\"}": "0.11.0",
-    "{\"source\":\"npm:@narumitw/pi-usage\",\"scope\":\"user\"}": "0.69.4",
+    "{\"source\":\"npm:@narumitw/pi-usage\",\"scope\":\"user\"}": "0.70.0",
     "{\"source\":\"npm:@llblab/pi-telegram\",\"scope\":\"user\"}": "0.59.3",
     "{\"source\":\"npm:@tintinweb/pi-subagents\",\"scope\":\"user\"}": "0.26.2",
     "{\"source\":\"npm:pi-herdr-agents\",\"scope\":\"user\"}": "3.12.1",
