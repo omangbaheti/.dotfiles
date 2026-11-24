@@ -18,20 +18,20 @@
       cmake
       glib
       dconf
-      (pkgs.symlinkJoin {
-        name = "pi-coding-agent";
-        buildinputs = [ pkgs.makeWrapper ];
-        paths = [ pkgs.pi-coding-agent ];
-        postbuild = ''
-        wrapprogram $out/bin/pi \
-          --set npm_config_prefix ${config.home.homeDirectory}/.pi/npm/ \
-          --prefix path : ${
-            pkgs.lib.makeBinPath [
-              pkgs.nodejs_latest
-            ]
-          }
-      '';
-      })
+      # (pkgs.symlinkJoin {
+      #   name = "pi-coding-agent";
+      #   buildinputs = [ pkgs.makeWrapper ];
+      #   paths = [ pkgs.pi-coding-agent ];
+      #   postbuild = ''
+      #   wrapprogram $out/bin/pi \
+      #     --set npm_config_prefix ${config.home.homeDirectory}/.pi/npm/ \
+      #     --prefix path : ${
+      #       pkgs.lib.makeBinPath [
+      #         pkgs.nodejs_latest
+      #       ]
+      #     }
+      # '';
+      # })
     ];
 
   programs.home-manager.enable = true;

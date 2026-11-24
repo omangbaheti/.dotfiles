@@ -104,7 +104,6 @@ in
       
       claude-code
       opencode
-      pi-coding-agent
       
       #misc     
       firefox
