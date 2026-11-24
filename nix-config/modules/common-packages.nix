@@ -32,7 +32,6 @@ in
       git
       git-lfs
       lazygit
-      wiper
       zoxide
       fzf
       vim 
