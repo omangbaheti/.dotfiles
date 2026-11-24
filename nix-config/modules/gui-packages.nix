@@ -30,7 +30,7 @@ in
     
     #niri
     vicinae
-    noctalia
+    # noctalia
     xwayland-satellite
     wlr-which-key
   ]) ++ builtins.attrValues guiPins;

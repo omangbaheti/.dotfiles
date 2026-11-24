@@ -97,6 +97,12 @@
       "version": "1.5.0",
       "date": "2026-11-21"
     },
+    "noctalia": {
+      "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
+      "label": "2026-11-21-2786a2a72088",
+      "version": "5.6.0",
+      "date": "2026-11-21"
+    },
     "nodejs_24": {
       "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
       "label": "2026-11-21-2786a2a72088",
