@@ -1,4 +1,13 @@
 { config, pkgs, stable, machine, inputs, ... }:
+let
+  # Only fern and nyx import this file, so these pins reach just those two.
+  # The global lock is multiverse.lock, installed everywhere by the module.
+  guiPins = inputs.multiverse.lib.readLock {
+    inherit (machine) system;
+    file = ../multiverse-gui.lock;
+    config.allowUnfree = true;
+  };
+in
 {
   # 26.05's rider build is flagged insecure until the branch catches up.
   # The real fix is `mvs lock add jetbrains.rider` — see "Updating Packages".
@@ -19,8 +28,8 @@
     libreoffice
     gimp
     aseprite
-    zotero
-    obsidian
+    # zotero
+    # obsidian comes from multiverse.lock (installed on every host)
     stable.android-studio
     audacity
     kdePackages.okular
@@ -60,5 +69,5 @@
     noctalia
     xwayland-satellite
     wlr-which-key
-  ]);
+  ]) ++ builtins.attrValues guiPins;
 }

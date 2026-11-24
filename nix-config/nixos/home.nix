@@ -157,6 +157,15 @@
 #  eval "$(tirith init --shell zsh)"
 #  eval "$(direnv hook zsh)"
 #  export COLORTERM=truecolor
+#  
+#  # Multiverse pins. Functions rather than aliases because they must run from the
+#  # flake directory — mvs writes ./multiverse.lock in the cwd.
+#  function nix-install {
+#    (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock add "$@")
+#  }
+#  function nix-gui-install {
+#    (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- --file multiverse-gui.lock lock add "$@")
+#  }
 #   #export display=$(ip route list default | awk '{print $3}'):0.0
 # '';
 
@@ -197,6 +206,15 @@
       eval "$(tirith init --shell zsh)"
       eval "$(direnv hook zsh)"
       export COLORTERM=truecolor
+      
+      # Multiverse pins. Functions rather than aliases because they must run from the
+      # flake directory — mvs writes ./multiverse.lock in the cwd.
+      function nix-install {
+        (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock add "$@")
+      }
+      function nix-gui-install {
+        (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- --file multiverse-gui.lock lock add "$@")
+      }
       #export display=$(ip route list default | awk '{print $3}'):0.0
     ''
     ];

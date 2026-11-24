@@ -30,6 +30,12 @@
     - [[#homenix-3][Home.nix]]
   - [[#raven---realme][Raven - Realme]]
 - [[#updating-packages][Updating Packages]]
+  - [[#one-time-get-the-mvs-cli][One-time: get the ~mvs~ CLI]]
+  - [[#adding-a-package-to-the-per-package-list][Adding a package to the per-package list]]
+  - [[#updating-one-package-and-only-that-package][Updating one package, and only that package]]
+  - [[#keeping-the-pins-cheap][Keeping the pins cheap]]
+  - [[#two-lock-files-global-and-gui][Two lock files: global and gui]]
+  - [[#limits-worth-knowing-before-you-pin-something][Limits worth knowing before you pin something]]
 - [[#zsh-config][ZSH Config]]
   - [[#wsl-config][WSL Config]]
   - [[#fern-config][Fern Config]]
@@ -487,6 +493,15 @@ in
 ** GUI Software (Home Manager)
 #+begin_src nix :tangle ./modules/gui-packages.nix
 { config, pkgs, stable, machine, inputs, ... }:
+let
+  # Only fern and nyx import this file, so these pins reach just those two.
+  # The global lock is multiverse.lock, installed everywhere by the module.
+  guiPins = inputs.multiverse.lib.readLock {
+    inherit (machine) system;
+    file = ../multiverse-gui.lock;
+    config.allowUnfree = true;
+  };
+in
 {
   # 26.05's rider build is flagged insecure until the branch catches up.
   # The real fix is `mvs lock add jetbrains.rider` — see "Updating Packages".
@@ -507,8 +522,8 @@ in
     libreoffice
     gimp
     aseprite
-    zotero
-    obsidian
+    # zotero
+    # obsidian comes from multiverse.lock (installed on every host)
     stable.android-studio
     audacity
     kdePackages.okular
@@ -548,7 +563,7 @@ in
     noctalia
     xwayland-satellite
     wlr-which-key
-  ]);
+  ]) ++ builtins.attrValues guiPins;
 }
 #+end_src
 
@@ -1852,6 +1867,43 @@ versions already pinned — versions never change, only which build of them:
 nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock minimize
 #+end_src
 
+** Two lock files: global and gui
+
+A pin is not scoped to a host — the module installs every entry it is given,
+so *the file you point the module at is the scope*. Two files, two audiences:
+
+| lock file              | read by                          | reaches                    |
+|------------------------+----------------------------------+----------------------------|
+| ~multiverse.lock~      | the module, in every host        | all machines               |
+| ~multiverse-gui.lock~  | ~modules/gui-packages.nix~ only  | fern and nyx               |
+
+~multiverse.lock~ is auto-installed: adding obsidian there puts it on every
+host, system and user, with no ~home.packages~ line anywhere.
+
+~multiverse-gui.lock~ is read by hand inside ~gui-packages.nix~, which only
+fern and nyx import, so its contents stay on those two:
+
+#+begin_src console
+cd ~/.dotfiles/nix-config
+git pull
+nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- --file multiverse-gui.lock lock add libreoffice@26.2
+#+end_src
+
+Then delete ~libreoffice~ from the ~home.packages~ list in the same file —
+~guiPins~ appends every entry of that lock already.
+
+Once a year, or when you notice something stale, both files need attention;
+~lock status~ takes ~--file~ too:
+
+#+begin_src console
+nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock status
+nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- --file multiverse-gui.lock lock status
+#+end_src
+
+Rule of thumb: anything in ~common-packages.nix~ or shared GUI code belongs in
+the global lock; anything device-specific belongs in that device's ~home.nix~
+on the base channel, or in the gui lock if the whole shared file wants it.
+
 ** Limits worth knowing before you pin something
 
 - A pin comes from a *different* nixpkgs than the running system, so it brings
@@ -1873,6 +1925,15 @@ eval "$(oh-my-posh init zsh)"
 eval "$(tirith init --shell zsh)"
 eval "$(direnv hook zsh)"
 export COLORTERM=truecolor
+
+# Multiverse pins. Functions rather than aliases because they must run from the
+# flake directory — mvs writes ./multiverse.lock in the cwd.
+function nix-install {
+  (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- lock add "$@")
+}
+function nix-gui-install {
+  (cd ~/.dotfiles/nix-config && nix run 'github:fzakaria/nixpkgs-multiverse#mvs' -- --file multiverse-gui.lock lock add "$@")
+}
 #+end_src
 
 ** WSL Config
